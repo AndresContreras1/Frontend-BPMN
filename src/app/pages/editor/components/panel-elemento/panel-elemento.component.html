@@ -1,0 +1,16 @@
+<div class="card shadow-sm" id="panelElemento">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-semibold"><i class="bi {{ icono() }} text-primary"></i> {{ titulo() }}</span>
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar.emit()"></button>
+  </div>
+  <div class="card-body">
+    <ng-content />
+  </div>
+  @if (puedeEliminar()) {
+    <div class="card-footer text-end">
+      <button type="button" class="btn btn-outline-danger btn-sm" id="eliminarElementoBtn" (click)="eliminar.emit()">
+        <i class="bi bi-trash"></i> Eliminar
+      </button>
+    </div>
+  }
+</div>
