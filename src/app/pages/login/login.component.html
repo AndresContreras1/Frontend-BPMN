@@ -1,0 +1,42 @@
+<div class="mt-5 d-flex justify-content-center">
+  <div class="col-xl-4 col-lg-5 col-md-7 col-sm-12">
+    <div class="card shadow-sm">
+      <div class="card-header text-center fw-bold fs-4">
+        <i class="bi bi-diagram-3-fill text-primary"></i> Iniciar sesión
+      </div>
+      <form class="p-3 row g-3" [formGroup]="loginForm" (ngSubmit)="handleSubmit()" novalidate>
+        @if (expirada()) {
+          <div class="alert alert-warning mb-0" id="sesionExpiradaMsg">Su sesión expiró o fue cerrada. Ingrese de nuevo.</div>
+        }
+        @if (registrada()) {
+          <div class="alert alert-success mb-0">La empresa quedó registrada. Ingrese con el correo de contacto.</div>
+        }
+        <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+        <div class="col-12">
+          <label for="correo" class="form-label">Correo</label>
+          <input type="email" id="correo" class="form-control" formControlName="correo" autocomplete="username"
+                 [class.is-invalid]="loginForm.controls.correo.touched && loginForm.controls.correo.invalid" />
+          <app-campo-error [control]="loginForm.controls.correo"></app-campo-error>
+        </div>
+
+        <div class="col-12">
+          <label for="password" class="form-label">Contraseña</label>
+          <input type="password" id="password" class="form-control" formControlName="password" autocomplete="current-password"
+                 [class.is-invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid" />
+          <app-campo-error [control]="loginForm.controls.password"></app-campo-error>
+        </div>
+
+        <div class="col-12 d-grid">
+          <button type="submit" class="btn btn-primary" id="loginBtn" [disabled]="enviando()">
+            @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            Ingresar
+          </button>
+        </div>
+        <p class="col-12 text-center small mb-0">
+          ¿Su empresa aún no tiene cuenta? <a routerLink="/registro" id="irRegistroLink">Registrar empresa</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
