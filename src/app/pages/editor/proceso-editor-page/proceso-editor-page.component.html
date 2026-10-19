@@ -59,7 +59,7 @@
         <app-diagrama-svg [pools]="store.pools()" [nodos]="store.nodos()" [arcos]="store.arcos()" [mensajes]="store.mensajes()"
                           [advertencias]="store.advertencias()" [resaltado]="store.idResaltado()"
                           [arcoResaltado]="store.arcoSeleccionado()?.id ?? null" [mensajeResaltado]="store.mensajeSeleccionado()?.id ?? null"
-                          [origenConexion]="store.origenConexion()" [herramienta]="store.editable() ? store.herramienta() : 'seleccionar'"
+                          [origenConexion]="store.origenConexion()" [colocando]="store.editable() && store.herramienta() !== 'seleccionar'"
                           (clicLienzo)="alClicLienzo($event)" (clicNodo)="alClicNodo($event)"
                           (clicArco)="alClicArco($event)" (clicMensaje)="alClicMensaje($event)">
         </app-diagrama-svg>

@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 
-import { Mensaje } from '../../../../models/mensaje.model';
-import { Ruta } from '../../layout';
+import { Mensaje } from '../../../models/mensaje.model';
+import { Ruta } from '../layout';
 
 /**
  * HU-25 a HU-28: flujo de mensaje entre pools, línea punteada con círculo de origen y punta hueca;

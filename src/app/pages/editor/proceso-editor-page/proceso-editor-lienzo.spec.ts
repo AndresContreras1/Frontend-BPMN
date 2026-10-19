@@ -7,7 +7,7 @@ import { of } from 'rxjs';
 import { SesionStore } from '../../../core/services/sesion.store';
 import { Diagrama } from '../../../models/diagrama.model';
 import { RolAcceso } from '../../../models/usuario.model';
-import { Posicion } from '../layout';
+import { Posicion } from '../../../components/diagrama/layout';
 import { ProcesoEditorPageComponent } from './proceso-editor-page.component';
 
 describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', () => {

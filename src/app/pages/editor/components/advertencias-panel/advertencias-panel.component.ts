@@ -1,7 +1,7 @@
 import { Component, computed, input, output } from '@angular/core';
 
 import { Advertencia } from '../../../../models/diagrama.model';
-import { tipoDeElemento } from '../../advertencias';
+import { tipoDeElemento } from '../../../../components/diagrama/advertencias';
 
 /**
  * Resultado del validador del proceso. Los ERROR impiden publicar; los AVISO solo informan.

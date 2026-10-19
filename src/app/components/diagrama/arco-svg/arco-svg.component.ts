@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 
-import { Arco } from '../../../../models/arco.model';
-import { Ruta } from '../../layout';
+import { Arco } from '../../../models/arco.model';
+import { Ruta } from '../layout';
 
 /** HU-11: flujo de secuencia, línea continua con punta sólida y su etiqueta (Sí / No). */
 @Component({

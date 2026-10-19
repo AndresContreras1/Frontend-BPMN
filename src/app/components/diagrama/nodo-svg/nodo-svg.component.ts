@@ -1,9 +1,9 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { Severidad } from '../../../../models/diagrama.model';
-import { Mensaje } from '../../../../models/mensaje.model';
-import { TipoActividad } from '../../../../models/nodo.model';
-import { NodoLayout, partirTexto } from '../../layout';
+import { Severidad } from '../../../models/diagrama.model';
+import { Mensaje } from '../../../models/mensaje.model';
+import { TipoActividad } from '../../../models/nodo.model';
+import { NodoLayout, partirTexto } from '../layout';
 
 /** Glifos de Bootstrap Icons (la fuente ya está cargada en la app). */
 const ICONO_ACTIVIDAD: Record<TipoActividad, string> = {

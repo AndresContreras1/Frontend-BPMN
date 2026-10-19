@@ -23,12 +23,12 @@ import { GatewayService } from '../../../service/gateway.service';
 import { LaneService } from '../../../service/lane.service';
 import { MensajeService } from '../../../service/mensaje.service';
 import { PoolService } from '../../../service/pool.service';
-import { tipoDeElemento } from '../advertencias';
+import { tipoDeElemento } from '../../../components/diagrama/advertencias';
 import { ActividadFormComponent } from '../components/actividad-form/actividad-form.component';
 import { AdvertenciasPanelComponent } from '../components/advertencias-panel/advertencias-panel.component';
 import { ArcoFormComponent, DatosArco } from '../components/arco-form/arco-form.component';
 import { CorrelacionFormComponent } from '../components/correlacion-form/correlacion-form.component';
-import { DiagramaSvgComponent } from '../components/diagrama-svg/diagrama-svg.component';
+import { DiagramaSvgComponent } from '../../../components/diagrama/diagrama-svg/diagrama-svg.component';
 import { EstructuraPanelComponent, MovimientoLane } from '../components/estructura-panel/estructura-panel.component';
 import { EventoFormComponent } from '../components/evento-form/evento-form.component';
 import { GatewayFormComponent } from '../components/gateway-form/gateway-form.component';
@@ -38,7 +38,7 @@ import { ClaseMensaje, GuardarMensaje, MensajeFormComponent } from '../component
 import { PanelElementoComponent } from '../components/panel-elemento/panel-elemento.component';
 import { PoolFormComponent } from '../components/pool-form/pool-form.component';
 import { EditorStore, Herramienta } from '../editor.store';
-import { Posicion } from '../layout';
+import { Posicion } from '../../../components/diagrama/layout';
 
 interface Confirmacion {
   titulo: string;
