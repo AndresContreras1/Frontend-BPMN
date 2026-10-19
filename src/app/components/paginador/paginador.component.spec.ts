@@ -5,11 +5,11 @@ import { PaginadorComponent } from './paginador.component';
 describe('PaginadorComponent', () => {
   let fixture: ComponentFixture<PaginadorComponent>;
 
-  const crear = (pagina: number, total: number) => {
+  const crear = (page: number, total: number) => {
     fixture = TestBed.createComponent(PaginadorComponent);
-    fixture.componentRef.setInput('pagina', pagina);
-    fixture.componentRef.setInput('totalPaginas', total);
-    fixture.componentRef.setInput('totalElementos', total * 10);
+    fixture.componentRef.setInput('page', page);
+    fixture.componentRef.setInput('totalPages', total);
+    fixture.componentRef.setInput('totalElements', total * 10);
     fixture.detectChanges();
   };
 
@@ -21,7 +21,7 @@ describe('PaginadorComponent', () => {
   it('emite la página elegida', () => {
     crear(0, 3);
     const emitidas: number[] = [];
-    fixture.componentInstance.cambio.subscribe((p) => emitidas.push(p));
+    fixture.componentInstance.pageChange.subscribe((p) => emitidas.push(p));
 
     const botones = fixture.nativeElement.querySelectorAll('button.page-link');
     (botones[2] as HTMLButtonElement).click();       // página 2
