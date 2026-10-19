@@ -56,7 +56,7 @@
 
         <div class="col-12 d-flex justify-content-end gap-2">
           <a class="btn btn-secondary" [routerLink]="isEdit ? ['/procesos', procesoId] : ['/procesos']">Cancelar</a>
-          <button type="submit" class="btn btn-primary" id="guardarProcesoBtn" [disabled]="enviando() || !!soloLectura()">
+          <button type="submit" class="btn btn-primary" id="guardarProcesoBtn" [disabled]="enviando() || !!soloLectura() || procesoForm.invalid">
             @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
             {{ isEdit ? 'Guardar cambios' : 'Crear proceso' }}
           </button>

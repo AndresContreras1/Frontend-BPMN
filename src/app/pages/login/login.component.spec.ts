@@ -57,9 +57,14 @@ describe('LoginComponent (HU-03)', () => {
 
   afterEach(() => backend.verify());
 
-  it('no envía el formulario vacío y muestra qué falta', () => {
+  it('el botón queda deshabilitado mientras falten datos y al salir de un campo muestra qué falta', () => {
     abrir();
+    expect(boton().disabled).toBeTrue();
+
+    escribir('correo', '');
+    fixture.detectChanges();
     enviar();
+
     backend.expectNone('/api/v1/auth/login');
     expect(html.textContent).toContain('Este campo es obligatorio');
   });

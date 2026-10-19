@@ -38,7 +38,7 @@
   }
   @if (editable()) {
     <div class="col-12 d-flex justify-content-end mt-2">
-      <button type="submit" class="btn btn-primary btn-sm" id="guardarArcoBtn" [disabled]="guardando()">
+      <button type="submit" class="btn btn-primary btn-sm" id="guardarArcoBtn" [disabled]="guardando() || arcoForm.invalid">
         @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Guardar
       </button>

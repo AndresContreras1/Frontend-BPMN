@@ -50,15 +50,18 @@ describe('PoolFormComponent (HU-21, HU-24)', () => {
     const nombre = html.querySelector<HTMLInputElement>('#poolNombre')!;
     nombre.value = '  Cliente final ';
     nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarPoolBtn')!.click();
     expect(emitido).toEqual({ nombre: 'Cliente final', tipo: 'CLIENTE', cajaNegra: false });
   });
 
-  it('no emite sin nombre', () => {
+  it('sin nombre el botón no se habilita y al tocar el campo dice qué falta', () => {
     const fixture = crear(null);
     let emitidos = 0;
     fixture.componentInstance.guardar.subscribe(() => emitidos++);
-    fixture.nativeElement.querySelector('#guardarPoolBtn').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#guardarPoolBtn').disabled).toBeTrue();
+    fixture.nativeElement.querySelectorAll('input, select, textarea').forEach((c: Element) => c.dispatchEvent(new Event('blur')));
     fixture.detectChanges();
     expect(emitidos).toBe(0);
     expect(fixture.nativeElement.textContent).toContain('Este campo es obligatorio');
@@ -116,11 +119,14 @@ describe('LaneFormComponent (HU-22)', () => {
     const html: HTMLElement = fixture.nativeElement;
     const emitidos: number[] = [];
     fixture.componentInstance.guardar.subscribe((id) => emitidos.push(id));
-    html.querySelector<HTMLButtonElement>('#guardarLaneBtn')!.click();
+    fixture.detectChanges();
+    expect(html.querySelector<HTMLButtonElement>('#guardarLaneBtn')!.disabled).toBeTrue();
+    html.querySelectorAll('input, select, textarea').forEach((c: Element) => c.dispatchEvent(new Event('blur')));
     fixture.detectChanges();
     expect(html.textContent).toContain('Elija el rol responsable de la lane');
 
     fixture.componentInstance.laneForm.controls.rolProcesoId.setValue(3);
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarLaneBtn')!.click();
     expect(emitidos).toEqual([3]);
   });

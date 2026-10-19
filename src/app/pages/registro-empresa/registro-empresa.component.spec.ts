@@ -27,6 +27,7 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
   };
 
   const enviar = () => {
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#registrarEmpresaBtn')!.click();
     fixture.detectChanges();
   };

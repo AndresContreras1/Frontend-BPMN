@@ -31,7 +31,7 @@
     }
     <div class="col-12 d-flex justify-content-end gap-2">
       <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
-      <button type="submit" class="btn btn-primary" id="guardarLaneBtn" [disabled]="guardando() || !rolesDisponibles().length">
+      <button type="submit" class="btn btn-primary" id="guardarLaneBtn" [disabled]="guardando() || !rolesDisponibles().length || laneForm.invalid">
         @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Guardar
       </button>

@@ -162,7 +162,7 @@
 
   @if (editable()) {
     <div class="col-12 d-flex justify-content-end mt-2">
-      <button type="submit" class="btn btn-primary btn-sm" id="guardarMensajeBtn" [disabled]="guardando()">
+      <button type="submit" class="btn btn-primary btn-sm" id="guardarMensajeBtn" [disabled]="guardando() || mensajeForm.invalid">
         @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Guardar
       </button>

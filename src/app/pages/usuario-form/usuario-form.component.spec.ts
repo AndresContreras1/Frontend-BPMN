@@ -29,6 +29,7 @@ describe('UsuarioFormComponent (HU-02)', () => {
   };
 
   const enviar = () => {
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarUsuarioBtn')!.click();
     fixture.detectChanges();
   };
@@ -53,8 +54,10 @@ describe('UsuarioFormComponent (HU-02)', () => {
     expect(html.textContent).toContain('Crea y modela procesos');
   });
 
-  it('no envía sin los campos obligatorios', () => {
-    enviar();
+  it('no envía sin los campos obligatorios: el botón sigue deshabilitado y cada campo dice qué falta', () => {
+    expect(html.querySelector<HTMLButtonElement>('#guardarUsuarioBtn')!.disabled).toBeTrue();
+    html.querySelectorAll('input, select, textarea').forEach((c: Element) => c.dispatchEvent(new Event('blur')));
+    fixture.detectChanges();
     backend.expectNone('/api/v1/usuarios');
     expect(html.querySelectorAll('.invalid-feedback').length).toBeGreaterThanOrEqual(3);
   });

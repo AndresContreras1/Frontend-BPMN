@@ -28,7 +28,7 @@
         </div>
 
         <div class="col-12 d-grid">
-          <button type="submit" class="btn btn-primary" id="loginBtn" [disabled]="enviando()">
+          <button type="submit" class="btn btn-primary" id="loginBtn" [disabled]="enviando() || loginForm.invalid">
             @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
             Ingresar
           </button>

@@ -24,7 +24,7 @@
   </div>
   @if (editable()) {
     <div class="col-12 d-flex justify-content-end">
-      <button type="submit" class="btn btn-outline-primary btn-sm" id="guardarCorrelacionBtn" [disabled]="guardando()">Guardar correlación</button>
+      <button type="submit" class="btn btn-outline-primary btn-sm" id="guardarCorrelacionBtn" [disabled]="guardando() || correlacionForm.invalid">Guardar correlación</button>
     </div>
   }
 </form>

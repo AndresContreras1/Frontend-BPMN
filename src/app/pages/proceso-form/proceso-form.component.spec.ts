@@ -43,6 +43,7 @@ describe('ProcesoFormComponent (HU-04, HU-05)', () => {
   };
 
   const enviar = () => {
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarProcesoBtn')!.click();
     fixture.detectChanges();
   };
@@ -62,9 +63,11 @@ describe('ProcesoFormComponent (HU-04, HU-05)', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/procesos', 12]);
   });
 
-  it('crear: exige nombre y categoría', () => {
+  it('crear: exige nombre y categoría (el botón no se habilita sin ellos)', () => {
     crear();
-    enviar();
+    expect(html.querySelector<HTMLButtonElement>('#guardarProcesoBtn')!.disabled).toBeTrue();
+    html.querySelectorAll('input, select, textarea').forEach((c: Element) => c.dispatchEvent(new Event('blur')));
+    fixture.detectChanges();
     backend.expectNone({ method: 'POST', url: '/api/v1/procesos' });
     expect(html.querySelectorAll('.invalid-feedback').length).toBe(2);
   });

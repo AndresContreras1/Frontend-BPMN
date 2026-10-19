@@ -46,7 +46,7 @@
 
         <div class="col-12 d-flex justify-content-between align-items-center">
           <a routerLink="/login" class="small">Ya tengo cuenta</a>
-          <button type="submit" class="btn btn-primary" id="registrarEmpresaBtn" [disabled]="enviando()">
+          <button type="submit" class="btn btn-primary" id="registrarEmpresaBtn" [disabled]="enviando() || registroForm.invalid">
             @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
             Registrar empresa
           </button>
