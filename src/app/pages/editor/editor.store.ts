@@ -3,16 +3,34 @@ import { catchError, forkJoin, map, Observable, of, tap } from 'rxjs';
 
 import { problemaDe } from '../../core/services/errores';
 import { SesionStore } from '../../core/services/sesion.store';
-import { Diagrama } from '../../models/diagrama.model';
+import { Advertencia, Diagrama } from '../../models/diagrama.model';
 import { ProblemDetail } from '../../models/problem-detail.model';
 import { RolProcesoResumen } from '../../models/rol-proceso.model';
 import { DiagramaService } from '../../service/diagrama.service';
 import { RolProcesoService } from '../../service/rol-proceso.service';
 
-/** Qué elemento está abierto en el panel lateral; id null significa "nuevo". */
+/** Elementos que se crean con un clic en el lienzo. */
+export type ClaseElemento = 'INICIO' | 'FIN' | 'ACTIVIDAD' | 'GATEWAY' | 'THROW' | 'CATCH' | 'EXTERNO';
+
+/** Qué hace el próximo clic en el lienzo. */
+export type Herramienta = 'seleccionar' | 'conectar' | 'mover' | ClaseElemento;
+
+/** Lugar del lienzo donde va un elemento nuevo (pool, lane y posición). */
+export interface Ubicacion {
+  poolId: number;
+  laneId: number | null;
+  posX: number;
+  posY: number;
+}
+
+/** Qué está abierto en el panel lateral; id null significa "nuevo". */
 export type Seleccion =
   | { tipo: 'pool'; id: number | null }
-  | { tipo: 'lane'; id: number | null; poolId: number };
+  | { tipo: 'lane'; id: number | null; poolId: number }
+  | { tipo: 'nodo'; id: number }
+  | { tipo: 'mensaje'; id: number }
+  | { tipo: 'arco'; id: number | null; origenId: number; destinoId: number }
+  | { tipo: 'nuevo'; clase: ClaseElemento; ubicacion: Ubicacion };
 
 /**
  * Estado compartido del editor (un servicio por página: va en providers del componente).
@@ -29,11 +47,16 @@ export class EditorStore {
   private readonly _roles = signal<RolProcesoResumen[]>([]);
   private readonly _problemaCarga = signal<ProblemDetail | null>(null);
   private readonly _seleccion = signal<Seleccion | null>(null);
+  private readonly _herramienta = signal<Herramienta>('seleccionar');
+  private readonly _origenConexion = signal<number | null>(null);
 
   readonly diagrama = this._diagrama.asReadonly();
   readonly roles = this._roles.asReadonly();
   readonly problemaCarga = this._problemaCarga.asReadonly();
   readonly seleccion = this._seleccion.asReadonly();
+  readonly herramienta = this._herramienta.asReadonly();
+  /** Primer elemento elegido con la herramienta "conectar". */
+  readonly origenConexion = this._origenConexion.asReadonly();
 
   readonly proceso = computed(() => this._diagrama()?.proceso ?? null);
   readonly pools = computed(() => [...(this._diagrama()?.pools ?? [])].sort((a, b) => a.orden - b.orden));
@@ -73,10 +96,49 @@ export class EditorStore {
     return s?.tipo === 'lane' ? (this.pools().find((p) => p.id === s.poolId) ?? null) : null;
   });
 
+  /** Elemento del flujo abierto en el panel (actividad, gateway o evento). */
+  readonly nodoSeleccionado = computed(() => {
+    const s = this._seleccion();
+    return s?.tipo === 'nodo' ? (this.nodos().find((n) => n.id === s.id) ?? null) : null;
+  });
+
+  readonly mensajeSeleccionado = computed(() => {
+    const s = this._seleccion();
+    return s?.tipo === 'mensaje' ? (this.mensajes().find((m) => m.id === s.id) ?? null) : null;
+  });
+
+  readonly arcoSeleccionado = computed(() => {
+    const s = this._seleccion();
+    return s?.tipo === 'arco' && s.id !== null ? (this.arcos().find((a) => a.id === s.id) ?? null) : null;
+  });
+
+  /** Id del elemento resaltado en el lienzo, cualquiera sea su tipo. */
+  readonly idResaltado = computed(() => {
+    const s = this._seleccion();
+    if (s?.tipo === 'nodo') {
+      return s.id;
+    }
+    if (s?.tipo === 'mensaje') {
+      return this.mensajeSeleccionado()?.nodo.id ?? null;
+    }
+    return null;
+  });
+
+  /** Mensaje al que pertenece un elemento del flujo (un throw, un catch o una tarea de envío). */
+  mensajeDeNodo(nodoId: number) {
+    return this.mensajes().find((m) => m.nodo.id === nodoId) ?? null;
+  }
+
+  lanesDePool(poolId: number) {
+    return [...(this.pools().find((p) => p.id === poolId)?.lanes ?? [])].sort((a, b) => a.orden - b.orden);
+  }
+
   /** Diagrama y catálogo de roles a la vez (forkJoin): se muestran juntos. */
   cargar(procesoId: number): Observable<void> {
     this._problemaCarga.set(null);
     this._seleccion.set(null);
+    this._herramienta.set('seleccionar');
+    this._origenConexion.set(null);
     return forkJoin({
       diagrama: this.diagramaService.obtener(procesoId),
       // Sin el catálogo igual se puede ver el diagrama: su error no debe tumbar la carga
@@ -109,5 +171,22 @@ export class EditorStore {
 
   seleccionar(seleccion: Seleccion | null): void {
     this._seleccion.set(seleccion);
+  }
+
+  usarHerramienta(herramienta: Herramienta): void {
+    this._herramienta.set(herramienta);
+    this._origenConexion.set(null);
+  }
+
+  marcarOrigenConexion(nodoId: number | null): void {
+    this._origenConexion.set(nodoId);
+  }
+
+  /** Resultado de "Validar": reemplaza las advertencias sin volver a pedir el diagrama. */
+  establecerAdvertencias(advertencias: Advertencia[]): void {
+    const diagrama = this._diagrama();
+    if (diagrama) {
+      this._diagrama.set({ ...diagrama, advertencias });
+    }
   }
 }
