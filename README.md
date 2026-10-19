@@ -33,7 +33,7 @@ La app queda en `http://localhost:4200`. Las peticiones a `/api` se reenvían al
 npm run test:ci
 ```
 
-Corre las pruebas unitarias una vez en Chrome headless y deja la cobertura en `coverage/` (161 pruebas; cerca de 88 % de líneas).
+Corre las pruebas unitarias una vez en Chrome headless y deja la cobertura en `coverage/` (174 pruebas; 87 % de líneas y 72 % de ramas).
 
 ## Docker
 
@@ -65,7 +65,10 @@ docker compose up --build
 
 - El navegador solo habla con nginx: la SPA, la API (`/api/`) y Swagger (`/swagger-ui/index.html`) salen del mismo origen, sin CORS.
 - El perfil `demo` carga las empresas, usuarios y procesos de demostración la primera vez (tabla de usuarios abajo).
+- El backend crea el esquema de PostgreSQL con las migraciones de Flyway (`V1` y `V2`) y Hibernate lo valida al arrancar.
 - `docker compose down` detiene todo; `docker compose down -v` borra también la base de datos.
+- Si el volumen `pgdata` viene de una versión anterior (creado sin migraciones), el backend no arranca: bórrelo una vez con `docker compose down -v` o arranque una vez con `FLYWAY_BASELINE_ON_MIGRATE=true` en `.env` para conservarlo.
+- nginx reenvía `Host` y `X-Forwarded-*`: Swagger publica `http://localhost:8080` como servidor y el límite de intentos del login se cuenta por la IP real del navegador.
 
 ### Solo el frontend
 
@@ -79,12 +82,15 @@ La imagen compila la SPA con Node y la sirve con nginx en el puerto 80. nginx re
 
 Con `docker compose up --build` y PostgreSQL vacío (perfil `prod,demo`):
 
+- Flyway aplica `V1__esquema_inicial` y `V2__nombres_unicos_entre_activos` y el backend arranca con `ddl-auto=validate`.
 - La colección de Postman del backend pasa completa **a través de nginx** (61 peticiones, 68 aserciones, 0 fallos):
 
   ```bash
   npx newman run ../Backend-BPMN/postman/BPMN-API.postman_collection.json -e ../Backend-BPMN/postman/local.postman_environment.json --env-var baseUrl=http://localhost:8080
   ```
 
+- `GET /v3/api-docs` por nginx publica `http://localhost:8080` como servidor de Swagger.
+- Más de 10 intentos de login seguidos desde el mismo navegador responden `429` con `Retry-After`.
 - Recorrido de punta a punta en el navegador (`http://localhost:8080`): registrar una empresa nueva, crear sus roles de proceso, invitar un editor, crear un proceso, agregar lanes, modelar inicio, actividades y fin con las herramientas, conectar, validar, publicar, compartir por NIT con Facimus Demo y, entrando como `admin@demo.com`, verlo en **Compartidos conmigo** en solo lectura (la API responde 404 si la empresa invitada intenta editarlo).
 
 ## Estructura
@@ -95,6 +101,7 @@ src/app/
 ├── models/          # interfaces que reflejan los DTO de la API
 ├── service/         # un servicio por recurso de la API; solo peticiones, retornan Observable
 ├── components/      # piezas reutilizables (navbar, paginador, alertas, modal, errores de campo)
+│   └── diagrama/    # lienzo SVG del diagrama y su geometría: lo usan el editor y la ficha del proceso
 └── pages/           # una carpeta por pantalla
 ```
 
@@ -102,7 +109,9 @@ src/app/
 - **Interceptores:** `authInterceptor` agrega `Authorization: Bearer` solo a la API; `errorInterceptor` cierra la sesión ante un 401 y lleva a `/login?expirada=true`.
 - **Guards:** `authGuard` exige sesión y recuerda la URL pedida (`returnUrl`); `invitadoGuard` saca del login a quien ya entró; `rolGuard` limita rutas por rol de acceso (la API aplica el mismo permiso).
 - **Errores:** la API responde `ProblemDetail`; `problemaDe()` lo normaliza, `app-alerta-error` lo muestra y `aplicarErroresDelServidor()` pone los errores de validación (400) debajo de cada campo.
-- **Formularios:** reactivos con `Validators`; los mensajes aparecen con `touched && invalid` (`app-campo-error`).
+- **Formularios:** reactivos con `Validators`; el botón de enviar queda deshabilitado mientras el formulario no sea válido y los mensajes aparecen con `touched && invalid` (`app-campo-error`).
+- **Parámetros de la URL:** se leen con `ActivatedRoute` en `ngOnInit` (`snapshot.queryParamMap` para `?returnUrl`, `?expirada`, `?eliminado`…; `paramMap` con `switchMap` para el `:id`).
+- **Historias de usuario visibles:** cada pantalla muestra junto al título las HU que cubre, y cada panel del editor las del elemento abierto.
 
 ## Pantallas por historia de usuario
 
@@ -115,7 +124,7 @@ src/app/
 | `/procesos` | Lista paginada con búsqueda por nombre, filtros por estado y categoría, orden y "Ver eliminados" | HU-06, HU-07 |
 | `/procesos/nuevo` | Crear proceso (nace en borrador con el pool de la empresa) | HU-04 |
 | `/procesos/editar/:id` | Editar nombre, descripción, categoría y estado, con control de versión | HU-04, HU-05 |
-| `/procesos/:id` | Ficha con publicar o volver a borrador, eliminar, historial de cambios y compartir por NIT | HU-04 a HU-07, HU-23 |
+| `/procesos/:id` | Ficha con el **diagrama completo en solo lectura**, publicar o volver a borrador, eliminar, historial de cambios y compartir por NIT | HU-04 a HU-07, HU-23 |
 | `/procesos/:id/diagrama` | Editor del diagrama (ver abajo) | HU-08 a HU-16, HU-21, HU-22, HU-24 a HU-28 |
 | `/compartidos` | Procesos que otras empresas compartieron, en solo lectura | HU-23 |
 | `/roles` | Catálogo de roles de proceso: crear, editar, ver en qué procesos se usa y eliminar si no está en uso | HU-17 a HU-20 |
@@ -130,6 +139,7 @@ El lienzo es SVG y se dibuja con funciones puras (`pages/editor/layout.ts`). No 
 - **Flujos:** secuencia con línea continua y punta sólida; mensajes con línea punteada, círculo de origen, punta hueca, nombre y clave de correlación.
 - **Herramientas:** Inicio, Actividad, Gateway y Fin se colocan con un clic en la lane; Conectar une dos elementos del mismo pool; Enviar mensaje, Recibir mensaje y Notificación externa crean los flujos entre pools; Mover reubica el elemento elegido dentro de su pool.
 - **Panel lateral:** formulario del elemento abierto (crear o editar), estructura de pools y lanes, y advertencias del validador (los errores impiden publicar; clic en una advertencia la ubica en el lienzo).
+- **Gateway:** además de su tipo, el panel lista los arcos salientes y deja actualizar la condición de cada uno (HU-15); en un paralelo explica que los caminos no llevan condición.
 - **Eliminar:** solo el administrador. Antes de confirmar se muestra el impacto: arcos que se van con el elemento y advertencias que quedarían.
 - **Permisos:** el lector y las empresas invitadas ven el diagrama en solo lectura. En un proceso publicado la API rechaza los cambios que lo dejen incoherente y la página muestra los motivos.
 
