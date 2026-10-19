@@ -60,6 +60,13 @@ const TITULO_NUEVO: Record<string, string> = {
   EXTERNO: 'Nueva notificación externa',
 };
 
+/** Historias de usuario de cada clase de elemento del diagrama (se muestran en el panel). */
+const HISTORIAS: Record<string, string> = {
+  INICIO: 'HU-04', FIN: 'HU-04', EVENTO_INICIO: 'HU-04', EVENTO_FIN: 'HU-04',
+  ACTIVIDAD: 'HU-08 a HU-10', GATEWAY: 'HU-14 a HU-16', ARCO: 'HU-11 a HU-13',
+  THROW: 'HU-25', ENVIO: 'HU-25', EXTERNO: 'HU-26', CATCH: 'HU-27', RECEPCION: 'HU-27',
+};
+
 /**
  * Editor del diagrama (HU-08 a HU-16, HU-21 a HU-28). Coordina: carga el diagrama en el EditorStore,
  * recibe los eventos del lienzo y de los paneles hijos, llama a la API y recarga el diagrama para
@@ -125,6 +132,10 @@ export class ProcesoEditorPageComponent {
 
   tituloNuevo(clase: string): string {
     return TITULO_NUEVO[clase];
+  }
+
+  historia(clase: string): string {
+    return HISTORIAS[clase] ?? '';
   }
 
   tituloNodo(nodo: Nodo): string {

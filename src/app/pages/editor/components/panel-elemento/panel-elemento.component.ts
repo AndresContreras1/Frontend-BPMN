@@ -11,6 +11,8 @@ import { Component, input, output } from '@angular/core';
 export class PanelElementoComponent {
   titulo = input.required<string>();
   icono = input<string>('bi-box');
+  /** Historias de usuario del elemento abierto. */
+  hu = input<string>();
   puedeEliminar = input<boolean>(false);
 
   eliminar = output<void>();
