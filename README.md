@@ -68,6 +68,11 @@ src/app/
 | `/registro` | Registro de empresa; el representante entra como administrador | HU-01 |
 | `/empresa` | Datos de la empresa y del usuario en sesión | HU-01, HU-03 |
 | botón **Salir** | Cierre de sesión (`POST /auth/logout`) | HU-03 |
+| `/procesos` | Lista paginada con búsqueda por nombre, filtros por estado y categoría, orden y "Ver eliminados" | HU-06, HU-07 |
+| `/procesos/nuevo` | Crear proceso (nace en borrador con el pool de la empresa) | HU-04 |
+| `/procesos/editar/:id` | Editar nombre, descripción, categoría y estado, con control de versión | HU-04, HU-05 |
+| `/procesos/:id` | Ficha con publicar o volver a borrador, eliminar, historial de cambios y compartir por NIT | HU-04 a HU-07, HU-23 |
+| `/compartidos` | Procesos que otras empresas compartieron, en solo lectura | HU-23 |
 | `/usuarios` | Lista paginada con búsqueda y orden; el administrador cambia el rol y desactiva o reactiva | HU-02 |
 | `/usuarios/nuevo` | Invitar usuario con contraseña inicial y rol (solo administrador) | HU-02 |
 
