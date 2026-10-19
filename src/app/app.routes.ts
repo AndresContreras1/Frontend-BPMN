@@ -1,10 +1,13 @@
 import { Routes } from '@angular/router';
 
 import { authGuard, invitadoGuard } from './core/guards/auth.guard';
+import { rolGuard } from './core/guards/rol.guard';
 import { LoginComponent } from './pages/login/login.component';
 import { MiEmpresaComponent } from './pages/mi-empresa/mi-empresa.component';
 import { NoEncontradoComponent } from './pages/no-encontrado/no-encontrado.component';
 import { RegistroEmpresaComponent } from './pages/registro-empresa/registro-empresa.component';
+import { UsuarioFormComponent } from './pages/usuario-form/usuario-form.component';
+import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 
 // Las rutas más específicas van arriba y las genéricas abajo
 export const routes: Routes = [
@@ -16,6 +19,10 @@ export const routes: Routes = [
 
   // Con sesión
   { path: 'empresa', component: MiEmpresaComponent, canActivate: [authGuard] },
+
+  // HU-02: todos ven la lista; invitar es solo del administrador
+  { path: 'usuarios/nuevo', component: UsuarioFormComponent, canActivate: [authGuard, rolGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'usuarios', component: UsuariosComponent, canActivate: [authGuard] },
 
   { path: '**', component: NoEncontradoComponent },
 ];
