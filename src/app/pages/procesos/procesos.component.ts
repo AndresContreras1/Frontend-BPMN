@@ -27,6 +27,7 @@ import { ProcesoService } from '../../service/proceso.service';
     EstadoBadgeComponent, TablaGenericaComponent,
   ],
   templateUrl: './procesos.component.html',
+  styleUrl: './procesos.component.scss',
 })
 export class ProcesosComponent implements OnInit {
   private readonly procesoService = inject(ProcesoService);

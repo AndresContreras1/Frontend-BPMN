@@ -128,7 +128,7 @@
       <div class="input-group input-group-sm mt-1">
         <input type="text" class="form-control" [value]="campo.nombre" placeholder="numeroSolicitud" [attr.aria-label]="'Nombre del campo ' + (i + 1)"
                [disabled]="!editable()" (input)="cambiarCampo(i, { nombre: $any($event.target).value })" />
-        <select class="form-select" style="max-width: 7.5rem" [value]="campo.tipoDato" [attr.aria-label]="'Tipo del campo ' + (i + 1)"
+        <select class="form-select tipo-dato" [value]="campo.tipoDato" [attr.aria-label]="'Tipo del campo ' + (i + 1)"
                 [disabled]="!editable()" (change)="cambiarCampo(i, { tipoDato: $any($event.target).value })">
           @for (t of tiposDato; track t) {
             <option [value]="t" [selected]="t === campo.tipoDato">{{ t }}</option>
