@@ -17,6 +17,9 @@
 }
 @if (proceso(); as p) {
   <app-page-title [titulo]="p.nombre" [subtitulo]="p.categoria">
+    <a class="btn btn-primary" [routerLink]="['/procesos', p.id, 'diagrama']" id="abrirDiagramaBtn">
+      <i class="bi bi-diagram-3"></i> {{ editable() ? 'Editar diagrama' : 'Ver diagrama' }}
+    </a>
     @if (editable()) {
       <a class="btn btn-outline-primary" [routerLink]="['/procesos/editar', p.id]" id="editarProcesoBtn">
         <i class="bi bi-pencil"></i> Editar

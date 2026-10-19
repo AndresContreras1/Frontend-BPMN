@@ -26,3 +26,8 @@ body {
 .tabla-procesos th {
   vertical-align: middle;
 }
+
+// Lane abierta en el panel del editor
+.active-lane {
+  background-color: var(--bs-primary-bg-subtle);
+}
