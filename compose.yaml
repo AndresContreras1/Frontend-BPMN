@@ -33,6 +33,11 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
       JWT_SECRET: ${JWT_SECRET:-}
       JWT_EXPIRATION_SECONDS: ${JWT_EXPIRATION_SECONDS:-1800}
+      # Base de PostgreSQL creada antes de las migraciones Flyway: true una sola vez para conservarla
+      FLYWAY_BASELINE_ON_MIGRATE: ${FLYWAY_BASELINE_ON_MIGRATE:-false}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-10}
+      RATE_LIMIT_REGISTRO: ${RATE_LIMIT_REGISTRO:-10}
     # Sin puerto publicado: el frontend llega por la red interna (backend:8090)
     expose:
       - "8090"
