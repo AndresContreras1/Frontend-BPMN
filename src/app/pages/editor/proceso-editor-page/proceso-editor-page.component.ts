@@ -222,10 +222,14 @@ export class ProcesoEditorPageComponent {
   /** Desde el panel de advertencias: abre el elemento o el arco señalado. */
   irAAdvertencia(advertencia: Advertencia): void {
     const tipo = tipoDeElemento(advertencia);
+    const id = advertencia.elementoId;
+    if (id == null) {
+      return;
+    }
     if (tipo === 'arco') {
-      this.alClicArco(advertencia.elementoId!);
-    } else if (tipo === 'nodo' && this.store.nodos().some((n) => n.id === advertencia.elementoId)) {
-      this.alClicNodo(advertencia.elementoId!);
+      this.alClicArco(id);
+    } else if (tipo === 'nodo' && this.store.nodos().some((n) => n.id === id)) {
+      this.alClicNodo(id);
     }
   }
 

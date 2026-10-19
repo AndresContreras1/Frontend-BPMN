@@ -229,7 +229,10 @@ export class MensajeFormComponent implements OnChanges {
       return;
     }
 
-    const ubicacion = this.ubicacion()!;
+    const ubicacion = this.ubicacion();
+    if (!ubicacion) {
+      return;
+    }
     const clave = (v.claveCorrelacion ?? '').trim() || null;
     if (clase === 'THROW') {
       this.guardar.emit({ tipo: 'throw', datos: {
