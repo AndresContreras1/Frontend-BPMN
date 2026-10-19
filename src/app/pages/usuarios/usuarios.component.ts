@@ -40,7 +40,7 @@ export class UsuariosComponent {
   orden = signal('nombre,asc');
   private readonly recargar = signal(0);
 
-  cargando = signal(false);
+  cargando = signal(true);
   problema = signal<ProblemDetail | null>(null);
   aviso = signal('');
   porDesactivar = signal<Usuario | null>(null);

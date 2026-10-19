@@ -8,13 +8,10 @@ import { CampoErrorComponent } from '../../components/campo-error/campo-error.co
 import { problemaDe } from '../../core/services/errores';
 import { aplicarErroresDelServidor, limpiarTextos } from '../../core/services/formularios';
 import { SesionStore } from '../../core/services/sesion.store';
-import { RegistroEmpresaRequest } from '../../models/empresa.model';
+import { PATRON_NIT, RegistroEmpresaRequest } from '../../models/empresa.model';
 import { ProblemDetail } from '../../models/problem-detail.model';
 import { AuthService } from '../../service/auth.service';
 import { EmpresaService } from '../../service/empresa.service';
-
-/** Mismo formato que valida el backend: 5 a 15 dígitos y, opcional, el dígito de verificación. */
-export const PATRON_NIT = /^[0-9]{5,15}(-[0-9])?$/;
 
 /**
  * HU-01: registro de la empresa. El representante queda como ADMINISTRADOR y entra de una vez
