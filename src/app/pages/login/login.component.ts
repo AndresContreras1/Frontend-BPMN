@@ -1,6 +1,6 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AlertaErrorComponent } from '../../components/alerta-error/alerta-error.component';
@@ -16,15 +16,17 @@ import { AuthService } from '../../service/auth.service';
   imports: [ReactiveFormsModule, RouterLink, AlertaErrorComponent, CampoErrorComponent],
   templateUrl: './login.component.html',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly sesion = inject(SesionStore);
   private readonly router = inject(Router);
 
-  /** Parámetros de la URL (withComponentInputBinding). */
-  expirada = input<string>();
-  registrada = input<string>();
-  returnUrl = input<string>();
+  private readonly route = inject(ActivatedRoute);
+
+  /** Parámetros de la URL: ?expirada (HU-03), ?registrada (HU-01) y ?returnUrl (la ruta que pidió el guard). */
+  expirada = signal<string | null>(null);
+  registrada = signal<string | null>(null);
+  returnUrl = signal<string | null>(null);
 
   enviando = signal(false);
   problema = signal<ProblemDetail | null>(null);
@@ -33,6 +35,13 @@ export class LoginComponent {
     correo: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required]),
   });
+
+  ngOnInit(): void {
+    const parametros = this.route.snapshot.queryParamMap;
+    this.expirada.set(parametros.get('expirada'));
+    this.registrada.set(parametros.get('registrada'));
+    this.returnUrl.set(parametros.get('returnUrl'));
+  }
 
   handleSubmit(): void {
     if (this.loginForm.invalid) {
