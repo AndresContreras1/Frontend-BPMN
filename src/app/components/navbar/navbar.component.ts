@@ -12,5 +12,4 @@ import { UsuarioResumen } from '../../models/usuario.model';
 export class NavbarComponent {
   usuario = input<UsuarioResumen | null>(null);
   cerrarSesion = output<void>();
-  menuAbierto = false;
 }
