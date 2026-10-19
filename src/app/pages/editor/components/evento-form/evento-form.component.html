@@ -1,0 +1,42 @@
+<form class="row g-2" [formGroup]="eventoForm" (ngSubmit)="handleSubmit()" novalidate id="eventoForm">
+  <div class="col-12">
+    <label for="eventoTipo" class="form-label small">Tipo</label>
+    <select id="eventoTipo" class="form-select form-select-sm" formControlName="tipo">
+      <option value="INICIO">Inicio</option>
+      <option value="FIN">Fin</option>
+    </select>
+  </div>
+  <div class="col-12">
+    <label for="eventoNombre" class="form-label small">Nombre <span class="text-body-secondary">(opcional)</span></label>
+    <input type="text" id="eventoNombre" class="form-control form-control-sm" formControlName="nombre" placeholder="Solicitud recibida"
+           [class.is-invalid]="eventoForm.controls.nombre.touched && eventoForm.controls.nombre.invalid" />
+    <app-campo-error [control]="eventoForm.controls.nombre"></app-campo-error>
+  </div>
+  <div class="col-12">
+    <label for="eventoLane" class="form-label small">Lane</label>
+    <select id="eventoLane" class="form-select form-select-sm" formControlName="laneId">
+      <option [ngValue]="null">Sin lane</option>
+      @for (lane of lanes(); track lane.id) {
+        <option [ngValue]="lane.id">{{ lane.nombre }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-6">
+    <label for="eventoPosX" class="form-label small">Posición X</label>
+    <input type="number" id="eventoPosX" class="form-control form-control-sm" formControlName="posX" min="0" max="10000" />
+    <app-campo-error [control]="eventoForm.controls.posX"></app-campo-error>
+  </div>
+  <div class="col-6">
+    <label for="eventoPosY" class="form-label small">Posición Y</label>
+    <input type="number" id="eventoPosY" class="form-control form-control-sm" formControlName="posY" min="0" max="10000" />
+    <app-campo-error [control]="eventoForm.controls.posY"></app-campo-error>
+  </div>
+  @if (editable()) {
+    <div class="col-12 d-flex justify-content-end mt-2">
+      <button type="submit" class="btn btn-primary btn-sm" id="guardarEventoBtn" [disabled]="guardando()">
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+        Guardar
+      </button>
+    </div>
+  }
+</form>
