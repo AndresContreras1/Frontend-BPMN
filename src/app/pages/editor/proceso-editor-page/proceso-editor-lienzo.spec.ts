@@ -225,4 +225,17 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.textContent).toContain('dejaría el diagrama incoherente');
     expect(html.querySelector('#panelElemento')).not.toBeNull();
   });
+
+  it('HU-15: guardar las condiciones del gateway actualiza cada arco y recarga el diagrama', () => {
+    crear('EDITOR');
+    const arco = pagina.store.arcos()[0];
+
+    pagina.guardarCondiciones([{ arco, condicion: 'monto > 100' }]);
+
+    const req = backend.expectOne({ method: 'PUT', url: '/api/v1/arcos/100' });
+    expect(req.request.body).toEqual({ procesoId: 9, origenId: 1, destinoId: 2, etiqueta: null, condicion: 'monto > 100' });
+    req.flush({ ...arco, condicion: 'monto > 100' });
+    recargar();
+    expect(html.textContent).toContain('Condición actualizada.');
+  });
 });

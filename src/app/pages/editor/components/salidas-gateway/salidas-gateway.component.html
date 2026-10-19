@@ -1,0 +1,40 @@
+<section class="border-top mt-3 pt-3" id="salidasGateway" aria-labelledby="salidasGatewayTitulo">
+  <h3 class="h6 mb-2" id="salidasGatewayTitulo">
+    Condiciones de las salidas
+    <span class="badge rounded-pill text-bg-light border fw-normal align-middle">HU-15</span>
+  </h3>
+  @if (!salidas().length) {
+    <p class="small text-body-secondary mb-0" id="gatewaySinSalidas">
+      El gateway todavía no tiene arcos salientes: conéctelo con la herramienta <strong>Conectar</strong>.
+    </p>
+  } @else if (esParalelo()) {
+    <p class="small text-body-secondary mb-2">En un gateway paralelo se siguen todos los caminos: los arcos no llevan condición.</p>
+    <ul class="list-unstyled small mb-0">
+      @for (arco of salidas(); track arco.id) {
+        <li><i class="bi bi-arrow-right"></i> {{ destino(arco) }}</li>
+      }
+    </ul>
+  } @else {
+    <form class="row g-2" [formGroup]="salidasForm" (ngSubmit)="handleSubmit()" novalidate>
+      @for (arco of salidas(); track arco.id) {
+        <div class="col-12">
+          <label class="form-label small mb-1" [for]="'condicion-' + arco.id">
+            <i class="bi bi-arrow-right"></i> Hacia {{ destino(arco) }}
+          </label>
+          <input type="text" class="form-control form-control-sm" [id]="'condicion-' + arco.id" [formControlName]="clave(arco)"
+                 placeholder="Condición, por ejemplo: aprobada == true"
+                 [class.is-invalid]="salidasForm.controls[clave(arco)].touched && salidasForm.controls[clave(arco)].invalid" />
+          <app-campo-error [control]="salidasForm.controls[clave(arco)]"></app-campo-error>
+        </div>
+      }
+      @if (editable()) {
+        <div class="col-12 d-flex justify-content-end">
+          <button type="submit" class="btn btn-outline-primary btn-sm" id="guardarCondicionesBtn"
+                  [disabled]="guardando() || salidasForm.invalid || salidasForm.pristine">
+            Guardar condiciones
+          </button>
+        </div>
+      }
+    </form>
+  }
+</section>

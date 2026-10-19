@@ -131,6 +131,9 @@
                     @case ('GATEWAY') {
                       <app-gateway-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
                                         [guardando]="guardando()" [problema]="problema()" (guardar)="guardarGateway($event)"></app-gateway-form>
+                      <app-salidas-gateway [salidas]="salidasGateway()" [nodos]="store.nodos()" [tipoGateway]="nodo.tipoGateway"
+                                           [editable]="store.editable()" [guardando]="guardando()"
+                                           (guardar)="guardarCondiciones($event)"></app-salidas-gateway>
                     }
                     @default {
                       <app-evento-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"

@@ -1,10 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { finalize, map, Observable, switchMap, tap } from 'rxjs';
+import { finalize, forkJoin, map, Observable, switchMap, tap } from 'rxjs';
 
 import { AlertaErrorComponent } from '../../../components/alerta-error/alerta-error.component';
 import { ConfirmarModalComponent } from '../../../components/confirmar-modal/confirmar-modal.component';
+import { tipoDeElemento } from '../../../components/diagrama/advertencias';
+import { DiagramaSvgComponent } from '../../../components/diagrama/diagrama-svg/diagrama-svg.component';
 import { EstadoBadgeComponent } from '../../../components/estado-badge/estado-badge.component';
 import { PageTitleComponent } from '../../../components/page-title/page-title.component';
 import { problemaDe } from '../../../core/services/errores';
@@ -23,12 +25,10 @@ import { GatewayService } from '../../../service/gateway.service';
 import { LaneService } from '../../../service/lane.service';
 import { MensajeService } from '../../../service/mensaje.service';
 import { PoolService } from '../../../service/pool.service';
-import { tipoDeElemento } from '../../../components/diagrama/advertencias';
 import { ActividadFormComponent } from '../components/actividad-form/actividad-form.component';
 import { AdvertenciasPanelComponent } from '../components/advertencias-panel/advertencias-panel.component';
 import { ArcoFormComponent, DatosArco } from '../components/arco-form/arco-form.component';
 import { CorrelacionFormComponent } from '../components/correlacion-form/correlacion-form.component';
-import { DiagramaSvgComponent } from '../../../components/diagrama/diagrama-svg/diagrama-svg.component';
 import { EstructuraPanelComponent, MovimientoLane } from '../components/estructura-panel/estructura-panel.component';
 import { EventoFormComponent } from '../components/evento-form/evento-form.component';
 import { GatewayFormComponent } from '../components/gateway-form/gateway-form.component';
@@ -37,6 +37,7 @@ import { LaneFormComponent } from '../components/lane-form/lane-form.component';
 import { ClaseMensaje, GuardarMensaje, MensajeFormComponent } from '../components/mensaje-form/mensaje-form.component';
 import { PanelElementoComponent } from '../components/panel-elemento/panel-elemento.component';
 import { PoolFormComponent } from '../components/pool-form/pool-form.component';
+import { CondicionArco, SalidasGatewayComponent } from '../components/salidas-gateway/salidas-gateway.component';
 import { EditorStore, Herramienta } from '../editor.store';
 import { Posicion } from '../../../components/diagrama/layout';
 
@@ -78,7 +79,7 @@ const HISTORIAS: Record<string, string> = {
     RouterLink, PageTitleComponent, AlertaErrorComponent, ConfirmarModalComponent, EstadoBadgeComponent,
     DiagramaSvgComponent, HerramientasBarraComponent, PanelElementoComponent, AdvertenciasPanelComponent,
     EstructuraPanelComponent, PoolFormComponent, LaneFormComponent, EventoFormComponent, ActividadFormComponent,
-    GatewayFormComponent, ArcoFormComponent, MensajeFormComponent, CorrelacionFormComponent,
+    GatewayFormComponent, SalidasGatewayComponent, ArcoFormComponent, MensajeFormComponent, CorrelacionFormComponent,
   ],
   providers: [EditorStore],
   templateUrl: './proceso-editor-page.component.html',
@@ -110,6 +111,12 @@ export class ProcesoEditorPageComponent {
 
   /** Solo el administrador elimina elementos (la API aplica la misma regla). */
   puedeEliminar = computed(() => this.store.editable() && this.sesion.esAdministrador());
+
+  /** HU-15: arcos que salen del gateway abierto (computed: el arreglo solo cambia si cambia el diagrama). */
+  salidasGateway = computed(() => {
+    const nodo = this.store.nodoSeleccionado();
+    return nodo?.tipo === 'GATEWAY' ? this.store.arcos().filter((a) => a.origenId === nodo.id) : [];
+  });
 
   constructor() {
     this.route.paramMap
@@ -280,6 +287,20 @@ export class ProcesoEditorPageComponent {
     const arco = { procesoId: proceso.id, ...datos };
     const peticion = s.id === null ? this.arcoService.crear(arco) : this.arcoService.actualizar(s.id, arco);
     this.ejecutar(peticion, s.id === null ? 'Flujo de secuencia agregado.' : 'Flujo de secuencia actualizado.', s.id === null);
+  }
+
+  /** HU-15: guarda de una vez las condiciones que cambiaron en las salidas del gateway. */
+  guardarCondiciones(cambios: CondicionArco[]): void {
+    const proceso = this.store.proceso();
+    if (!proceso || !cambios.length) {
+      return;
+    }
+    const peticiones = cambios.map(({ arco, condicion }) =>
+      this.arcoService.actualizar(arco.id, {
+        procesoId: proceso.id, origenId: arco.origenId, destinoId: arco.destinoId, etiqueta: arco.etiqueta, condicion,
+      }),
+    );
+    this.ejecutar(forkJoin(peticiones), cambios.length === 1 ? 'Condición actualizada.' : 'Condiciones actualizadas.', false);
   }
 
   // ---------- Mensajes (HU-25 a HU-28) ----------
