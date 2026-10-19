@@ -1,0 +1,32 @@
+<svg:rect class="pool" [class.caja-negra]="layout().pool.cajaNegra" [class.con-error]="severidad() === 'ERROR'"
+          [attr.data-pool]="layout().pool.id"
+          [attr.x]="layout().x" [attr.y]="layout().y" [attr.width]="layout().ancho" [attr.height]="layout().alto" />
+
+@if (layout().pool.cajaNegra) {
+  <svg:text class="pool-nombre-centro" [attr.x]="layout().x + layout().ancho / 2" [attr.y]="layout().y + layout().alto / 2 - 6">
+    {{ layout().pool.nombre }}
+  </svg:text>
+  <svg:text class="pool-detalle" [attr.x]="layout().x + layout().ancho / 2" [attr.y]="layout().y + layout().alto / 2 + 14">
+    caja negra
+  </svg:text>
+} @else {
+  <svg:line class="separador" [attr.x1]="layout().x + anchoEtiquetaPool" [attr.y1]="layout().y"
+            [attr.x2]="layout().x + anchoEtiquetaPool" [attr.y2]="layout().y + layout().alto" />
+  <svg:text class="pool-nombre" [attr.x]="layout().x + anchoEtiquetaPool / 2" [attr.y]="layout().y + layout().alto / 2"
+            [attr.transform]="rotar(layout().x + anchoEtiquetaPool / 2, layout().y + layout().alto / 2)">
+    {{ layout().pool.nombre }}
+  </svg:text>
+
+  @for (franja of layout().franjas; track $index; let primera = $first) {
+    @if (!primera) {
+      <svg:line class="separador-lane" [attr.x1]="franja.x" [attr.y1]="franja.y" [attr.x2]="franja.x + franja.ancho" [attr.y2]="franja.y" />
+    }
+    <svg:line class="separador" [attr.x1]="franja.x + anchoEtiquetaLane" [attr.y1]="franja.y"
+              [attr.x2]="franja.x + anchoEtiquetaLane" [attr.y2]="franja.y + franja.alto" />
+    <svg:text class="lane-nombre" [class.sin-lane]="!franja.lane"
+              [attr.x]="franja.x + anchoEtiquetaLane / 2" [attr.y]="franja.y + franja.alto / 2"
+              [attr.transform]="rotar(franja.x + anchoEtiquetaLane / 2, franja.y + franja.alto / 2)">
+      {{ franja.nombre }}
+    </svg:text>
+  }
+}
