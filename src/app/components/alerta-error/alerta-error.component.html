@@ -1,0 +1,22 @@
+@if (problema(); as p) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-start" role="alert">
+    <div>
+      <strong>{{ p.title }}.</strong> {{ p.detail }}
+      @if (p.detalles?.length) {
+        <ul class="mb-0 mt-1">
+          @for (detalle of p.detalles; track $index) {
+            <li>{{ detalle }}</li>
+          }
+        </ul>
+      }
+      @if (erroresPorCampo().length) {
+        <ul class="mb-0 mt-1">
+          @for (error of erroresPorCampo(); track error.campo) {
+            <li><code>{{ error.campo }}</code>: {{ error.mensaje }}</li>
+          }
+        </ul>
+      }
+    </div>
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar.emit()"></button>
+  </div>
+}
