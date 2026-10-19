@@ -48,13 +48,22 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
       req.flush({ title: 'Recurso no encontrado', status: 404, detail: 'No existe el proceso 5' }, { status: 404, statusText: 'Not Found' });
     }
     fixture.detectChanges();
-    // Paneles hijos: historial y compartición (solo si el proceso es propio)
+    // Paneles hijos: diagrama (siempre), historial y compartición (solo si el proceso es propio)
+    for (const r of backend.match('/api/v1/procesos/5/diagrama')) {
+      r.flush({ proceso, pools: [], nodos: [], arcos: [], mensajes: [], advertencias: [] });
+    }
     for (const r of backend.match((r) => r.url === '/api/v1/procesos/5/historial')) r.flush(vacio);
     for (const r of backend.match('/api/v1/procesos/5/comparticion')) r.flush({ compartido: false, empresas: [] });
     fixture.detectChanges();
   };
 
   afterEach(() => backend.verify());
+
+  it('HU-07: al abrir el proceso se ve su diagrama, también si es compartido por otra empresa', () => {
+    crear('LECTOR', { ...base, propio: false });
+    expect(html.querySelector('app-diagrama-vista')).not.toBeNull();
+    expect(html.querySelector('#diagramaVacio')).not.toBeNull();
+  });
 
   it('el administrador ve editar, publicar, eliminar, historial y compartir', () => {
     crear('ADMINISTRADOR', base);
