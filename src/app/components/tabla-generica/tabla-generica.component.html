@@ -1,0 +1,35 @@
+<div class="table-responsive tarjeta">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        @for (columna of columnas(); track columna.titulo) {
+          <th scope="col" [class]="columna.clase ?? ''">
+            @if (columna.ordenable) {
+              <button type="button" class="btn btn-link btn-sm p-0 text-reset fw-semibold text-decoration-none"
+                      (click)="alternar(columna)" [attr.aria-label]="'Ordenar por ' + columna.titulo">
+                {{ columna.titulo }}
+                @if (campoOrden() === columna.clave) {
+                  <i class="bi" [class.bi-caret-up-fill]="direccion() === 'asc'" [class.bi-caret-down-fill]="direccion() === 'desc'"></i>
+                } @else {
+                  <i class="bi bi-chevron-expand text-body-tertiary"></i>
+                }
+              </button>
+            } @else {
+              {{ columna.titulo }}
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      <ng-content />
+      @if (cargando()) {
+        <tr><td [attr.colspan]="columnas().length" class="text-center text-body-secondary py-4">
+          <span class="spinner-border spinner-border-sm me-2"></span>Cargando…
+        </td></tr>
+      } @else if (vacia()) {
+        <tr><td [attr.colspan]="columnas().length" class="text-center text-body-secondary py-4">{{ mensajeVacio() }}</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
