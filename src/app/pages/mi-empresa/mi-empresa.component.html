@@ -1,0 +1,32 @@
+<app-page-title titulo="Mi empresa" subtitulo="Datos registrados y su sesión actual"></app-page-title>
+<app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-building"></i> Empresa</div>
+      @if (empresa(); as e) {
+        <dl class="card-body row mb-0" id="datosEmpresa">
+          <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">{{ e.nombre }}</dd>
+          <dt class="col-sm-4">NIT</dt><dd class="col-sm-8">{{ e.nit }}</dd>
+          <dt class="col-sm-4">Correo de contacto</dt><dd class="col-sm-8">{{ e.correoContacto }}</dd>
+          <dt class="col-sm-4">Registrada</dt><dd class="col-sm-8">{{ e.creadoEn | date: 'medium' }}</dd>
+        </dl>
+      } @else if (!problema()) {
+        <div class="card-body text-body-secondary">Cargando…</div>
+      }
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-person-badge"></i> Mi usuario</div>
+      @if (sesion.usuario(); as u) {
+        <dl class="card-body row mb-0">
+          <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">{{ u.nombre }}</dd>
+          <dt class="col-sm-4">Correo</dt><dd class="col-sm-8">{{ u.correo }}</dd>
+          <dt class="col-sm-4">Rol de acceso</dt><dd class="col-sm-8"><span class="badge text-bg-primary">{{ u.rol }}</span></dd>
+        </dl>
+      }
+    </div>
+  </div>
+</div>
