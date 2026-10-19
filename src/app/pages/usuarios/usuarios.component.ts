@@ -121,7 +121,7 @@ export class UsuariosComponent {
       return;
     }
     this.limpiarMensajes();
-    this.usuarioService.desactivar(usuario.id).subscribe({
+    this.usuarioService.cambiarEstado(usuario.id, false).subscribe({
       next: (u) => {
         this.aviso.set(`${u.nombre} quedó desactivado: ya no puede iniciar sesión.`);
         this.recargar.update((n) => n + 1);
@@ -132,7 +132,7 @@ export class UsuariosComponent {
 
   activar(usuario: Usuario): void {
     this.limpiarMensajes();
-    this.usuarioService.activar(usuario.id).subscribe({
+    this.usuarioService.cambiarEstado(usuario.id, true).subscribe({
       next: (u) => {
         this.aviso.set(`${u.nombre} quedó activo de nuevo.`);
         this.recargar.update((n) => n + 1);

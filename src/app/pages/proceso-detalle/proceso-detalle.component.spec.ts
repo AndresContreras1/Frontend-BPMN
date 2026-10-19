@@ -50,7 +50,7 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     fixture.detectChanges();
     // Paneles hijos: historial y compartición (solo si el proceso es propio)
     for (const r of backend.match((r) => r.url === '/api/v1/procesos/5/historial')) r.flush(vacio);
-    for (const r of backend.match('/api/v1/procesos/5/compartir')) r.flush({ compartido: false, empresas: [] });
+    for (const r of backend.match('/api/v1/procesos/5/comparticion')) r.flush({ compartido: false, empresas: [] });
     fixture.detectChanges();
   };
 

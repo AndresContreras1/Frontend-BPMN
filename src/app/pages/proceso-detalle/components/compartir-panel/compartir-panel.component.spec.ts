@@ -20,7 +20,7 @@ describe('CompartirPanelComponent (HU-23)', () => {
     fixture.componentRef.setInput('editable', editable);
     html = fixture.nativeElement;
     fixture.detectChanges();
-    backend.expectOne('/api/v1/procesos/5/compartir').flush(
+    backend.expectOne('/api/v1/procesos/5/comparticion').flush(
       compartido ? { compartido: true, empresas: [{ nombre: 'Comercial Andina Ltda.', nit: '800987654-3' }] } : { compartido: false, empresas: [] },
     );
     fixture.detectChanges();
@@ -75,7 +75,7 @@ describe('CompartirPanelComponent (HU-23)', () => {
     agregar('800987654-3');
     html.querySelector<HTMLButtonElement>('#guardarComparticionBtn')!.click();
 
-    const req = backend.expectOne({ method: 'PUT', url: '/api/v1/procesos/5/compartir' });
+    const req = backend.expectOne({ method: 'PUT', url: '/api/v1/procesos/5/comparticion' });
     expect(req.request.body).toEqual({ compartido: true, nitsEmpresas: ['800987654-3'] });
     req.flush({ compartido: true, empresas: [{ nombre: 'Comercial Andina Ltda.', nit: '800987654-3' }] });
     fixture.detectChanges();
@@ -89,7 +89,7 @@ describe('CompartirPanelComponent (HU-23)', () => {
     crear(true, true);
     activar();   // lo apaga
     html.querySelector<HTMLButtonElement>('#guardarComparticionBtn')!.click();
-    const req = backend.expectOne({ method: 'PUT', url: '/api/v1/procesos/5/compartir' });
+    const req = backend.expectOne({ method: 'PUT', url: '/api/v1/procesos/5/comparticion' });
     expect(req.request.body).toEqual({ compartido: false, nitsEmpresas: [] });
     req.flush({ compartido: false, empresas: [] });
   });
@@ -99,7 +99,7 @@ describe('CompartirPanelComponent (HU-23)', () => {
     activar();
     agregar('111111111-1');
     html.querySelector<HTMLButtonElement>('#guardarComparticionBtn')!.click();
-    backend.expectOne({ method: 'PUT', url: '/api/v1/procesos/5/compartir' }).flush(
+    backend.expectOne({ method: 'PUT', url: '/api/v1/procesos/5/comparticion' }).flush(
       { title: 'Recurso no encontrado', status: 404, detail: 'No existe una empresa registrada con el NIT 111111111-1' },
       { status: 404, statusText: 'Not Found' },
     );
