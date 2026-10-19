@@ -36,19 +36,6 @@ export interface FiltroProceso {
   activo: boolean;
 }
 
-export type TipoCambio = 'CREACION' | 'EDICION' | 'CAMBIO_ESTADO' | 'ELIMINACION' | 'COMPARTICION';
-
-export interface HistorialCambio {
-  id: number;
-  fecha: string;
-  usuario: string;
-  tipo: TipoCambio;
-  elemento: string;
-  elementoId: number | null;
-  detalle: string;
-  advertencias: string[];
-}
-
 /** HU-23 */
 export interface Comparticion {
   compartido: boolean;
