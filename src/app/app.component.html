@@ -1,7 +1,9 @@
+@if (carga.cargando()) {
+  <div class="barra-carga" role="progressbar" aria-label="Cargando" id="barraCarga"><span></span></div>
+}
 <app-navbar [usuario]="sesion.usuario()" (cerrarSesion)="cerrarSesion()"></app-navbar>
-<main class="container-fluid py-4 px-3 px-lg-4">
+<main class="flex-grow-1" [class]="claseContenido()">
   <router-outlet></router-outlet>
 </main>
-<footer class="border-top py-3 text-center small text-body-secondary">
-  Editor de procesos BPMN · visualización y edición de procesos, sin ejecución
-</footer>
+<app-pie-pagina></app-pie-pagina>
+<app-notificaciones></app-notificaciones>
