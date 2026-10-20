@@ -1,60 +1,88 @@
-<div class="mt-4 d-flex justify-content-center">
-  <div class="col-xl-6 col-lg-7 col-md-9 col-sm-12">
-    <div class="card shadow-sm">
-      <div class="card-header text-center fw-bold fs-4">
-        Registrar empresa
-        <span class="badge rounded-pill text-bg-light border fw-normal fs-6 align-middle" id="historiasPagina">HU-01</span>
-      </div>
-      <form class="p-3 row g-3" [formGroup]="registroForm" (ngSubmit)="handleSubmit()" novalidate>
-        <p class="col-12 text-body-secondary small mb-0">
-          La persona que registra la empresa queda como <strong>administrador</strong> y entra con el correo de contacto.
-        </p>
-        <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+<div class="row justify-content-center py-lg-4 aparecer">
+  <div class="col-xl-10">
+    <div class="card shadow overflow-hidden">
+      <div class="row g-0">
+        <aside class="col-lg-4 fondo-marca p-5 d-none d-lg-flex flex-column justify-content-between">
+          <div>
+            <h2 class="h4 fw-bold mb-2"><i class="bi bi-building-add me-2"></i>Su empresa, su espacio</h2>
+            <p class="mb-0 opacity-75">Los procesos pertenecen a la empresa, no a las personas: quedan aunque alguien se vaya.</p>
+          </div>
+          <ol class="small mb-0 d-grid gap-2 ps-3">
+            <li>Registre la empresa con su NIT</li>
+            <li>Usted queda como administrador</li>
+            <li>Invite a su equipo con su rol</li>
+          </ol>
+        </aside>
 
-        <div class="col-md-7">
-          <label for="nombre" class="form-label">Nombre de la empresa</label>
-          <input type="text" id="nombre" class="form-control" formControlName="nombre"
-                 [class.is-invalid]="registroForm.controls.nombre.touched && registroForm.controls.nombre.invalid" />
-          <app-campo-error [control]="registroForm.controls.nombre"></app-campo-error>
-        </div>
-
-        <div class="col-md-5">
-          <label for="nit" class="form-label">NIT</label>
-          <input type="text" id="nit" class="form-control" formControlName="nit" placeholder="900123456-1"
-                 [class.is-invalid]="registroForm.controls.nit.touched && registroForm.controls.nit.invalid" />
-          <app-campo-error [control]="registroForm.controls.nit" [mensajes]="mensajesNit"></app-campo-error>
-        </div>
-
-        <div class="col-md-6">
-          <label for="nombreRepresentante" class="form-label">Nombre del representante</label>
-          <input type="text" id="nombreRepresentante" class="form-control" formControlName="nombreRepresentante"
-                 [class.is-invalid]="registroForm.controls.nombreRepresentante.touched && registroForm.controls.nombreRepresentante.invalid" />
-          <app-campo-error [control]="registroForm.controls.nombreRepresentante"></app-campo-error>
-        </div>
-
-        <div class="col-md-6">
-          <label for="correoContacto" class="form-label">Correo de contacto</label>
-          <input type="email" id="correoContacto" class="form-control" formControlName="correoContacto" autocomplete="username"
-                 [class.is-invalid]="registroForm.controls.correoContacto.touched && registroForm.controls.correoContacto.invalid" />
-          <app-campo-error [control]="registroForm.controls.correoContacto"></app-campo-error>
-        </div>
-
-        <div class="col-md-6">
-          <label for="password" class="form-label">Contraseña</label>
-          <input type="password" id="password" class="form-control" formControlName="password" autocomplete="new-password"
-                 [class.is-invalid]="registroForm.controls.password.touched && registroForm.controls.password.invalid" />
-          <div class="form-text">Entre 8 y 72 caracteres.</div>
-          <app-campo-error [control]="registroForm.controls.password"></app-campo-error>
-        </div>
-
-        <div class="col-12 d-flex justify-content-between align-items-center">
-          <a routerLink="/login" class="small">Ya tengo cuenta</a>
-          <button type="submit" class="btn btn-primary" id="registrarEmpresaBtn" [disabled]="enviando() || registroForm.invalid">
-            @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+        <div class="col-lg-8 p-4 p-lg-5">
+          <h1 class="h3 mb-1">
             Registrar empresa
-          </button>
+            <span class="badge rounded-pill text-bg-light border fw-normal fs-6 align-middle" id="historiasPagina">HU-01</span>
+          </h1>
+          <p class="text-body-secondary mb-4">
+            La persona que registra la empresa queda como <strong>administrador</strong> y entra con el correo de contacto.
+          </p>
+
+          <form class="row g-3" [formGroup]="registroForm" (ngSubmit)="handleSubmit()" novalidate>
+            <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+            <div class="col-md-7">
+              <div class="form-floating">
+                <input type="text" id="nombre" class="form-control" formControlName="nombre" placeholder="Nombre de la empresa"
+                       [class.is-invalid]="registroForm.controls.nombre.touched && registroForm.controls.nombre.invalid" />
+                <label for="nombre">Nombre de la empresa</label>
+                <app-campo-error [control]="registroForm.controls.nombre"></app-campo-error>
+              </div>
+            </div>
+
+            <div class="col-md-5">
+              <div class="form-floating">
+                <input type="text" id="nit" class="form-control" formControlName="nit" placeholder="900123456-1"
+                       [class.is-invalid]="registroForm.controls.nit.touched && registroForm.controls.nit.invalid" />
+                <label for="nit">NIT</label>
+                <app-campo-error [control]="registroForm.controls.nit" [mensajes]="mensajesNit"></app-campo-error>
+              </div>
+              <div class="form-text">Ejemplo: 900123456-1</div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="text" id="nombreRepresentante" class="form-control" formControlName="nombreRepresentante" placeholder="Nombre del representante"
+                       [class.is-invalid]="registroForm.controls.nombreRepresentante.touched && registroForm.controls.nombreRepresentante.invalid" />
+                <label for="nombreRepresentante">Nombre del representante</label>
+                <app-campo-error [control]="registroForm.controls.nombreRepresentante"></app-campo-error>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="email" id="correoContacto" class="form-control" formControlName="correoContacto" placeholder="Correo de contacto" autocomplete="username"
+                       [class.is-invalid]="registroForm.controls.correoContacto.touched && registroForm.controls.correoContacto.invalid" />
+                <label for="correoContacto">Correo de contacto</label>
+                <app-campo-error [control]="registroForm.controls.correoContacto"></app-campo-error>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="password" id="password" class="form-control" formControlName="password" placeholder="Contraseña" autocomplete="new-password"
+                       [class.is-invalid]="registroForm.controls.password.touched && registroForm.controls.password.invalid" />
+                <label for="password">Contraseña</label>
+                <app-campo-error [control]="registroForm.controls.password"></app-campo-error>
+              </div>
+              <div class="form-text">Entre 8 y 72 caracteres.</div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-between align-items-center">
+              <a routerLink="/login" class="small">Ya tengo cuenta</a>
+              <button type="submit" class="btn btn-primary btn-lg" id="registrarEmpresaBtn" [disabled]="enviando() || registroForm.invalid">
+                @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                Registrar empresa
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
