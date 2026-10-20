@@ -47,6 +47,15 @@ export interface ProcesoCompartido {
   empresaPropietaria: string;
 }
 
+/** HU-07: indicadores de la página de inicio (GET /procesos/resumen). */
+export interface ResumenProcesos {
+  total: number;
+  borradores: number;
+  publicados: number;
+  eliminados: number;
+  compartidosConmigo: number;
+}
+
 export interface ProcesoResumen {
   id: number;
   nombre: string;

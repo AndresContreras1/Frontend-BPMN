@@ -1,0 +1,17 @@
+<article class="card h-100 tarjeta-interactiva indicador" [id]="'indicador-' + clave()">
+  <div class="card-body d-flex align-items-center gap-3">
+    <span class="icono-circulo" [class]="'bg-' + color() + '-subtle text-' + color() + '-emphasis'" aria-hidden="true">
+      <i class="bi" [class]="icono()"></i>
+    </span>
+    <div class="flex-grow-1">
+      <p class="small text-body-secondary mb-1">{{ titulo() }}</p>
+      <p class="fs-3 fw-semibold lh-1 mb-0 valor-indicador">{{ valor() }}</p>
+      @if (descripcion()) {
+        <p class="small text-body-secondary mb-0 mt-1">{{ descripcion() }}</p>
+      }
+    </div>
+  </div>
+  @if (ruta()) {
+    <a class="stretched-link" [routerLink]="ruta()" [queryParams]="parametros()" [attr.aria-label]="'Ver ' + titulo()"></a>
+  }
+</article>
