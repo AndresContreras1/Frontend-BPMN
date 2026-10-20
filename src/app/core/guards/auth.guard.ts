@@ -12,8 +12,8 @@ export const authGuard: CanActivateFn = (_route, state) => {
   return inject(Router).createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
 };
 
-/** Las páginas de solo invitados (login, registro) redirigen al inicio si ya hay sesión. */
+/** Las páginas de solo invitados (bienvenida, login, registro) llevan al inicio de la empresa si ya hay sesión. */
 export const invitadoGuard: CanActivateFn = () => {
   const sesion = inject(SesionStore);
-  return sesion.autenticado() ? inject(Router).createUrlTree(['/']) : true;
+  return sesion.autenticado() ? inject(Router).createUrlTree(['/inicio']) : true;
 };

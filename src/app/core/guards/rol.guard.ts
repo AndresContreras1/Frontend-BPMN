@@ -11,5 +11,5 @@ import { SesionStore } from '../services/sesion.store';
 export const rolGuard: CanActivateFn = (route) => {
   const roles = (route.data['roles'] ?? []) as RolAcceso[];
   const rol = inject(SesionStore).rol();
-  return rol !== null && roles.includes(rol) ? true : inject(Router).createUrlTree(['/']);
+  return rol !== null && roles.includes(rol) ? true : inject(Router).createUrlTree(['/inicio']);
 };

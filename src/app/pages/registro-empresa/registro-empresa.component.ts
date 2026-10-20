@@ -7,6 +7,7 @@ import { AlertaErrorComponent } from '../../components/alerta-error/alerta-error
 import { CampoErrorComponent } from '../../components/campo-error/campo-error.component';
 import { problemaDe } from '../../core/services/errores';
 import { aplicarErroresDelServidor, limpiarTextos } from '../../core/services/formularios';
+import { NotificacionesService } from '../../core/services/notificaciones.service';
 import { SesionStore } from '../../core/services/sesion.store';
 import { PATRON_NIT, RegistroEmpresaRequest } from '../../models/empresa.model';
 import { ProblemDetail } from '../../models/problem-detail.model';
@@ -26,6 +27,7 @@ export class RegistroEmpresaComponent {
   private readonly empresaService = inject(EmpresaService);
   private readonly authService = inject(AuthService);
   private readonly sesion = inject(SesionStore);
+  private readonly notificaciones = inject(NotificacionesService);
   private readonly router = inject(Router);
 
   enviando = signal(false);
@@ -76,7 +78,8 @@ export class RegistroEmpresaComponent {
       .subscribe({
         next: (respuesta) => {
           this.sesion.iniciar(respuesta);
-          this.router.navigate(['/']);
+          this.notificaciones.exito(`La empresa ${datos.nombre} quedó registrada. Usted es su administrador.`);
+          this.router.navigate(['/inicio']);
         },
         error: (err) => {
           const problema = problemaDe(err);

@@ -9,6 +9,7 @@ import { CampoErrorComponent } from '../../components/campo-error/campo-error.co
 import { PageTitleComponent } from '../../components/page-title/page-title.component';
 import { problemaDe } from '../../core/services/errores';
 import { aplicarErroresDelServidor } from '../../core/services/formularios';
+import { NotificacionesService } from '../../core/services/notificaciones.service';
 import { ProblemDetail } from '../../models/problem-detail.model';
 import { EstadoProceso, Proceso } from '../../models/proceso.model';
 import { ProcesoService } from '../../service/proceso.service';
@@ -26,6 +27,7 @@ import { ProcesoService } from '../../service/proceso.service';
 export class ProcesoFormComponent implements OnInit {
   private readonly procesoService = inject(ProcesoService);
   private readonly router = inject(Router);
+  private readonly notificaciones = inject(NotificacionesService);
   private readonly activedRoute = inject(ActivatedRoute);
 
   procesoId: number | undefined = undefined;
@@ -103,7 +105,10 @@ export class ProcesoFormComponent implements OnInit {
 
     peticion.pipe(finalize(() => this.enviando.set(false))).subscribe({
       // Se navega dentro del subscribe: primero se guarda, luego se muestra el detalle
-      next: (proceso) => this.router.navigate(['/procesos', proceso.id]),
+      next: (proceso) => {
+        this.notificaciones.exito(this.isEdit ? `Se guardaron los cambios de "${proceso.nombre}".` : `Proceso "${proceso.nombre}" creado en borrador.`);
+        this.router.navigate(['/procesos', proceso.id]);
+      },
       error: (err) => {
         const problema = problemaDe(err);
         aplicarErroresDelServidor(this.procesoForm, problema);
