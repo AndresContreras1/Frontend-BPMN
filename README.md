@@ -8,7 +8,7 @@ SPA en Angular del visor y editor de procesos BPMN multiempresa. Consume la API 
 |---|---|
 | Angular (componentes standalone, signals) | 19.2 |
 | TypeScript | 5.7 |
-| Bootstrap + Bootstrap Icons | 5.3.8 / 1.13.1 |
+| Bootstrap (compilado desde Sass con el tema propio) + Bootstrap Icons | 5.3.8 / 1.13.1 |
 | RxJS | 7.8 |
 | Pruebas | Jasmine + Karma (Chrome headless) |
 | Servidor de producción | nginx 1.27 |
@@ -33,7 +33,7 @@ La app queda en `http://localhost:4200`. Las peticiones a `/api` se reenvían al
 npm run test:ci
 ```
 
-Corre las pruebas unitarias una vez en Chrome headless y deja la cobertura en `coverage/` (174 pruebas; 87 % de líneas y 72 % de ramas).
+Corre las pruebas unitarias una vez en Chrome headless y deja la cobertura en `coverage/` (197 pruebas; 88 % de líneas y 72 % de ramas).
 
 ## Docker
 
@@ -97,13 +97,19 @@ Con `docker compose up --build` y PostgreSQL vacío (perfil `prod,demo`):
 
 ```
 src/app/
-├── core/            # sesión, token, interceptores HTTP y guards
+├── core/            # sesión, token, preferencias, avisos, carga; interceptores HTTP y guards
 ├── models/          # interfaces que reflejan los DTO de la API
 ├── service/         # un servicio por recurso de la API; solo peticiones, retornan Observable
-├── components/      # piezas reutilizables (navbar, paginador, alertas, modal, errores de campo)
-│   └── diagrama/    # lienzo SVG del diagrama y su geometría: lo usan el editor y la ficha del proceso
-└── pages/           # una carpeta por pantalla
+├── components/      # piezas reutilizables (navbar, pie de página, indicador, avisos, paginador, alertas, modal…)
+│   └── diagrama/    # lienzo SVG del diagrama y su geometría: lo usan el editor, la ficha y la página pública
+└── pages/           # una carpeta por pantalla; lo que solo usa una pantalla va en su carpeta components/
 ```
+
+- **Tema:** `styles.scss` define las variables de Bootstrap (`$primary`, radios, sombras, fondo) y después importa Bootstrap desde sus fuentes Sass, así todos los componentes toman los colores del proyecto. Las animaciones son CSS (`@keyframes`), y se apagan si el sistema pide menos movimiento.
+- **Rutas:** cada página se carga al visitarla por primera vez (`loadComponent`) y tiene su `title`; el paquete inicial queda en unos 15 kB de `main`.
+- **Diseño:** la página pública va de borde a borde, el editor usa todo el ancho y el resto va en un `container-xxl` que no crece sin límite en pantallas muy anchas. El menú colapsa por debajo de 1200 px (plugin Collapse) y el usuario tiene un menú desplegable (plugin Dropdown).
+- **Avisos y carga:** `NotificacionesService` (signals) publica avisos breves que pinta `app-notificaciones` como toasts, aunque la página navegue justo después; `cargaInterceptor` cuenta las peticiones en curso y la barra superior se ve mientras quede alguna.
+- **Preferencias:** `PreferenciasService` guarda en `localStorage` lo que no necesita el servidor (ver procesos como tabla o como tarjetas); si el navegador no lo permite, usa el valor por defecto.
 
 - **Sesión:** `SesionStore` guarda el usuario con signals y el token en `localStorage`. Cerrar sesión en una pestaña la cierra en todas.
 - **Interceptores:** `authInterceptor` agrega `Authorization: Bearer` solo a la API; `errorInterceptor` cierra la sesión ante un 401 y lleva a `/login?expirada=true`.
@@ -117,11 +123,13 @@ src/app/
 
 | Ruta | Pantalla | HU |
 |---|---|---|
-| `/login` | Inicio de sesión; vuelve a la ruta pedida | HU-03 |
+| `/` | Página pública: qué hace el sistema, el diagrama de vacaciones del enunciado dibujado con el mismo lienzo del editor, los seis frentes del proyecto, un carrusel con los elementos BPMN y cómo empezar. Con sesión iniciada lleva a `/inicio` | HU-01, HU-03 |
+| `/inicio` | Inicio de la empresa: indicadores (activos, borradores, publicados, compartidos conmigo, eliminados), procesos modificados hace poco, avance de publicación y accesos según el rol | HU-07 |
+| `/login` | Inicio de sesión; vuelve a la ruta pedida o al inicio | HU-03 |
 | `/registro` | Registro de empresa; el representante entra como administrador | HU-01 |
 | `/empresa` | Datos de la empresa y del usuario en sesión | HU-01, HU-03 |
-| botón **Salir** | Cierre de sesión (`POST /auth/logout`) | HU-03 |
-| `/procesos` | Lista paginada con búsqueda por nombre, filtros por estado y categoría, orden y "Ver eliminados" | HU-06, HU-07 |
+| menú del usuario → **Cerrar sesión** | Cierre de sesión (`POST /auth/logout`) | HU-03 |
+| `/procesos` | Lista paginada con búsqueda por nombre, filtros por estado y categoría, orden y "Ver eliminados"; como tabla o como tarjetas. Acepta `?estado=` y `?eliminados=true` (los enlaces del inicio) | HU-06, HU-07 |
 | `/procesos/nuevo` | Crear proceso (nace en borrador con el pool de la empresa) | HU-04 |
 | `/procesos/editar/:id` | Editar nombre, descripción, categoría y estado, con control de versión | HU-04, HU-05 |
 | `/procesos/:id` | Ficha con el **diagrama completo en solo lectura**, publicar o volver a borrador, eliminar, historial de cambios y compartir por NIT | HU-04 a HU-07, HU-23 |
