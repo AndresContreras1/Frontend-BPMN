@@ -31,12 +31,12 @@
                     [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
                     mensajeVacio="No hay usuarios que coincidan con la búsqueda.">
   @for (u of resultado()?.content ?? []; track u.id) {
-    <tr [class.text-body-tertiary]="!u.activo">
+    <tr class="fila-usuario" [class.text-body-tertiary]="!u.activo">
       <td>
         {{ u.nombre }}
         @if (esYo(u)) { <span class="badge text-bg-light border ms-1">Usted</span> }
       </td>
-      <td>{{ u.correo }}</td>
+      <td class="correo-usuario">{{ u.correo }}</td>
       <td>
         @if (sesion.esAdministrador()) {
           <select class="form-select form-select-sm w-auto" [value]="u.rol" (change)="cambiarRol(u, $event)"
