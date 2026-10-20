@@ -106,7 +106,7 @@ src/app/
 ```
 
 - **Tema:** `styles.scss` define las variables de Bootstrap (`$primary`, radios, sombras, fondo) y después importa Bootstrap desde sus fuentes Sass, así todos los componentes toman los colores del proyecto. Las animaciones son CSS (`@keyframes`), y se apagan si el sistema pide menos movimiento.
-- **Rutas:** cada página se carga al visitarla por primera vez (`loadComponent`) y tiene su `title`; el paquete inicial queda en unos 15 kB de `main`.
+- **Rutas:** cada página se carga al visitarla por primera vez (`loadComponent`) y tiene su `title`. En el build de producción la carga inicial es de unos 710 kB (147 kB comprimidos, con Angular y los estilos) y cada pantalla llega en su propio archivo; el editor, el más grande, pesa unos 99 kB.
 - **Diseño:** la página pública va de borde a borde, el editor usa todo el ancho y el resto va en un `container-xxl` que no crece sin límite en pantallas muy anchas. El menú colapsa por debajo de 1200 px (plugin Collapse) y el usuario tiene un menú desplegable (plugin Dropdown).
 - **Avisos y carga:** `NotificacionesService` (signals) publica avisos breves que pinta `app-notificaciones` como toasts, aunque la página navegue justo después; `cargaInterceptor` cuenta las peticiones en curso y la barra superior se ve mientras quede alguna.
 - **Preferencias:** `PreferenciasService` guarda en `localStorage` lo que no necesita el servidor (ver procesos como tabla o como tarjetas); si el navegador no lo permite, usa el valor por defecto.
