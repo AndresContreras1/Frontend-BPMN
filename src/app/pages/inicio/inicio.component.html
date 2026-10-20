@@ -1,0 +1,127 @@
+<section class="aparecer" aria-labelledby="saludoInicio">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <p class="text-body-secondary small mb-1 primera-mayuscula">{{ hoy | date: 'fullDate' }}</p>
+      <h1 class="h3 mb-1" id="saludoInicio">Hola, {{ primerNombre() }}</h1>
+      @if (sesion.usuario(); as u) {
+        <p class="text-body-secondary mb-0">
+          <i class="bi bi-building me-1"></i>{{ u.empresaNombre }}
+          <span class="badge rounded-pill text-bg-light border fw-normal ms-1" id="historiasPagina">HU-07</span>
+        </p>
+      }
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      @if (sesion.puedeEditar()) {
+        <a class="btn btn-primary" routerLink="/procesos/nuevo" id="inicioNuevoProcesoBtn">
+          <i class="bi bi-plus-lg"></i> Nuevo proceso
+        </a>
+      }
+      <a class="btn btn-outline-primary" routerLink="/procesos"><i class="bi bi-list-ul"></i> Ver procesos</a>
+    </div>
+  </div>
+
+  @switch (estado()) {
+    @case ('cargando') {
+      <div class="text-center text-body-secondary py-5" id="inicioCargando">
+        <span class="spinner-border spinner-border-sm me-2"></span>Cargando el resumen de su empresa…
+      </div>
+    }
+    @case ('error') {
+      <div class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2" id="inicioError">
+        <span><strong>{{ problema()?.title }}.</strong> {{ problema()?.detail }}</span>
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="cargar()">Reintentar</button>
+      </div>
+    }
+    @case ('listo') {
+      @if (datos(); as d) {
+        <div class="row g-3 mb-4">
+          <div class="col-xl col-md-4 col-6">
+            <app-indicador clave="total" titulo="Procesos activos" [valor]="d.resumen.total" icono="bi-diagram-3"
+                           color="primary" ruta="/procesos"></app-indicador>
+          </div>
+          <div class="col-xl col-md-4 col-6">
+            <app-indicador clave="borradores" titulo="En borrador" [valor]="d.resumen.borradores" icono="bi-pencil-square"
+                           color="warning" ruta="/procesos" [parametros]="{ estado: 'BORRADOR' }"></app-indicador>
+          </div>
+          <div class="col-xl col-md-4 col-6">
+            <app-indicador clave="publicados" titulo="Publicados" [valor]="d.resumen.publicados" icono="bi-check2-circle"
+                           color="success" ruta="/procesos" [parametros]="{ estado: 'PUBLICADO' }"></app-indicador>
+          </div>
+          <div class="col-xl col-md-6 col-6">
+            <app-indicador clave="compartidos" titulo="Compartidos conmigo" [valor]="d.resumen.compartidosConmigo"
+                           icono="bi-share" color="info" ruta="/compartidos"></app-indicador>
+          </div>
+          <div class="col-xl col-md-6 col-12">
+            <app-indicador clave="eliminados" titulo="Eliminados" [valor]="d.resumen.eliminados" icono="bi-archive"
+                           color="secondary" ruta="/procesos" [parametros]="{ eliminados: 'true' }"></app-indicador>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <section class="col-lg-8" aria-labelledby="tituloRecientes">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h6 mb-0" id="tituloRecientes"><i class="bi bi-clock-history me-1"></i> Modificados recientemente</h2>
+                <a class="small" routerLink="/procesos">Ver todos</a>
+              </div>
+              @if (d.recientes.length) {
+                <ul class="list-group list-group-flush">
+                  @for (p of d.recientes; track p.id) {
+                    <li class="list-group-item d-flex justify-content-between align-items-center gap-3 proceso-reciente">
+                      <div class="text-truncate">
+                        <a [routerLink]="['/procesos', p.id]" class="fw-semibold text-decoration-none">{{ p.nombre }}</a>
+                        <div class="small text-body-secondary">{{ p.categoria }} · {{ p.modificadoEn | date: 'short' }} · {{ p.modificadoPor }}</div>
+                      </div>
+                      <app-estado-badge [estado]="p.estado" [activo]="p.activo"></app-estado-badge>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <div class="card-body text-center text-body-secondary py-5" id="inicioSinProcesos">
+                  <i class="bi bi-diagram-3 fs-1 d-block mb-2"></i>
+                  Su empresa todavía no tiene procesos.
+                  @if (sesion.puedeEditar()) {
+                    <a routerLink="/procesos/nuevo">Cree el primero</a>.
+                  }
+                </div>
+              }
+            </div>
+          </section>
+
+          <aside class="col-lg-4 d-flex flex-column gap-3">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="h6"><i class="bi bi-graph-up-arrow me-1"></i> Avance de publicación</h2>
+                <p class="small text-body-secondary mb-2">
+                  {{ d.resumen.publicados }} de {{ d.resumen.total }} procesos activos están publicados.
+                </p>
+                <div class="progress" role="progressbar" aria-label="Procesos publicados"
+                     [attr.aria-valuenow]="avancePublicacion()" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar bg-success" [style.width.%]="avancePublicacion()">{{ avancePublicacion() }} %</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <h2 class="h6"><i class="bi bi-people me-1"></i> Su espacio</h2>
+                <ul class="list-unstyled small mb-0 d-grid gap-2">
+                  <li class="d-flex justify-content-between">
+                    <a routerLink="/usuarios">Usuarios de la empresa</a><strong id="inicioUsuarios">{{ d.usuarios }}</strong>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <a routerLink="/roles">Roles de proceso</a><strong id="inicioRoles">{{ d.roles }}</strong>
+                  </li>
+                  @if (sesion.esAdministrador()) {
+                    <li><a routerLink="/usuarios/nuevo"><i class="bi bi-person-plus me-1"></i>Invitar a un usuario</a></li>
+                  }
+                  <li><a routerLink="/empresa"><i class="bi bi-building me-1"></i>Datos de mi empresa</a></li>
+                </ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      }
+    }
+  }
+</section>
