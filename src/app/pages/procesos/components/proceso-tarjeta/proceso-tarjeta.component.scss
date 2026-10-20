@@ -1,0 +1,14 @@
+// La descripción se corta en tres líneas para que todas las tarjetas midan parecido
+.descripcion {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Los botones quedan por encima del enlace que cubre la tarjeta (stretched-link)
+.acciones {
+  position: relative;
+  z-index: 2;
+}
