@@ -1,6 +1,11 @@
 <div class="card shadow-sm" id="panelElemento">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <span class="fw-semibold"><i class="bi {{ icono() }} text-primary"></i> {{ titulo() }}</span>
+    <span class="fw-semibold">
+      <i class="bi {{ icono() }} text-primary"></i> {{ titulo() }}
+      @if (hu()) {
+        <span class="badge rounded-pill text-bg-light border fw-normal align-middle" id="historiasPanel" title="Historias de usuario que cubre este elemento">{{ hu() }}</span>
+      }
+    </span>
     <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar.emit()"></button>
   </div>
   <div class="card-body">

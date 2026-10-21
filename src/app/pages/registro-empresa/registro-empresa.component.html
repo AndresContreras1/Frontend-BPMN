@@ -1,7 +1,10 @@
 <div class="mt-4 d-flex justify-content-center">
   <div class="col-xl-6 col-lg-7 col-md-9 col-sm-12">
     <div class="card shadow-sm">
-      <div class="card-header text-center fw-bold fs-4">Registrar empresa</div>
+      <div class="card-header text-center fw-bold fs-4">
+        Registrar empresa
+        <span class="badge rounded-pill text-bg-light border fw-normal fs-6 align-middle" id="historiasPagina">HU-01</span>
+      </div>
       <form class="p-3 row g-3" [formGroup]="registroForm" (ngSubmit)="handleSubmit()" novalidate>
         <p class="col-12 text-body-secondary small mb-0">
           La persona que registra la empresa queda como <strong>administrador</strong> y entra con el correo de contacto.
@@ -46,7 +49,7 @@
 
         <div class="col-12 d-flex justify-content-between align-items-center">
           <a routerLink="/login" class="small">Ya tengo cuenta</a>
-          <button type="submit" class="btn btn-primary" id="registrarEmpresaBtn" [disabled]="enviando()">
+          <button type="submit" class="btn btn-primary" id="registrarEmpresaBtn" [disabled]="enviando() || registroForm.invalid">
             @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
             Registrar empresa
           </button>

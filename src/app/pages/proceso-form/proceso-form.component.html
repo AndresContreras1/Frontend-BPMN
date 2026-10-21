@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
   <div class="col-xl-7 col-lg-9 col-sm-12">
-    <app-page-title [titulo]="isEdit ? 'Editar proceso' : 'Nuevo proceso'"
+    <app-page-title [titulo]="isEdit ? 'Editar proceso' : 'Nuevo proceso'" [hu]="isEdit ? 'HU-05' : 'HU-04'"
                     [subtitulo]="isEdit ? 'Cambie los datos o publique el proceso' : 'El proceso nace en borrador con el pool de su empresa'">
     </app-page-title>
 
@@ -56,7 +56,7 @@
 
         <div class="col-12 d-flex justify-content-end gap-2">
           <a class="btn btn-secondary" [routerLink]="isEdit ? ['/procesos', procesoId] : ['/procesos']">Cancelar</a>
-          <button type="submit" class="btn btn-primary" id="guardarProcesoBtn" [disabled]="enviando() || !!soloLectura()">
+          <button type="submit" class="btn btn-primary" id="guardarProcesoBtn" [disabled]="enviando() || !!soloLectura() || procesoForm.invalid">
             @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
             {{ isEdit ? 'Guardar cambios' : 'Crear proceso' }}
           </button>

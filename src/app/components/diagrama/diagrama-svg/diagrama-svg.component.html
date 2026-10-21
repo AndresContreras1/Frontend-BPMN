@@ -1,4 +1,4 @@
-<svg class="lienzo-bpmn" [class.colocando]="herramienta() !== 'seleccionar'" id="lienzoDiagrama"
+<svg class="lienzo-bpmn" [class.colocando]="colocando()" id="lienzoDiagrama"
      [attr.width]="layout().ancho" [attr.height]="layout().alto" [attr.viewBox]="'0 0 ' + layout().ancho + ' ' + layout().alto"
      role="img" aria-label="Diagrama BPMN del proceso" (click)="clicFondo($event)">
   <defs>

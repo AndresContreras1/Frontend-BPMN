@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, debounceTime, finalize, of, switchMap } from 'rxjs';
 
 import { AlertaErrorComponent } from '../../components/alerta-error/alerta-error.component';
@@ -27,13 +27,16 @@ import { ProcesoService } from '../../service/proceso.service';
     EstadoBadgeComponent, TablaGenericaComponent,
   ],
   templateUrl: './procesos.component.html',
+  styleUrl: './procesos.component.scss',
 })
-export class ProcesosComponent {
+export class ProcesosComponent implements OnInit {
   private readonly procesoService = inject(ProcesoService);
   readonly sesion = inject(SesionStore);
 
-  /** Aviso que deja otra pantalla al volver (por ejemplo, después de eliminar). */
-  eliminado = input<string>();
+  private readonly route = inject(ActivatedRoute);
+
+  /** ?eliminado=<nombre>: aviso al volver de eliminar un proceso (HU-06). */
+  eliminado = signal<string | null>(null);
 
   texto = signal('');
   estado = signal<EstadoProceso | ''>('');
@@ -86,6 +89,10 @@ export class ProcesosComponent {
   hayFiltros = computed(() => this.texto() !== '' || this.estado() !== '' || this.categoria() !== '');
 
   // Cualquier cambio de filtro u orden vuelve a la primera página
+  ngOnInit(): void {
+    this.eliminado.set(this.route.snapshot.queryParamMap.get('eliminado'));
+  }
+
   buscar(texto: string): void {
     this.texto.set(texto);
     this.page.set(0);

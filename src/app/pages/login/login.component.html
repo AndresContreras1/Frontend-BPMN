@@ -3,6 +3,7 @@
     <div class="card shadow-sm">
       <div class="card-header text-center fw-bold fs-4">
         <i class="bi bi-diagram-3-fill text-primary"></i> Iniciar sesión
+        <span class="badge rounded-pill text-bg-light border fw-normal fs-6 align-middle" id="historiasPagina">HU-03</span>
       </div>
       <form class="p-3 row g-3" [formGroup]="loginForm" (ngSubmit)="handleSubmit()" novalidate>
         @if (expirada()) {
@@ -28,7 +29,7 @@
         </div>
 
         <div class="col-12 d-grid">
-          <button type="submit" class="btn btn-primary" id="loginBtn" [disabled]="enviando()">
+          <button type="submit" class="btn btn-primary" id="loginBtn" [disabled]="enviando() || loginForm.invalid">
             @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
             Ingresar
           </button>

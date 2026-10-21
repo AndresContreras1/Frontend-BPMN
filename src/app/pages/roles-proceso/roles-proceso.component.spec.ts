@@ -79,6 +79,7 @@ describe('RolesProcesoComponent (HU-17 a HU-20)', () => {
     html.querySelector<HTMLButtonElement>('#nuevoRolBtn')!.click();
     fixture.detectChanges();
     escribirNombre('  Analista  ');
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarRolBtn')!.click();
 
     const req = backend.expectOne({ method: 'POST', url: '/api/v1/roles-proceso' });
@@ -95,6 +96,7 @@ describe('RolesProcesoComponent (HU-17 a HU-20)', () => {
     html.querySelector<HTMLButtonElement>('#nuevoRolBtn')!.click();
     fixture.detectChanges();
     escribirNombre('empleado');
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarRolBtn')!.click();
     backend.expectOne({ method: 'POST', url: '/api/v1/roles-proceso' }).flush(
       { title: 'Regla de negocio', status: 409, detail: "Ya existe un rol de proceso llamado 'empleado' en la empresa" },
@@ -113,6 +115,7 @@ describe('RolesProcesoComponent (HU-17 a HU-20)', () => {
     expect(html.textContent).toContain('Las lanes que usan este rol cambian de nombre');
 
     escribirNombre('Colaborador');
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarRolBtn')!.click();
     const req = backend.expectOne({ method: 'PUT', url: '/api/v1/roles-proceso/1' });
     expect(req.request.body).toEqual({ nombre: 'Colaborador', descripcion: 'Radica' });

@@ -1,4 +1,4 @@
-<app-page-title titulo="Procesos" subtitulo="Procesos de negocio de su empresa">
+<app-page-title titulo="Procesos" hu="HU-04, HU-06, HU-07" subtitulo="Procesos de negocio de su empresa">
   @if (sesion.puedeEditar()) {
     <a class="btn btn-primary" routerLink="/procesos/nuevo" id="nuevoProcesoBtn">
       <i class="bi bi-plus-lg"></i> Nuevo proceso
@@ -62,7 +62,7 @@
       <td>
         <a [routerLink]="['/procesos', p.id]" class="fw-semibold text-decoration-none">{{ p.nombre }}</a>
         @if (p.descripcion) {
-          <div class="small text-body-secondary text-truncate" style="max-width: 28rem">{{ p.descripcion }}</div>
+          <div class="small text-body-secondary text-truncate descripcion-corta">{{ p.descripcion }}</div>
         }
       </td>
       <td>{{ p.categoria }}</td>

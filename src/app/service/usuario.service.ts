@@ -29,11 +29,8 @@ export class UsuarioService {
     return this.http.put<Usuario>(`${this.url}/${id}/rol`, { rol });
   }
 
-  desactivar(id: number): Observable<Usuario> {
-    return this.http.patch<Usuario>(`${this.url}/${id}/desactivar`, null);
-  }
-
-  activar(id: number): Observable<Usuario> {
-    return this.http.patch<Usuario>(`${this.url}/${id}/activar`, null);
+  /** Desactivar no borra: el usuario conserva su historial y sus procesos siguen siendo de la empresa. */
+  cambiarEstado(id: number, activo: boolean): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.url}/${id}/estado`, { activo });
   }
 }

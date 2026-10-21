@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Mensaje } from '../../../../models/mensaje.model';
-import { Nodo } from '../../../../models/nodo.model';
-import { Pool } from '../../../../models/pool.model';
-import { Posicion } from '../../layout';
+import { Mensaje } from '../../../models/mensaje.model';
+import { Nodo } from '../../../models/nodo.model';
+import { Pool } from '../../../models/pool.model';
+import { Posicion } from '../layout';
 import { DiagramaSvgComponent } from './diagrama-svg.component';
 
 describe('DiagramaSvgComponent (lienzo)', () => {

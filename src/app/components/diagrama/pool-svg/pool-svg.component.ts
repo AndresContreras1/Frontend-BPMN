@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
-import { Severidad } from '../../../../models/diagrama.model';
-import { ANCHO_ETIQUETA_LANE, ANCHO_ETIQUETA_POOL, PoolLayout } from '../../layout';
+import { Severidad } from '../../../models/diagrama.model';
+import { ANCHO_ETIQUETA_LANE, ANCHO_ETIQUETA_POOL, PoolLayout } from '../layout';
 
 /** HU-21 y HU-22: un pool con su nombre vertical y sus lanes; la caja negra solo muestra el nombre. */
 @Component({

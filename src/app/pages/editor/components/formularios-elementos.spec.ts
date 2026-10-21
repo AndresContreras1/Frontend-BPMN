@@ -36,6 +36,7 @@ describe('EventoFormComponent', () => {
     const fixture = crear(EventoFormComponent, { ubicacion, lanes, tipoInicial: 'FIN' });
     const emitidos: unknown[] = [];
     fixture.componentInstance.guardar.subscribe((e) => emitidos.push(e));
+    fixture.detectChanges();
     fixture.nativeElement.querySelector('#guardarEventoBtn').click();
     expect(emitidos).toEqual([{ tipo: 'FIN', nombre: null, laneId: 11, posX: 200, posY: 30 }]);
   });
@@ -51,7 +52,7 @@ describe('EventoFormComponent', () => {
 });
 
 describe('ActividadFormComponent (HU-08, HU-09)', () => {
-  it('exige nombre y lane; cambiar la lane cambia el responsable', () => {
+  it('exige nombre y lane (el botón no se habilita sin ellos); cambiar la lane cambia el responsable', () => {
     const nodo: Nodo = { ...base, id: 2, tipo: 'ACTIVIDAD', nombre: 'Revisar', tipoActividad: 'USUARIO' };
     const fixture = crear(ActividadFormComponent, { nodo, lanes });
     const html: HTMLElement = fixture.nativeElement;
@@ -59,13 +60,15 @@ describe('ActividadFormComponent (HU-08, HU-09)', () => {
     fixture.componentInstance.guardar.subscribe((e) => emitidos.push(e));
 
     escribir(html, '#actividadNombre', '');
-    html.querySelector<HTMLButtonElement>('#guardarActividadBtn')!.click();
+    html.querySelector('#actividadNombre')!.dispatchEvent(new Event('blur'));
     fixture.detectChanges();
+    expect(html.querySelector<HTMLButtonElement>('#guardarActividadBtn')!.disabled).toBeTrue();
     expect(emitidos.length).toBe(0);
     expect(html.textContent).toContain('Este campo es obligatorio');
 
     escribir(html, '#actividadNombre', ' Revisar solicitud ');
     fixture.componentInstance.actividadForm.controls.laneId.setValue(11);
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarActividadBtn')!.click();
     expect(emitidos).toEqual([{ nombre: 'Revisar solicitud', tipoActividad: 'USUARIO', laneId: 11, posX: 100, posY: 0 }]);
   });
@@ -82,6 +85,7 @@ describe('GatewayFormComponent (HU-14, HU-15)', () => {
 
     const emitidos: unknown[] = [];
     fixture.componentInstance.guardar.subscribe((e) => emitidos.push(e));
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarGatewayBtn')!.click();
     expect(emitidos).toEqual([{ nombre: null, tipoGateway: 'PARALELO', laneId: 11, posX: 200, posY: 30 }]);
   });
@@ -109,6 +113,7 @@ describe('ArcoFormComponent (HU-11, HU-12)', () => {
     fixture.componentInstance.guardar.subscribe((e) => emitidos.push(e));
     escribir(html, '#arcoEtiqueta', 'Sí');
     escribir(html, '#arcoCondicion', 'aprobada == true');
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarArcoBtn')!.click();
     expect(emitidos).toEqual([{ origenId: 2, destinoId: 3, etiqueta: 'Sí', condicion: 'aprobada == true' }]);
   });
@@ -121,6 +126,7 @@ describe('ArcoFormComponent (HU-11, HU-12)', () => {
     const emitidos: DatosArco[] = [];
     fixture.componentInstance.guardar.subscribe((e) => emitidos.push(e));
     fixture.componentInstance.arcoForm.controls.condicion.setValue('algo');
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarArcoBtn')!.click();
     expect(emitidos[0].condicion).toBeNull();
   });
@@ -144,6 +150,7 @@ describe('MensajeFormComponent (HU-25 a HU-27)', () => {
   const emitir = (fixture: ComponentFixture<MensajeFormComponent>) => {
     const emitidos: GuardarMensaje[] = [];
     fixture.componentInstance.guardar.subscribe((e) => emitidos.push(e));
+    fixture.detectChanges();
     fixture.nativeElement.querySelector('#guardarMensajeBtn').click();
     fixture.detectChanges();
     return emitidos;
@@ -257,10 +264,12 @@ describe('CorrelacionFormComponent (HU-28)', () => {
 
     const emitidos: unknown[] = [];
     fixture.componentInstance.guardar.subscribe((e) => emitidos.push(e));
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarCorrelacionBtn')!.click();
     expect(emitidos.length).toBe(0);
     escribir(html, '#correlacionClave', 'numeroOrden');
     escribir(html, '#correlacionAccion', 'INICIAR_CASO_NUEVO');
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarCorrelacionBtn')!.click();
     expect(emitidos).toEqual([{ claveCorrelacion: 'numeroOrden', accionSinCaso: 'INICIAR_CASO_NUEVO' }]);
   });

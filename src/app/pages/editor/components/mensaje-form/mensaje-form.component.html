@@ -128,7 +128,7 @@
       <div class="input-group input-group-sm mt-1">
         <input type="text" class="form-control" [value]="campo.nombre" placeholder="numeroSolicitud" [attr.aria-label]="'Nombre del campo ' + (i + 1)"
                [disabled]="!editable()" (input)="cambiarCampo(i, { nombre: $any($event.target).value })" />
-        <select class="form-select" style="max-width: 7.5rem" [value]="campo.tipoDato" [attr.aria-label]="'Tipo del campo ' + (i + 1)"
+        <select class="form-select tipo-dato" [value]="campo.tipoDato" [attr.aria-label]="'Tipo del campo ' + (i + 1)"
                 [disabled]="!editable()" (change)="cambiarCampo(i, { tipoDato: $any($event.target).value })">
           @for (t of tiposDato; track t) {
             <option [value]="t" [selected]="t === campo.tipoDato">{{ t }}</option>
@@ -162,7 +162,7 @@
 
   @if (editable()) {
     <div class="col-12 d-flex justify-content-end mt-2">
-      <button type="submit" class="btn btn-primary btn-sm" id="guardarMensajeBtn" [disabled]="guardando()">
+      <button type="submit" class="btn btn-primary btn-sm" id="guardarMensajeBtn" [disabled]="guardando() || mensajeForm.invalid">
         @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Guardar
       </button>

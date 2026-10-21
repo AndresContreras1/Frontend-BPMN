@@ -83,6 +83,7 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     const nombre = html.querySelector<HTMLInputElement>('#poolNombre')!;
     nombre.value = 'Proveedor';
     nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarPoolBtn')!.click();
 
     const req = backend.expectOne({ method: 'POST', url: '/api/v1/procesos/9/pools' });

@@ -1,13 +1,12 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { Arco } from '../../../../models/arco.model';
-import { Advertencia } from '../../../../models/diagrama.model';
-import { Mensaje } from '../../../../models/mensaje.model';
-import { Nodo } from '../../../../models/nodo.model';
-import { Pool } from '../../../../models/pool.model';
-import { severidadesPor } from '../../advertencias';
-import { Herramienta } from '../../editor.store';
-import { calcularLayout, Posicion, posicionEn, rutaArco, rutaMensaje } from '../../layout';
+import { Arco } from '../../../models/arco.model';
+import { Advertencia } from '../../../models/diagrama.model';
+import { Mensaje } from '../../../models/mensaje.model';
+import { Nodo } from '../../../models/nodo.model';
+import { Pool } from '../../../models/pool.model';
+import { severidadesPor } from '../advertencias';
+import { calcularLayout, Posicion, posicionEn, rutaArco, rutaMensaje } from '../layout';
 import { ArcoSvgComponent } from '../arco-svg/arco-svg.component';
 import { MensajeSvgComponent } from '../mensaje-svg/mensaje-svg.component';
 import { NodoSvgComponent } from '../nodo-svg/nodo-svg.component';
@@ -17,6 +16,7 @@ import { PoolSvgComponent } from '../pool-svg/pool-svg.component';
  * Lienzo SVG del diagrama. Recibe el diagrama por input(), calcula la geometría con funciones puras
  * (layout.ts) y avisa al padre de cada clic: en el fondo (con pool, lane y posición), en un
  * elemento, en un arco o en un mensaje. No hay arrastrar y soltar: la posición se elige con clic.
+ * Es compartido: lo usan el editor y la ficha del proceso, que lo muestra en solo lectura (HU-07).
  */
 @Component({
   selector: 'app-diagrama-svg',
@@ -33,7 +33,8 @@ export class DiagramaSvgComponent {
   arcoResaltado = input<number | null>(null);
   mensajeResaltado = input<number | null>(null);
   origenConexion = input<number | null>(null);
-  herramienta = input<Herramienta>('seleccionar');
+  /** Con una herramienta de colocar activa, el cursor indica que un clic agrega el elemento. */
+  colocando = input<boolean>(false);
 
   clicLienzo = output<Posicion>();
   clicNodo = output<number>();

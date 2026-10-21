@@ -32,6 +32,7 @@ export const TIPOS_DATO: TipoDato[] = ['TEXTO', 'NUMERO', 'DECIMAL', 'FECHA', 'B
   selector: 'app-mensaje-form',
   imports: [ReactiveFormsModule, CampoErrorComponent],
   templateUrl: './mensaje-form.component.html',
+  styleUrl: './mensaje-form.component.scss',
 })
 export class MensajeFormComponent implements OnChanges {
   /** null: mensaje nuevo de la clase indicada. */
@@ -228,7 +229,10 @@ export class MensajeFormComponent implements OnChanges {
       return;
     }
 
-    const ubicacion = this.ubicacion()!;
+    const ubicacion = this.ubicacion();
+    if (!ubicacion) {
+      return;
+    }
     const clave = (v.claveCorrelacion ?? '').trim() || null;
     if (clase === 'THROW') {
       this.guardar.emit({ tipo: 'throw', datos: {

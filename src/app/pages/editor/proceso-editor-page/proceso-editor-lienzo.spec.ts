@@ -7,7 +7,7 @@ import { of } from 'rxjs';
 import { SesionStore } from '../../../core/services/sesion.store';
 import { Diagrama } from '../../../models/diagrama.model';
 import { RolAcceso } from '../../../models/usuario.model';
-import { Posicion } from '../layout';
+import { Posicion } from '../../../components/diagrama/layout';
 import { ProcesoEditorPageComponent } from './proceso-editor-page.component';
 
 describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', () => {
@@ -89,6 +89,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     const nombre = html.querySelector<HTMLInputElement>('#actividadNombre')!;
     nombre.value = 'Aprobar';
     nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarActividadBtn')!.click();
 
     const req = backend.expectOne({ method: 'POST', url: '/api/v1/lanes/10/actividades' });
@@ -123,6 +124,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     clicNodo(3);
 
     expect(html.querySelector('#panelElemento')!.textContent).toContain('Nuevo flujo de secuencia');
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarArcoBtn')!.click();
     const req = backend.expectOne({ method: 'POST', url: '/api/v1/arcos' });
     expect(req.request.body).toEqual({ procesoId: 9, origenId: 2, destinoId: 3, etiqueta: null, condicion: null });
@@ -212,6 +214,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
   it('un cambio incoherente en un proceso publicado muestra los motivos de la API', () => {
     crear('EDITOR');
     clicNodo(2);
+    fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#guardarActividadBtn')!.click();
     backend.expectOne({ method: 'PUT', url: '/api/v1/actividades/2' }).flush(
       { title: 'Regla de negocio', status: 409, detail: 'El proceso está publicado y el cambio dejaría el diagrama incoherente.',
@@ -221,5 +224,18 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     fixture.detectChanges();
     expect(html.textContent).toContain('dejaría el diagrama incoherente');
     expect(html.querySelector('#panelElemento')).not.toBeNull();
+  });
+
+  it('HU-15: guardar las condiciones del gateway actualiza cada arco y recarga el diagrama', () => {
+    crear('EDITOR');
+    const arco = pagina.store.arcos()[0];
+
+    pagina.guardarCondiciones([{ arco, condicion: 'monto > 100' }]);
+
+    const req = backend.expectOne({ method: 'PUT', url: '/api/v1/arcos/100' });
+    expect(req.request.body).toEqual({ procesoId: 9, origenId: 1, destinoId: 2, etiqueta: null, condicion: 'monto > 100' });
+    req.flush({ ...arco, condicion: 'monto > 100' });
+    recargar();
+    expect(html.textContent).toContain('Condición actualizada.');
   });
 });

@@ -1,31 +1,33 @@
-<nav class="navbar navbar-expand-xl bg-body-tertiary border-bottom">
-  <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
-      <i class="bi bi-diagram-3-fill text-primary"></i> Editor BPMN
-    </a>
-    @if (usuario(); as u) {
-      <button class="navbar-toggler" type="button" (click)="menuAbierto = !menuAbierto"
-              aria-label="Abrir menú" [attr.aria-expanded]="menuAbierto">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" [class.show]="menuAbierto">
-        <ul class="navbar-nav me-auto mb-2 mb-xl-0">
-          <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/procesos" routerLinkActive="active" (click)="menuAbierto = false">Procesos</a></li>
-          <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/compartidos" routerLinkActive="active" (click)="menuAbierto = false">Compartidos conmigo</a></li>
-          <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/roles" routerLinkActive="active" (click)="menuAbierto = false">Roles de proceso</a></li>
-          <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/empresa" routerLinkActive="active" (click)="menuAbierto = false">Mi empresa</a></li>
-          <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/usuarios" routerLinkActive="active" (click)="menuAbierto = false">Usuarios</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-3">
-          <span class="small text-end">
-            <strong id="usuarioNombre">{{ u.nombre }}</strong> · {{ u.empresaNombre }}<br>
-            <span class="badge text-bg-primary" id="usuarioRol">{{ u.rol }}</span>
-          </span>
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="cerrarSesionBtn" (click)="cerrarSesion.emit()">
-            <i class="bi bi-box-arrow-right"></i> Salir
-          </button>
+<header>
+  <nav class="navbar navbar-expand-xl bg-body-tertiary border-bottom">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
+        <i class="bi bi-diagram-3-fill text-primary"></i> Editor BPMN
+      </a>
+      @if (usuario(); as u) {
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+                aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menuPrincipal">
+          <ul class="navbar-nav me-auto mb-2 mb-xl-0">
+            <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/procesos" routerLinkActive="active">Procesos</a></li>
+            <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/compartidos" routerLinkActive="active">Compartidos conmigo</a></li>
+            <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/roles" routerLinkActive="active">Roles de proceso</a></li>
+            <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/empresa" routerLinkActive="active">Mi empresa</a></li>
+            <li class="nav-item"><a class="nav-link text-nowrap" routerLink="/usuarios" routerLinkActive="active">Usuarios</a></li>
+          </ul>
+          <div class="d-flex align-items-center gap-3">
+            <span class="small text-end">
+              <strong id="usuarioNombre">{{ u.nombre }}</strong> · {{ u.empresaNombre }}<br>
+              <span class="badge text-bg-primary" id="usuarioRol">{{ u.rol }}</span>
+            </span>
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="cerrarSesionBtn" (click)="cerrarSesion.emit()">
+              <i class="bi bi-box-arrow-right"></i> Salir
+            </button>
+          </div>
         </div>
-      </div>
-    }
-  </div>
-</nav>
+      }
+    </div>
+  </nav>
+</header>

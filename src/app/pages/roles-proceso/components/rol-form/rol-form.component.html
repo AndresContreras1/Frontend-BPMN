@@ -18,7 +18,7 @@
     </div>
     <div class="col-12 d-flex justify-content-end gap-2">
       <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
-      <button type="submit" class="btn btn-primary" id="guardarRolBtn" [disabled]="guardando()">
+      <button type="submit" class="btn btn-primary" id="guardarRolBtn" [disabled]="guardando() || rolForm.invalid">
         @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Guardar
       </button>

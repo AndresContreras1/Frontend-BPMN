@@ -138,7 +138,7 @@ describe('UsuariosComponent (HU-02)', () => {
     html.querySelector<HTMLButtonElement>('.modal .btn-secondary')!.click();
     fixture.detectChanges();
     expect(html.querySelector('.modal')).toBeNull();
-    backend.expectNone({ method: 'PATCH', url: '/api/v1/usuarios/2/desactivar' });
+    backend.expectNone({ method: 'PUT', url: '/api/v1/usuarios/2/estado' });
   }));
 
   it('desactiva al confirmar y avisa que ya no puede entrar', fakeAsync(() => {
@@ -147,7 +147,9 @@ describe('UsuariosComponent (HU-02)', () => {
     fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#confirmarEliminarBtn')!.click();
 
-    backend.expectOne({ method: 'PATCH', url: '/api/v1/usuarios/2/desactivar' }).flush({ ...beto, activo: false });
+    const peticion2 = backend.expectOne({ method: 'PUT', url: '/api/v1/usuarios/2/estado' });
+    expect(peticion2.request.body).toEqual({ activo: false });
+    peticion2.flush({ ...beto, activo: false });
     recargar();
     expect(html.querySelector('#avisoUsuarios')!.textContent).toContain('ya no puede iniciar sesión');
   }));
@@ -155,7 +157,9 @@ describe('UsuariosComponent (HU-02)', () => {
   it('reactiva un usuario desactivado', fakeAsync(() => {
     crear('ADMINISTRADOR');
     html.querySelector<HTMLButtonElement>('#activarUsuarioBtn-3')!.click();
-    backend.expectOne({ method: 'PATCH', url: '/api/v1/usuarios/3/activar' }).flush({ ...carla, activo: true });
+    const peticion3 = backend.expectOne({ method: 'PUT', url: '/api/v1/usuarios/3/estado' });
+    expect(peticion3.request.body).toEqual({ activo: true });
+    peticion3.flush({ ...carla, activo: true });
     recargar();
     expect(html.querySelector('#avisoUsuarios')!.textContent).toContain('Carla quedó activo de nuevo');
   }));

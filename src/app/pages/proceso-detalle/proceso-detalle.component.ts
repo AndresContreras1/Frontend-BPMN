@@ -14,10 +14,11 @@ import { ProblemDetail } from '../../models/problem-detail.model';
 import { EstadoProceso, Proceso } from '../../models/proceso.model';
 import { ProcesoService } from '../../service/proceso.service';
 import { CompartirPanelComponent } from './components/compartir-panel/compartir-panel.component';
+import { DiagramaVistaComponent } from './components/diagrama-vista/diagrama-vista.component';
 import { HistorialTablaComponent } from './components/historial-tabla/historial-tabla.component';
 
 /**
- * Ficha del proceso (HU-07) con sus acciones: editar (HU-05), publicar o volver a borrador (HU-04),
+ * Ficha del proceso (HU-07) con su diagrama completo en solo lectura y sus acciones: editar (HU-05), publicar o volver a borrador (HU-04),
  * eliminar (HU-06), historial y compartir (HU-23). Un proceso compartido por otra empresa o eliminado
  * se muestra en solo lectura.
  */
@@ -25,7 +26,7 @@ import { HistorialTablaComponent } from './components/historial-tabla/historial-
   selector: 'app-proceso-detalle',
   imports: [
     DatePipe, RouterLink, PageTitleComponent, AlertaErrorComponent, ConfirmarModalComponent, EstadoBadgeComponent,
-    HistorialTablaComponent, CompartirPanelComponent,
+    HistorialTablaComponent, CompartirPanelComponent, DiagramaVistaComponent,
   ],
   templateUrl: './proceso-detalle.component.html',
 })

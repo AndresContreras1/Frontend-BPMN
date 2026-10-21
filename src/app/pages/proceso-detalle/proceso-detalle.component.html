@@ -16,7 +16,7 @@
   </div>
 }
 @if (proceso(); as p) {
-  <app-page-title [titulo]="p.nombre" [subtitulo]="p.categoria">
+  <app-page-title [titulo]="p.nombre" [subtitulo]="p.categoria" hu="HU-04 a HU-07, HU-23">
     <a class="btn btn-primary" [routerLink]="['/procesos', p.id, 'diagrama']" id="abrirDiagramaBtn">
       <i class="bi bi-diagram-3"></i> {{ editable() ? 'Editar diagrama' : 'Ver diagrama' }}
     </a>
@@ -74,6 +74,8 @@
       </div>
     </div>
   </div>
+
+  <app-diagrama-vista [procesoId]="p.id"></app-diagrama-vista>
 
   @if (p.propio) {
     <div class="row g-3">

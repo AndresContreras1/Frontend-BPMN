@@ -53,11 +53,11 @@ export class ProcesoService {
   }
 
   comparticion(id: number): Observable<Comparticion> {
-    return this.http.get<Comparticion>(`${this.url}/${id}/compartir`);
+    return this.http.get<Comparticion>(`${this.url}/${id}/comparticion`);
   }
 
   compartir(id: number, compartido: boolean, nitsEmpresas: string[]): Observable<Comparticion> {
-    return this.http.put<Comparticion>(`${this.url}/${id}/compartir`, { compartido, nitsEmpresas });
+    return this.http.put<Comparticion>(`${this.url}/${id}/comparticion`, { compartido, nitsEmpresas });
   }
 
   compartidosConmigo(paginacion: Paginacion): Observable<PageResponse<ProcesoCompartido>> {

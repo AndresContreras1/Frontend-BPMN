@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, debounceTime, finalize, of, switchMap } from 'rxjs';
 
 import { AlertaErrorComponent } from '../../components/alerta-error/alerta-error.component';
@@ -27,13 +27,15 @@ import { UsuarioService } from '../../service/usuario.service';
   ],
   templateUrl: './usuarios.component.html',
 })
-export class UsuariosComponent {
+export class UsuariosComponent implements OnInit {
   private readonly usuarioService = inject(UsuarioService);
   readonly sesion = inject(SesionStore);
   readonly roles = ROLES_ACCESO;
 
-  /** Nombre del usuario recién invitado (query param que deja el formulario). */
-  creado = input<string>();
+  private readonly route = inject(ActivatedRoute);
+
+  /** ?creado=<nombre>: aviso al volver de invitar un usuario (HU-02). */
+  creado = signal<string | null>(null);
 
   texto = signal('');
   page = signal(0);
@@ -81,6 +83,10 @@ export class UsuariosComponent {
     { initialValue: null },
   );
 
+  ngOnInit(): void {
+    this.creado.set(this.route.snapshot.queryParamMap.get('creado'));
+  }
+
   buscar(valor: string): void {
     this.texto.set(valor);
     this.page.set(0);
@@ -121,7 +127,7 @@ export class UsuariosComponent {
       return;
     }
     this.limpiarMensajes();
-    this.usuarioService.desactivar(usuario.id).subscribe({
+    this.usuarioService.cambiarEstado(usuario.id, false).subscribe({
       next: (u) => {
         this.aviso.set(`${u.nombre} quedó desactivado: ya no puede iniciar sesión.`);
         this.recargar.update((n) => n + 1);
@@ -132,7 +138,7 @@ export class UsuariosComponent {
 
   activar(usuario: Usuario): void {
     this.limpiarMensajes();
-    this.usuarioService.activar(usuario.id).subscribe({
+    this.usuarioService.cambiarEstado(usuario.id, true).subscribe({
       next: (u) => {
         this.aviso.set(`${u.nombre} quedó activo de nuevo.`);
         this.recargar.update((n) => n + 1);

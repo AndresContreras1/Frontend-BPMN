@@ -19,7 +19,7 @@
     </ol>
   </nav>
 
-  <app-page-title [titulo]="'Diagrama: ' + proceso.nombre" subtitulo="Pools, lanes, elementos, flujos de secuencia y mensajes">
+  <app-page-title [titulo]="'Diagrama: ' + proceso.nombre" hu="HU-07 a HU-16, HU-21 a HU-28" subtitulo="Pools, lanes, elementos, flujos de secuencia y mensajes">
     <app-estado-badge [estado]="proceso.estado" [activo]="proceso.activo"></app-estado-badge>
     @if (!store.editable()) {
       <span class="badge text-bg-secondary" id="soloLecturaBadge"><i class="bi bi-lock"></i> Solo lectura</span>
@@ -59,7 +59,7 @@
         <app-diagrama-svg [pools]="store.pools()" [nodos]="store.nodos()" [arcos]="store.arcos()" [mensajes]="store.mensajes()"
                           [advertencias]="store.advertencias()" [resaltado]="store.idResaltado()"
                           [arcoResaltado]="store.arcoSeleccionado()?.id ?? null" [mensajeResaltado]="store.mensajeSeleccionado()?.id ?? null"
-                          [origenConexion]="store.origenConexion()" [herramienta]="store.editable() ? store.herramienta() : 'seleccionar'"
+                          [origenConexion]="store.origenConexion()" [colocando]="store.editable() && store.herramienta() !== 'seleccionar'"
                           (clicLienzo)="alClicLienzo($event)" (clicNodo)="alClicNodo($event)"
                           (clicArco)="alClicArco($event)" (clicMensaje)="alClicMensaje($event)">
         </app-diagrama-svg>
@@ -92,7 +92,7 @@
             @case ('nuevo') {
               @if (store.seleccion(); as s) {
                 @if (s.tipo === 'nuevo') {
-                  <app-panel-elemento [titulo]="tituloNuevo(s.clase)" icono="bi-plus-circle" (cerrar)="cerrarPanel()">
+                  <app-panel-elemento [titulo]="tituloNuevo(s.clase)" [hu]="historia(s.clase)" icono="bi-plus-circle" (cerrar)="cerrarPanel()">
                     @switch (s.clase) {
                       @case ('ACTIVIDAD') {
                         <app-actividad-form [ubicacion]="s.ubicacion" [lanes]="lanesDe(s.ubicacion.poolId)"
@@ -121,7 +121,7 @@
             }
             @case ('nodo') {
               @if (store.nodoSeleccionado(); as nodo) {
-                <app-panel-elemento [titulo]="tituloNodo(nodo)" icono="bi-bounding-box" [puedeEliminar]="puedeEliminar()"
+                <app-panel-elemento [titulo]="tituloNodo(nodo)" [hu]="historia(nodo.tipo)" icono="bi-bounding-box" [puedeEliminar]="puedeEliminar()"
                                     (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
                   @switch (nodo.tipo) {
                     @case ('ACTIVIDAD') {
@@ -131,6 +131,9 @@
                     @case ('GATEWAY') {
                       <app-gateway-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
                                         [guardando]="guardando()" [problema]="problema()" (guardar)="guardarGateway($event)"></app-gateway-form>
+                      <app-salidas-gateway [salidas]="salidasGateway()" [nodos]="store.nodos()" [tipoGateway]="nodo.tipoGateway"
+                                           [editable]="store.editable()" [guardando]="guardando()"
+                                           (guardar)="guardarCondiciones($event)"></app-salidas-gateway>
                     }
                     @default {
                       <app-evento-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
@@ -144,6 +147,7 @@
               @if (store.mensajeSeleccionado(); as mensaje) {
                 <app-panel-elemento [titulo]="mensaje.direccion === 'RECEPCION' ? 'Recepción de mensaje' : (mensaje.tipoDestino ? 'Notificación externa' : 'Envío de mensaje')"
                                     [icono]="mensaje.direccion === 'RECEPCION' ? 'bi-envelope' : 'bi-envelope-fill'"
+                                    [hu]="historia(mensaje.tipoDestino ? 'EXTERNO' : mensaje.direccion)"
                                     [puedeEliminar]="puedeEliminar()" (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
                   <app-mensaje-form [mensaje]="mensaje" [pools]="store.pools()" [nodos]="store.nodos()" [editable]="store.editable()"
                                     [guardando]="guardando()" [problema]="problema()" (guardar)="guardarMensaje($event)"></app-mensaje-form>
@@ -155,7 +159,7 @@
             @case ('arco') {
               @if (store.seleccion(); as s) {
                 @if (s.tipo === 'arco') {
-                  <app-panel-elemento [titulo]="s.id === null ? 'Nuevo flujo de secuencia' : 'Flujo de secuencia'" icono="bi-arrow-right"
+                  <app-panel-elemento [titulo]="s.id === null ? 'Nuevo flujo de secuencia' : 'Flujo de secuencia'" [hu]="historia('ARCO')" icono="bi-arrow-right"
                                       [puedeEliminar]="puedeEliminar() && s.id !== null" (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
                     <app-arco-form [arco]="store.arcoSeleccionado()" [origenId]="s.origenId" [destinoId]="s.destinoId" [nodos]="store.nodos()"
                                    [editable]="store.editable()" [guardando]="guardando()" [problema]="problema()"
