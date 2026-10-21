@@ -1,0 +1,85 @@
+@if (cargando() && !store.diagrama()) {
+  <p class="text-body-secondary"><span class="spinner-border spinner-border-sm me-2"></span>Cargando el diagrama…</p>
+}
+
+@if (store.problemaCarga(); as error) {
+  <div class="text-center py-5" id="diagramaNoEncontrado">
+    <h1 class="h4">{{ error.status === 404 ? 'El proceso no existe' : error.title }}</h1>
+    <p class="text-body-secondary">{{ error.detail }}</p>
+    <a class="btn btn-primary" routerLink="/procesos">Volver a los procesos</a>
+  </div>
+}
+
+@if (store.proceso(); as proceso) {
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb small mb-2">
+      <li class="breadcrumb-item"><a routerLink="/procesos">Procesos</a></li>
+      <li class="breadcrumb-item"><a [routerLink]="['/procesos', proceso.id]">{{ proceso.nombre }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Diagrama</li>
+    </ol>
+  </nav>
+
+  <app-page-title [titulo]="'Diagrama: ' + proceso.nombre" subtitulo="Pools, lanes y elementos del proceso">
+    <app-estado-badge [estado]="proceso.estado" [activo]="proceso.activo"></app-estado-badge>
+    @if (!store.editable()) {
+      <span class="badge text-bg-secondary" id="soloLecturaBadge"><i class="bi bi-lock"></i> Solo lectura</span>
+    }
+  </app-page-title>
+
+  @if (store.editable() && !store.estructuraEditable()) {
+    <div class="alert alert-info small" id="estructuraRestringidaMsg">
+      <i class="bi bi-shield-lock"></i> El administrador restringió los cambios de pools y lanes de este proceso.
+    </div>
+  }
+  @if (aviso()) {
+    <div class="alert alert-success alert-dismissible py-2" id="avisoEditor">
+      {{ aviso() }}
+      <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
+    </div>
+  }
+  <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <app-estructura-panel [pools]="store.pools()" [editable]="store.estructuraEditable()" [seleccion]="store.seleccion()"
+                            (seleccionar)="store.seleccionar($event)" (moverLane)="moverLane($event)"
+                            (eliminarPool)="eliminarPool($event)" (eliminarLane)="eliminarLane($event)">
+      </app-estructura-panel>
+    </div>
+
+    <div class="col-lg-4">
+      @switch (store.seleccion()?.tipo) {
+        @case ('pool') {
+          <app-pool-form [pool]="store.poolSeleccionado()" [esAdministrador]="sesion.esAdministrador()"
+                         [guardando]="guardando()" [problema]="problema()"
+                         (guardar)="guardarPool($event)" (cambiarPermiso)="cambiarPermiso($event)" (cancelar)="cerrarPanel()">
+          </app-pool-form>
+        }
+        @case ('lane') {
+          @if (store.poolDeLane(); as pool) {
+            <app-lane-form [lane]="store.laneSeleccionada()" [pool]="pool" [roles]="store.roles()"
+                           [esAdministrador]="sesion.esAdministrador()" [guardando]="guardando()"
+                           (guardar)="guardarLane($event)" (cancelar)="cerrarPanel()">
+            </app-lane-form>
+          }
+        }
+        @default {
+          <div class="card">
+            <div class="card-body small text-body-secondary">
+              @if (store.estructuraEditable()) {
+                Elija un pool o una lane para editarlo, o agregue participantes al proceso.
+              } @else {
+                Consulta de la estructura: su usuario no puede cambiar pools ni lanes de este proceso.
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}
+
+<app-confirmar-modal [abierto]="confirmacion() !== null" [titulo]="confirmacion()?.titulo ?? ''"
+                     [mensaje]="confirmacion()?.mensaje ?? ''" textoConfirmar="Eliminar"
+                     (confirmar)="confirmar()" (cancelar)="confirmacion.set(null)">
+</app-confirmar-modal>

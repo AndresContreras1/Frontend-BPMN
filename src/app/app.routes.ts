@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { authGuard, invitadoGuard } from './core/guards/auth.guard';
 import { rolGuard } from './core/guards/rol.guard';
 import { CompartidosComponent } from './pages/compartidos/compartidos.component';
+import { ProcesoEditorPageComponent } from './pages/editor/proceso-editor-page/proceso-editor-page.component';
 import { LoginComponent } from './pages/login/login.component';
 import { MiEmpresaComponent } from './pages/mi-empresa/mi-empresa.component';
 import { NoEncontradoComponent } from './pages/no-encontrado/no-encontrado.component';
@@ -10,6 +11,7 @@ import { ProcesoDetalleComponent } from './pages/proceso-detalle/proceso-detalle
 import { ProcesoFormComponent } from './pages/proceso-form/proceso-form.component';
 import { ProcesosComponent } from './pages/procesos/procesos.component';
 import { RegistroEmpresaComponent } from './pages/registro-empresa/registro-empresa.component';
+import { RolesProcesoComponent } from './pages/roles-proceso/roles-proceso.component';
 import { UsuarioFormComponent } from './pages/usuario-form/usuario-form.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 
@@ -27,8 +29,13 @@ export const routes: Routes = [
   // HU-04 a HU-07: crear y editar solo administrador o editor; el lector consulta
   { path: 'procesos/nuevo', component: ProcesoFormComponent, canActivate: [authGuard, rolGuard], data: { roles: ['ADMINISTRADOR', 'EDITOR'] } },
   { path: 'procesos/editar/:id', component: ProcesoFormComponent, canActivate: [authGuard, rolGuard], data: { roles: ['ADMINISTRADOR', 'EDITOR'] } },
+  // Editor del diagrama: todos lo ven; cambiar exige administrador o editor (la API lo valida)
+  { path: 'procesos/:id/diagrama', component: ProcesoEditorPageComponent, canActivate: [authGuard] },
   { path: 'procesos/:id', component: ProcesoDetalleComponent, canActivate: [authGuard] },
   { path: 'procesos', component: ProcesosComponent, canActivate: [authGuard] },
+
+  // HU-17 a HU-20: catálogo de roles de proceso
+  { path: 'roles', component: RolesProcesoComponent, canActivate: [authGuard] },
 
   // HU-23: procesos de otras empresas en solo lectura
   { path: 'compartidos', component: CompartidosComponent, canActivate: [authGuard] },

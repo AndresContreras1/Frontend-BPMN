@@ -1,0 +1,78 @@
+<div class="d-flex flex-column gap-3" id="estructuraDiagrama">
+  @for (pool of pools(); track pool.id) {
+    <div class="card" [class.border-primary]="estaSeleccionado('pool', pool.id)">
+      <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <i class="bi {{ iconoTipo[pool.tipo] }} text-primary"></i>
+          <span class="fw-semibold ms-1">{{ pool.nombre }}</span>
+          <span class="badge text-bg-light border ms-2">{{ etiquetaTipo[pool.tipo] }}</span>
+          @if (pool.cajaNegra) {
+            <span class="badge text-bg-dark ms-1" title="Participante sin detalle interno">Caja negra</span>
+          }
+        </div>
+        @if (editable()) {
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-primary" (click)="seleccionar.emit({ tipo: 'pool', id: pool.id })"
+                    [id]="'editarPoolBtn-' + pool.id" [attr.aria-label]="'Editar pool ' + pool.nombre" title="Editar pool">
+              <i class="bi bi-pencil"></i>
+            </button>
+            @if (!pool.cajaNegra) {
+              <button type="button" class="btn btn-outline-primary" (click)="seleccionar.emit({ tipo: 'lane', id: null, poolId: pool.id })"
+                      [id]="'agregarLaneBtn-' + pool.id" title="Agregar lane">
+                <i class="bi bi-plus-lg"></i> Lane
+              </button>
+            }
+            @if (pool.tipo !== 'PROPIETARIO') {
+              <button type="button" class="btn btn-outline-danger" (click)="eliminarPool.emit(pool)"
+                      [id]="'eliminarPoolBtn-' + pool.id" [attr.aria-label]="'Eliminar pool ' + pool.nombre" title="Eliminar pool">
+                <i class="bi bi-trash"></i>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (pool.cajaNegra) {
+        <div class="card-body small text-body-secondary">Caja negra: se ve como participante, sin lanes ni elementos internos.</div>
+      } @else {
+        <ul class="list-group list-group-flush">
+          @for (lane of lanesOrdenadas(pool); track lane.id; let primera = $first; let ultima = $last) {
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                [class.active-lane]="estaSeleccionado('lane', lane.id)">
+              <span><i class="bi bi-distribute-vertical text-body-tertiary"></i> {{ lane.nombre }}</span>
+              @if (editable()) {
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-secondary" [disabled]="primera"
+                          (click)="moverLane.emit({ lane, direccion: -1 })" [attr.aria-label]="'Subir ' + lane.nombre" title="Subir">
+                    <i class="bi bi-arrow-up"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" [disabled]="ultima"
+                          (click)="moverLane.emit({ lane, direccion: 1 })" [attr.aria-label]="'Bajar ' + lane.nombre" title="Bajar">
+                    <i class="bi bi-arrow-down"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-primary" (click)="seleccionar.emit({ tipo: 'lane', id: lane.id, poolId: pool.id })"
+                          [id]="'editarLaneBtn-' + lane.id" [attr.aria-label]="'Cambiar rol de ' + lane.nombre" title="Cambiar rol">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger" (click)="eliminarLane.emit(lane)"
+                          [id]="'eliminarLaneBtn-' + lane.id" [attr.aria-label]="'Eliminar lane ' + lane.nombre" title="Eliminar lane">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              }
+            </li>
+          } @empty {
+            <li class="list-group-item small text-body-secondary">Sin lanes. Cada lane es un rol de proceso responsable de actividades.</li>
+          }
+        </ul>
+      }
+    </div>
+  }
+
+  @if (editable()) {
+    <button type="button" class="btn btn-outline-primary align-self-start" id="agregarPoolBtn"
+            (click)="seleccionar.emit({ tipo: 'pool', id: null })">
+      <i class="bi bi-plus-lg"></i> Agregar pool (participante)
+    </button>
+  }
+</div>

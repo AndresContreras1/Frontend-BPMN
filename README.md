@@ -72,7 +72,9 @@ src/app/
 | `/procesos/nuevo` | Crear proceso (nace en borrador con el pool de la empresa) | HU-04 |
 | `/procesos/editar/:id` | Editar nombre, descripción, categoría y estado, con control de versión | HU-04, HU-05 |
 | `/procesos/:id` | Ficha con publicar o volver a borrador, eliminar, historial de cambios y compartir por NIT | HU-04 a HU-07, HU-23 |
+| `/procesos/:id/diagrama` | Editor del diagrama: pools (participantes, caja negra), lanes por rol con orden, permisos de estructura | HU-21, HU-22, HU-24 |
 | `/compartidos` | Procesos que otras empresas compartieron, en solo lectura | HU-23 |
+| `/roles` | Catálogo de roles de proceso: crear, editar, ver en qué procesos se usa y eliminar si no está en uso | HU-17 a HU-20 |
 | `/usuarios` | Lista paginada con búsqueda y orden; el administrador cambia el rol y desactiva o reactiva | HU-02 |
 | `/usuarios/nuevo` | Invitar usuario con contraseña inicial y rol (solo administrador) | HU-02 |
 

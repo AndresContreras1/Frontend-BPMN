@@ -1,0 +1,39 @@
+<div class="card shadow-sm" id="usoRol">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-semibold"><i class="bi bi-diagram-2"></i> Uso de «{{ rol().nombre }}»</span>
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar.emit()"></button>
+  </div>
+  <div class="card-body">
+    @if (rol().descripcion) {
+      <p class="small">{{ rol().descripcion }}</p>
+    }
+    <h3 class="h6">Procesos con lanes de este rol</h3>
+    @if (rol().procesos.length) {
+      <ul class="small">
+        @for (p of rol().procesos; track p.id) {
+          <li><a [routerLink]="['/procesos', p.id]">{{ p.nombre }}</a></li>
+        }
+      </ul>
+      <p class="small text-warning-emphasis mb-3">
+        <i class="bi bi-lock"></i> Para eliminarlo, primero reasigne o retire esas lanes.
+      </p>
+    } @else {
+      <p class="small text-body-secondary mb-3">Ningún proceso lo usa: se puede eliminar.</p>
+    }
+
+    <h3 class="h6">Historial</h3>
+    @if (historial(); as cambios) {
+      <ul class="list-unstyled small mb-0">
+        @for (c of cambios; track c.id) {
+          <li class="mb-2">
+            <span class="text-body-secondary">{{ c.fecha | date: 'short' }} · {{ c.usuario }}</span><br>{{ c.detalle }}
+          </li>
+        } @empty {
+          <li class="text-body-secondary">Sin cambios registrados.</li>
+        }
+      </ul>
+    } @else {
+      <p class="small text-body-secondary mb-0">Cargando…</p>
+    }
+  </div>
+</div>

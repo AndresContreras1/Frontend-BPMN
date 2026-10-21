@@ -1,0 +1,90 @@
+<app-page-title titulo="Roles de proceso" subtitulo="Funciones responsables de las actividades; cada lane del diagrama usa uno">
+  @if (sesion.esAdministrador()) {
+    <button type="button" class="btn btn-primary" id="nuevoRolBtn" (click)="nuevo()">
+      <i class="bi bi-plus-lg"></i> Nuevo rol
+    </button>
+  }
+</app-page-title>
+
+@if (aviso()) {
+  <div class="alert alert-success alert-dismissible" id="avisoRoles">
+    {{ aviso() }}
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
+  </div>
+}
+<app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+<div class="row g-3">
+  <div [class]="editando() !== undefined || seleccionado() ? 'col-lg-8' : 'col-12'">
+    <div class="row g-2 mb-3">
+      <div class="col-md-6 col-lg-5">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="search" class="form-control" id="buscarRol" placeholder="Buscar por nombre" aria-label="Buscar por nombre"
+                 [value]="texto()" (input)="buscar($any($event.target).value)" />
+        </div>
+      </div>
+    </div>
+
+    <app-tabla-generica [columnas]="columnas" [orden]="orden()" (ordenar)="ordenar($event)"
+                        [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
+                        mensajeVacio="No hay roles de proceso. El administrador los crea antes de dibujar las lanes.">
+      @for (r of resultado()?.content ?? []; track r.id) {
+        <tr [class.table-active]="seleccionado()?.id === r.id || editando()?.id === r.id">
+          <td>
+            <span class="fw-semibold">{{ r.nombre }}</span>
+            @if (r.descripcion) {
+              <div class="small text-body-secondary">{{ r.descripcion }}</div>
+            }
+          </td>
+          <td>
+            @if (r.enUso) {
+              <span class="badge text-bg-info" [title]="'Usado en: ' + nombresProcesos(r)">
+                {{ r.procesos.length }} {{ r.procesos.length === 1 ? 'proceso' : 'procesos' }}
+              </span>
+            } @else {
+              <span class="badge text-bg-light border">Sin uso</span>
+            }
+          </td>
+          <td class="text-end text-nowrap">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verUso(r)" [id]="'verUsoRolBtn-' + r.id"
+                    [attr.aria-label]="'Ver uso de ' + r.nombre" title="Ver uso">
+              <i class="bi bi-diagram-2"></i>
+            </button>
+            @if (sesion.esAdministrador()) {
+              <button type="button" class="btn btn-outline-primary btn-sm ms-1" (click)="editar(r)" [id]="'editarRolBtn-' + r.id"
+                      [attr.aria-label]="'Editar ' + r.nombre" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm ms-1" (click)="porEliminar.set(r)" [id]="'eliminarRolBtn-' + r.id"
+                      [disabled]="!r.eliminable" [attr.aria-label]="'Eliminar ' + r.nombre"
+                      [title]="r.eliminable ? 'Eliminar' : 'Está asignado a lanes: no se puede eliminar'">
+                <i class="bi bi-trash"></i>
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </app-tabla-generica>
+
+    <app-paginador [page]="page()" [totalPages]="resultado()?.totalPages ?? 0"
+                   [totalElements]="resultado()?.totalElements ?? 0" (pageChange)="page.set($event)"></app-paginador>
+  </div>
+
+  @if (editando() !== undefined) {
+    <div class="col-lg-4">
+      <app-rol-form [rol]="editando() ?? null" [guardando]="guardando()" [problema]="problemaForm()"
+                    (guardar)="guardar($event)" (cancelar)="editando.set(undefined)"></app-rol-form>
+      <app-alerta-error class="d-block mt-2" [problema]="problemaForm()" (cerrar)="problemaForm.set(null)"></app-alerta-error>
+    </div>
+  } @else if (seleccionado()) {
+    <div class="col-lg-4">
+      <app-rol-uso [rol]="seleccionado()!" (cerrar)="seleccionado.set(null)"></app-rol-uso>
+    </div>
+  }
+</div>
+
+<app-confirmar-modal [abierto]="porEliminar() !== null" titulo="Eliminar rol de proceso"
+                     [mensaje]="'¿Eliminar el rol &quot;' + (porEliminar()?.nombre ?? '') + '&quot;? Ya no estará disponible para nuevas lanes.'"
+                     textoConfirmar="Eliminar" (confirmar)="confirmarEliminar()" (cancelar)="porEliminar.set(null)">
+</app-confirmar-modal>
