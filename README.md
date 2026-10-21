@@ -16,7 +16,7 @@ SPA en Angular del visor y editor de procesos BPMN multiempresa. Consume la API 
 ## Requisitos
 
 - Node.js 20 o superior y npm.
-- El backend corriendo en `http://localhost:8090` (ver su README).
+- El backend corriendo en `http://localhost:8090` (ver su README), o Docker para levantar todo junto (ver **Docker**).
 
 ## Ejecutar en desarrollo
 
@@ -33,15 +33,59 @@ La app queda en `http://localhost:4200`. Las peticiones a `/api` se reenvían al
 npm run test:ci
 ```
 
-Corre las pruebas unitarias una vez en Chrome headless y deja la cobertura en `coverage/`.
+Corre las pruebas unitarias una vez en Chrome headless y deja la cobertura en `coverage/` (161 pruebas; cerca de 88 % de líneas).
 
 ## Docker
+
+### Stack completo (PostgreSQL + backend + frontend)
+
+Con los dos repositorios clonados uno al lado del otro:
+
+```
+Desktop/
+├── Backend-BPMN/
+└── Frontend-BPMN/   ← aquí está compose.yaml
+```
+
+```bash
+cp .env.example .env
+```
+
+Cambie en `.env` la contraseña de la base de datos y, si quiere que los tokens sobrevivan a un reinicio, la clave JWT (`openssl rand -base64 64`). Luego:
+
+```bash
+docker compose up --build
+```
+
+| Servicio | Imagen | Acceso |
+|---|---|---|
+| `db` | `postgres:16` con volumen `pgdata` | solo red interna |
+| `backend` | `Backend-BPMN/Dockerfile` (Maven → JRE 17), perfil `prod,demo` | solo red interna (`backend:8090`) |
+| `frontend` | `Dockerfile` de este repositorio (Node 22 → nginx) | `http://localhost:8080` |
+
+- El navegador solo habla con nginx: la SPA, la API (`/api/`) y Swagger (`/swagger-ui/index.html`) salen del mismo origen, sin CORS.
+- El perfil `demo` carga las empresas, usuarios y procesos de demostración la primera vez (tabla de usuarios abajo).
+- `docker compose down` detiene todo; `docker compose down -v` borra también la base de datos.
+
+### Solo el frontend
 
 ```bash
 docker build -t frontend-bpmn .
 ```
 
 La imagen compila la SPA con Node y la sirve con nginx en el puerto 80. nginx resuelve las rutas de Angular con `index.html` y reenvía `/api/` al servicio `backend:8090`.
+
+### Verificación del stack completo
+
+Con `docker compose up --build` y PostgreSQL vacío (perfil `prod,demo`):
+
+- La colección de Postman del backend pasa completa **a través de nginx** (61 peticiones, 68 aserciones, 0 fallos):
+
+  ```bash
+  npx newman run ../Backend-BPMN/postman/BPMN-API.postman_collection.json -e ../Backend-BPMN/postman/local.postman_environment.json --env-var baseUrl=http://localhost:8080
+  ```
+
+- Recorrido de punta a punta en el navegador (`http://localhost:8080`): registrar una empresa nueva, crear sus roles de proceso, invitar un editor, crear un proceso, agregar lanes, modelar inicio, actividades y fin con las herramientas, conectar, validar, publicar, compartir por NIT con Facimus Demo y, entrando como `admin@demo.com`, verlo en **Compartidos conmigo** en solo lectura (la API responde 404 si la empresa invitada intenta editarlo).
 
 ## Estructura
 
@@ -96,4 +140,8 @@ El lienzo es SVG y se dibuja con funciones puras (`pages/editor/layout.ts`). No 
 | `admin@demo.com` | `admin123` | ADMINISTRADOR |
 | `editor@demo.com` | `editor123` | EDITOR |
 | `lector@demo.com` | `lector123` | LECTOR |
-| `admin@andina.com` | `admin123` | ADMINISTRADOR (otra empresa) |
+| `admin@andina.com` | `admin123` | ADMINISTRADOR (Comercial Andina, otra empresa) |
+| `editor@andina.com` | `editor123` | EDITOR (Comercial Andina) |
+| `lector@andina.com` | `lector123` | LECTOR (Comercial Andina) |
+
+Facimus Demo comparte "Solicitud de vacaciones" con Comercial Andina: entrando con `admin@andina.com` se ve en **Compartidos conmigo**, en solo lectura.
