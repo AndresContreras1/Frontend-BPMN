@@ -1,0 +1,202 @@
+<!-- Formulario reactivo del mensaje. Sirve para tres clases: envío (throw), recepción (catch) y notificación externa; cada bloque @if muestra solo lo que corresponde. -->
+<form class="row g-2" [formGroup]="mensajeForm" (ngSubmit)="handleSubmit()" novalidate id="mensajeForm">
+  <!-- Solo al crear una notificación externa: elegir si se modela como evento o como tarea. -->
+  @if (claseActual() === 'EXTERNO' && esNuevo()) {
+    <div class="col-12">
+      <label class="form-label small d-block">Se modela como</label>
+      <div class="btn-group btn-group-sm" role="group">
+        <input type="radio" class="btn-check" id="elementoEvento" value="EVENTO" formControlName="elemento" />
+        <label class="btn btn-outline-secondary" for="elementoEvento">Evento de envío</label>
+        <input type="radio" class="btn-check" id="elementoTarea" value="TAREA" formControlName="elemento" />
+        <label class="btn btn-outline-secondary" for="elementoTarea">Tarea de envío</label>
+      </div>
+    </div>
+  }
+
+  <div class="col-12">
+    <!-- Nombre del mensaje (obligatorio). -->
+    <label for="mensajeNombre" class="form-label small">Nombre del mensaje</label>
+    <input type="text" id="mensajeNombre" class="form-control form-control-sm" formControlName="nombre" placeholder="OrdenDeCompra"
+           [class.is-invalid]="mensajeForm.controls.nombre.touched && mensajeForm.controls.nombre.invalid" />
+    <app-campo-error [control]="mensajeForm.controls.nombre"></app-campo-error>
+    <!-- Ayuda: el envío y la recepción se emparejan por el nombre. -->
+    @if (claseActual() !== 'EXTERNO') {
+      <div class="form-text">El envío y la recepción se emparejan por el nombre del mensaje.</div>
+    }
+  </div>
+
+  <!-- Nombre de la tarea (solo si la notificación externa nueva es una tarea). -->
+  @if (esTarea() && esNuevo()) {
+    <div class="col-12">
+      <label for="mensajeTarea" class="form-label small">Nombre de la tarea</label>
+      <input type="text" id="mensajeTarea" class="form-control form-control-sm" formControlName="nombreTarea" placeholder="Enviar correo de aprobación" />
+    </div>
+  }
+
+  <!-- Variante del evento (una tarea no tiene variante). -->
+  @if (!esTarea()) {
+    <div class="col-12">
+      <label for="mensajeVariante" class="form-label small">Evento</label>
+      <select id="mensajeVariante" class="form-select form-select-sm" formControlName="variante">
+        <!-- Una opción por cada variante permitida. -->
+        @for (v of variantes(); track v.valor) {
+          <option [value]="v.valor">{{ v.texto }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  <!-- Pool que recibe: throw y externo lo necesitan; catch no. -->
+  @if (claseActual() !== 'CATCH') {
+    <div class="col-12">
+      <label for="mensajeDestino" class="form-label small">Pool que recibe</label>
+      <select id="mensajeDestino" class="form-select form-select-sm" formControlName="poolDestinoId">
+        <!-- Una opción por cada pool posible. -->
+        @for (p of poolsDestino(); track p.id) {
+          <option [ngValue]="p.id">{{ p.nombre }}{{ p.cajaNegra ? ' (caja negra)' : '' }}</option>
+        } @empty {
+          <!-- @empty: se muestra cuando no hay ningún pool destino posible. -->
+          <option [ngValue]="null" disabled>{{ claseActual() === 'EXTERNO' ? 'Agregue un pool de sistema externo (caja negra)' : 'Agregue otro pool al proceso' }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  <!-- Datos propios de la notificación externa. -->
+  @if (claseActual() === 'EXTERNO') {
+    <!-- Canal de envío. -->
+    <div class="col-6">
+      <label for="mensajeTipoDestino" class="form-label small">Canal</label>
+      <select id="mensajeTipoDestino" class="form-select form-select-sm" formControlName="tipoDestino">
+        <option value="CORREO">Correo</option>
+        <option value="SERVICIO_WEB">Servicio web</option>
+        <option value="COLA">Cola de mensajes</option>
+      </select>
+    </div>
+    <!-- Política si el envío falla. -->
+    <div class="col-6">
+      <label for="mensajePolitica" class="form-label small">Si falla</label>
+      <select id="mensajePolitica" class="form-select form-select-sm" formControlName="politicaFallo">
+        <option value="CONTINUAR">Continuar</option>
+        <option value="DERIVAR_A_ACTIVIDAD">Derivar a una actividad</option>
+        <option value="FINALIZAR_PROCESO">Finalizar el proceso</option>
+      </select>
+    </div>
+    <!-- Si la política es derivar, se pide la actividad que atiende el fallo. -->
+    @if (mensajeForm.controls.politicaFallo.value === 'DERIVAR_A_ACTIVIDAD') {
+      <div class="col-12">
+        <label for="mensajeManejo" class="form-label small">Actividad que atiende el fallo</label>
+        <select id="mensajeManejo" class="form-select form-select-sm" formControlName="actividadManejoErrorId">
+          <option [ngValue]="null" disabled>Elija la actividad…</option>
+          <!-- Una opción por cada actividad del pool. -->
+          @for (a of actividadesDelPool(); track a.id) {
+            <option [ngValue]="a.id">{{ a.nombre }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="col-12">
+      <!-- Momento opcional en que se envía. -->
+      <label for="mensajeMomento" class="form-label small">Momento <span class="text-body-secondary">(opcional)</span></label>
+      <input type="text" id="mensajeMomento" class="form-control form-control-sm" formControlName="momento"
+             placeholder="Después de actualizar los días de vacaciones" />
+    </div>
+  }
+
+  <!-- Datos propios de la recepción de mensaje. -->
+  @if (claseActual() === 'CATCH') {
+    <div class="col-12">
+      <!-- Casilla: el mensaje llega de fuera del diagrama. -->
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="mensajeOrigenExterno" formControlName="origenExterno" />
+        <label class="form-check-label small" for="mensajeOrigenExterno">Llega de fuera del diagrama (origen externo)</label>
+      </div>
+    </div>
+    <!-- Actividades que usan los datos recibidos (casillas). -->
+    @if (actividadesDelPool().length) {
+      <div class="col-12">
+        <span class="form-label small d-block">Actividades que usan los datos recibidos</span>
+        <!-- Una casilla por actividad: al cambiar, se marca o desmarca en la lista. $any evita el error de tipo del compilador al leer checked. -->
+        @for (a of actividadesDelPool(); track a.id) {
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" [id]="'usaDatos-' + a.id" [checked]="actividadesQueUsan().includes(a.id)"
+                   [disabled]="!editable()" (change)="alternarActividad(a.id, $any($event.target).checked)" />
+            <label class="form-check-label small" [for]="'usaDatos-' + a.id">{{ a.nombre }}</label>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- Clave de correlación opcional (solo al crear throw o catch). -->
+  @if (esNuevo() && claseActual() !== 'EXTERNO') {
+    <div class="col-12">
+      <label for="mensajeClave" class="form-label small">Clave de correlación <span class="text-body-secondary">(opcional)</span></label>
+      <input type="text" id="mensajeClave" class="form-control form-control-sm" formControlName="claveCorrelacion" placeholder="numeroOrden" />
+    </div>
+  }
+
+  <div class="col-12">
+    <!-- Contenido del mensaje: lista editable de campos (nombre y tipo de dato). -->
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="form-label small mb-0">Contenido (campos)</span>
+      <!-- Botón para agregar un campo. -->
+      @if (editable()) {
+        <button type="button" class="btn btn-link btn-sm p-0" id="agregarCampoBtn" (click)="agregarCampo()">
+          <i class="bi bi-plus-lg"></i> Campo
+        </button>
+      }
+    </div>
+    <!-- Una fila por campo: el nombre y el tipo se actualizan en la lista al cambiar. -->
+    @for (campo of campos(); track $index; let i = $index) {
+      <div class="input-group input-group-sm mt-1">
+        <input type="text" class="form-control" [value]="campo.nombre" placeholder="numeroSolicitud" [attr.aria-label]="'Nombre del campo ' + (i + 1)"
+               [disabled]="!editable()" (input)="cambiarCampo(i, { nombre: $any($event.target).value })" />
+        <select class="form-select tipo-dato" [value]="campo.tipoDato" [attr.aria-label]="'Tipo del campo ' + (i + 1)"
+                [disabled]="!editable()" (change)="cambiarCampo(i, { tipoDato: $any($event.target).value })">
+          <!-- Una opción por cada tipo de dato. -->
+          @for (t of tiposDato; track t) {
+            <option [value]="t" [selected]="t === campo.tipoDato">{{ t }}</option>
+          }
+        </select>
+        <!-- Botón para quitar el campo. -->
+        @if (editable()) {
+          <button type="button" class="btn btn-outline-danger" (click)="quitarCampo(i)" [attr.aria-label]="'Quitar campo ' + (i + 1)">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        }
+      </div>
+    } @empty {
+      <!-- @empty: aún no hay campos. -->
+      <p class="small text-body-secondary mb-0">Sin campos.</p>
+    }
+  </div>
+
+  <!-- Posición en el lienzo: solo se edita en un mensaje existente (al crear se usa el lugar del clic). -->
+  @if (!esNuevo()) {
+    <div class="col-6">
+      <label for="mensajePosX" class="form-label small">Posición X</label>
+      <input type="number" id="mensajePosX" class="form-control form-control-sm" formControlName="posX" min="0" max="10000" />
+    </div>
+    <div class="col-6">
+      <label for="mensajePosY" class="form-label small">Posición Y</label>
+      <input type="number" id="mensajePosY" class="form-control form-control-sm" formControlName="posY" min="0" max="10000" />
+    </div>
+  }
+
+  <!-- Error de validación propio del formulario. -->
+  @if (errorLocal()) {
+    <div class="col-12"><div class="alert alert-warning py-1 px-2 small mb-0" id="errorMensajeForm">{{ errorLocal() }}</div></div>
+  }
+
+  <!-- Botón Guardar: solo si se puede editar; deshabilitado mientras se guarda o si hay errores. -->
+  @if (editable()) {
+    <div class="col-12 d-flex justify-content-end mt-2">
+      <button type="submit" class="btn btn-primary btn-sm" id="guardarMensajeBtn" [disabled]="guardando() || mensajeForm.invalid">
+        <!-- Spinner mientras se guarda. -->
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+        Guardar
+      </button>
+    </div>
+  }
+</form>

@@ -1,0 +1,18 @@
+<!-- Barra de herramientas del editor. -->
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2" id="herramientasEditor" role="toolbar" aria-label="Herramientas del diagrama">
+  <!-- Un grupo de botones por cada fila de grupos. -->
+  @for (grupo of grupos; track $index) {
+    <div class="btn-group btn-group-sm" role="group">
+      <!-- Un botón por herramienta: azul si es la activa; aria-pressed lo indica a lectores de pantalla; al pulsarlo se avisa al padre. -->
+      @for (opcion of grupo; track opcion.valor) {
+        <button type="button" class="btn" [class.btn-primary]="herramienta() === opcion.valor"
+                [class.btn-outline-secondary]="herramienta() !== opcion.valor" [attr.aria-pressed]="herramienta() === opcion.valor"
+                [id]="'herramienta-' + opcion.valor" [title]="opcion.texto" (click)="cambiar.emit(opcion.valor)">
+          <i class="bi {{ opcion.icono }}"></i><span class="d-none d-xxl-inline ms-1">{{ opcion.texto }}</span>
+        </button>
+      }
+    </div>
+  }
+  <!-- Ayuda que explica qué hace el próximo clic. -->
+  <small class="text-body-secondary" id="ayudaHerramienta">{{ ayuda() }}</small>
+</div>

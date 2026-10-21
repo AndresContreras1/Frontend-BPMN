@@ -1,9 +1,18 @@
+<!-- Fila con el título a la izquierda y los botones (contenido proyectado) a la derecha -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div>
-    <h1 class="h3 mb-0">{{ titulo() }}</h1>
+    <h1 class="h3 mb-0">
+      {{ titulo() }}
+      <!-- Etiqueta con las historias de usuario que cubre la página, solo si se indicó -->
+      @if (hu()) {
+        <span class="badge rounded-pill text-bg-light border fw-normal align-middle" id="historiasPagina" title="Historias de usuario que cubre esta pantalla">{{ hu() }}</span>
+      }
+    </h1>
+    <!-- Subtítulo opcional -->
     @if (subtitulo()) {
       <p class="text-body-secondary mb-0">{{ subtitulo() }}</p>
     }
   </div>
+  <!-- ng-content: aquí aparece lo que el padre ponga dentro de <app-page-title>, normalmente botones -->
   <div class="d-flex gap-2"><ng-content /></div>
 </div>

@@ -1,0 +1,58 @@
+# Stack completo: PostgreSQL + backend (Spring Boot) + frontend (Angular servido por nginx).
+# Requiere el repositorio Backend-BPMN clonado al lado de este (ruta configurable con BACKEND_PATH).
+# Los valores salen del archivo .env (ver .env.example).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-procesos}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME:-procesos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [bpmn]
+
+  backend:
+    build: ${BACKEND_PATH:-../Backend-BPMN}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod,demo}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-procesos}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # El navegador habla solo con nginx (mismo origen); CORS queda para pruebas directas a la API
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_EXPIRATION_SECONDS: ${JWT_EXPIRATION_SECONDS:-1800}
+      # Base de PostgreSQL creada antes de las migraciones Flyway: true una sola vez para conservarla
+      FLYWAY_BASELINE_ON_MIGRATE: ${FLYWAY_BASELINE_ON_MIGRATE:-false}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-10}
+      RATE_LIMIT_REGISTRO: ${RATE_LIMIT_REGISTRO:-10}
+    # Sin puerto publicado: el frontend llega por la red interna (backend:8090)
+    expose:
+      - "8090"
+    networks: [bpmn]
+
+  frontend:
+    build: .
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    networks: [bpmn]
+
+volumes:
+  pgdata:
+
+networks:
+  bpmn:

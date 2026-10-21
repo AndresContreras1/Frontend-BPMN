@@ -1,0 +1,58 @@
+name: Build and Deploy with MicroK8s
+
+# Despliegue del curso: cada push a main publica la imagen en GHCR y la despliega en el microk8s del
+# servidor con el runner self-hosted "main". Mientras ese runner no esté registrado, el despliegue se salta:
+# se activa creando la variable del repositorio RUNNER_REGISTRADO=true (Settings → Variables → Actions).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    name: Build and Push Image to GHCR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Mostrar rama actual
+      run: "echo 'Rama actual: ${{ github.ref }}'"
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set OWNER_LC
+      run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Docker image
+      run: docker build -t ghcr.io/${OWNER_LC}/frontend-bpmn:latest .
+
+    - name: Push Docker image
+      run: docker push ghcr.io/${OWNER_LC}/frontend-bpmn:latest
+
+    - name: Print pushed image URL
+      run: 'echo "Imagen publicada: ghcr.io/${OWNER_LC}/frontend-bpmn:latest"'
+
+  deploy-onpremise:
+    name: Deploy on MicroK8s On-Premise
+    runs-on: main
+    needs: build-and-publish
+    if: vars.RUNNER_REGISTRADO == 'true'
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Apply Kubernetes deployment
+      run: sudo microk8s kubectl apply -f k8s/deployment.yaml
+    - name: Restart Kubernetes deployment
+      run: sudo microk8s kubectl rollout restart deployment/frontend-bpmn -n bpmn

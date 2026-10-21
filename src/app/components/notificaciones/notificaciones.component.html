@@ -1,0 +1,22 @@
+<!-- Contenedor fijo abajo a la derecha; aria-live hace que los lectores de pantalla lean los avisos nuevos -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+  <!-- Un aviso por cada notificación activa del servicio -->
+  @for (n of notificaciones.avisos(); track n.id) {
+    <div class="toast show align-items-center border-0 aparecer notificacion" role="status"
+         [class.text-bg-success]="n.tipo === 'exito'" [class.text-bg-danger]="n.tipo === 'error'"
+         [class.text-bg-primary]="n.tipo === 'info'">
+      <!-- Mensaje a la izquierda y botón de cerrar a la derecha -->
+      <div class="d-flex">
+        <!-- Ícono según el tipo (éxito, error, info) y el texto del aviso -->
+        <div class="toast-body">
+          <i class="bi me-2" [class.bi-check-circle-fill]="n.tipo === 'exito'"
+             [class.bi-exclamation-octagon-fill]="n.tipo === 'error'" [class.bi-info-circle-fill]="n.tipo === 'info'"></i>
+          {{ n.mensaje }}
+        </div>
+        <!-- Quita este aviso del servicio -->
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Cerrar aviso"
+                (click)="notificaciones.cerrar(n.id)"></button>
+      </div>
+    </div>
+  }
+</div>

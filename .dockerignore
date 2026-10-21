@@ -7,3 +7,6 @@ coverage/
 .vscode/
 .env
 README.md
+k8s/
+sonar-project.properties
+karma.conf.js

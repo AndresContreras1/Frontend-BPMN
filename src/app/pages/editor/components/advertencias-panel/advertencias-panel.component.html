@@ -1,0 +1,47 @@
+<!-- Panel de advertencias del validador. -->
+<div id="advertenciasPanel">
+  <!-- Encabezado: resumen de conteos y botón Validar. -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="small">
+      <!-- Sin advertencias: mensaje de éxito. Con advertencias: conteo de errores y avisos (con singular/plural). -->
+      @if (advertencias().length === 0) {
+        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Sin advertencias: el diagrama es coherente.</span>
+      } @else {
+        <span class="text-danger fw-semibold">{{ errores().length }} {{ errores().length === 1 ? 'error' : 'errores' }}</span> ·
+        <span class="text-warning-emphasis fw-semibold">{{ avisos().length }} {{ avisos().length === 1 ? 'aviso' : 'avisos' }}</span>
+      }
+    </span>
+    <!-- Botón Validar: avisa al padre con validar.emit(). -->
+    <button type="button" class="btn btn-outline-primary btn-sm" id="validarBtn" (click)="validar.emit()" [disabled]="validando()">
+      @if (validando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+      Validar
+    </button>
+  </div>
+
+  <!-- Recordatorio: los errores bloquean la publicación. -->
+  @if (errores().length) {
+    <p class="small text-body-secondary mb-1">Los errores impiden publicar el proceso.</p>
+  }
+  <!-- Lista de advertencias. -->
+  <ul class="list-group list-group-flush">
+    <!-- Una fila por advertencia (track $index: sin id propio, se usa la posición). -->
+    @for (a of advertencias(); track $index) {
+      <li class="list-group-item px-0 py-2 small d-flex gap-2">
+        <!-- Icono según severidad: rojo para error, amarillo para aviso. -->
+        <i class="bi" [class.bi-x-octagon-fill]="a.severidad === 'ERROR'" [class.text-danger]="a.severidad === 'ERROR'"
+           [class.bi-exclamation-triangle-fill]="a.severidad === 'AVISO'" [class.text-warning]="a.severidad === 'AVISO'"></i>
+        <!-- Mensaje y código de la regla incumplida. -->
+        <span class="flex-grow-1">
+          {{ a.mensaje }}
+          <span class="d-block text-body-tertiary"><code>{{ a.codigo }}</code></span>
+        </span>
+        <!-- Botón para ir al elemento en el diagrama; solo si la advertencia apunta a un nodo o arco. -->
+        @if (seUbica(a)) {
+          <button type="button" class="btn btn-link btn-sm p-0 align-self-start" (click)="elegir.emit(a)" title="Ver en el diagrama">
+            <i class="bi bi-crosshair"></i>
+          </button>
+        }
+      </li>
+    }
+  </ul>
+</div>

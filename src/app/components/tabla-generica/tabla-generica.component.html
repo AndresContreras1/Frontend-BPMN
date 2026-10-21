@@ -1,0 +1,43 @@
+<!-- Contenedor con scroll horizontal si la tabla no cabe -->
+<div class="table-responsive tarjeta">
+  <table class="table table-hover align-middle mb-0">
+    <!-- Encabezados generados a partir de columnas() -->
+    <thead class="table-light">
+      <tr>
+        <!-- Una celda de encabezado por columna -->
+        @for (columna of columnas(); track columna.titulo) {
+          <th scope="col" [class]="columna.clase ?? ''">
+            <!-- Columna ordenable: el título es un botón que pide ordenar -->
+            @if (columna.ordenable) {
+              <button type="button" class="btn btn-link btn-sm p-0 text-reset fw-semibold text-decoration-none"
+                      (click)="alternar(columna)" [attr.aria-label]="'Ordenar por ' + columna.titulo">
+                {{ columna.titulo }}
+                <!-- Flecha hacia arriba o abajo si esta es la columna con la que se ordena; si no, un ícono neutro -->
+                @if (campoOrden() === columna.clave) {
+                  <i class="bi" [class.bi-caret-up-fill]="direccion() === 'asc'" [class.bi-caret-down-fill]="direccion() === 'desc'"></i>
+                } @else {
+                  <i class="bi bi-chevron-expand text-body-tertiary"></i>
+                }
+              </button>
+            } @else {
+              {{ columna.titulo }}
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <!-- Las filas las pone el padre en el ng-content -->
+    <tbody>
+      <ng-content />
+      <!-- Mientras carga: una fila que ocupa todas las columnas con un spinner -->
+      @if (cargando()) {
+        <tr><td [attr.colspan]="columnas().length" class="text-center text-body-secondary py-4">
+          <span class="spinner-border spinner-border-sm me-2"></span>Cargando…
+        </td></tr>
+      <!-- Siguiente rama, si no hay datos: una fila con el mensaje de lista vacía -->
+      } @else if (vacia()) {
+        <tr><td [attr.colspan]="columnas().length" class="text-center text-body-secondary py-4">{{ mensajeVacio() }}</td></tr>
+      }
+    </tbody>
+  </table>
+</div>

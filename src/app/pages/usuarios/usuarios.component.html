@@ -1,0 +1,105 @@
+<!-- Titulo; el boton de invitar solo lo ve el administrador -->
+<app-page-title titulo="Usuarios" hu="HU-02" subtitulo="Personas de su empresa y su rol de acceso">
+  @if (sesion.esAdministrador()) {
+    <a class="btn btn-primary" routerLink="/usuarios/nuevo" id="invitarUsuarioBtn">
+      <i class="bi bi-person-plus"></i> Invitar usuario
+    </a>
+  }
+</app-page-title>
+
+<!-- Aviso al llegar desde el formulario de invitar (el nombre viene en la URL) -->
+@if (creado() && !aviso()) {
+  <div class="alert alert-success" id="usuarioCreadoMsg">Se invitó a <strong>{{ creado() }}</strong>. Ya puede iniciar sesión con la contraseña inicial.</div>
+}
+<!-- Mensaje de exito despues de cambiar rol o estado -->
+@if (aviso()) {
+  <div class="alert alert-success alert-dismissible" id="avisoUsuarios">
+    {{ aviso() }}
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
+  </div>
+}
+<!-- Error de la API -->
+<app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+<!-- Busqueda por nombre -->
+<div class="row g-2 mb-3">
+  <div class="col-md-5 col-lg-4">
+    <div class="input-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="search" class="form-control" id="buscarUsuario" placeholder="Buscar por nombre"
+             [value]="texto()" (input)="buscar($any($event.target).value)" aria-label="Buscar por nombre" />
+    </div>
+  </div>
+</div>
+
+<!-- Tabla generica: pinta encabezados, spinner y mensaje de vacio; las filas se pasan como contenido -->
+<app-tabla-generica [columnas]="columnas()" [orden]="orden()" (ordenar)="ordenar($event)"
+                    [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
+                    mensajeVacio="No hay usuarios que coincidan con la búsqueda.">
+  <!-- Una fila por usuario; los desactivados se ven atenuados -->
+  @for (u of resultado()?.content ?? []; track u.id) {
+    <tr class="fila-usuario" [class.text-body-tertiary]="!u.activo">
+      <!-- Nombre; la etiqueta "Usted" marca la fila del usuario con sesion -->
+      <td>
+        {{ u.nombre }}
+        @if (esYo(u)) { <span class="badge text-bg-light border ms-1">Usted</span> }
+      </td>
+      <td class="correo-usuario">{{ u.correo }}</td>
+      <!-- Rol de acceso: el administrador lo cambia con un select; los demas solo lo ven -->
+      <td>
+        @if (sesion.esAdministrador()) {
+          <!-- Deshabilitado para uno mismo (no puede cambiar su propio rol) y para cuentas desactivadas -->
+          <select class="form-select form-select-sm w-auto" [value]="u.rol" (change)="cambiarRol(u, $event)"
+                  [disabled]="esYo(u) || !u.activo" [attr.aria-label]="'Rol de ' + u.nombre"
+                  [title]="esYo(u) ? 'No puede cambiar su propio rol' : ''">
+            @for (rol of roles; track rol) {
+              <option [value]="rol" [selected]="rol === u.rol">{{ rol }}</option>
+            }
+          </select>
+        } @else {
+          <span class="badge text-bg-primary">{{ u.rol }}</span>
+        }
+      </td>
+      <!-- Estado de la cuenta -->
+      <td>
+        @if (u.activo) {
+          <span class="badge text-bg-success">Activo</span>
+        } @else {
+          <span class="badge text-bg-secondary">Desactivado</span>
+        }
+      </td>
+      <td class="small">{{ u.creadoEn | date: 'mediumDate' }}</td>
+      <!-- Columna de acciones, solo para el administrador (coincide con la columna extra del .ts) -->
+      @if (sesion.esAdministrador()) {
+        <td class="text-end">
+          <!-- Nadie puede desactivarse a si mismo -->
+          @if (!esYo(u)) {
+            @if (u.activo) {
+              <!-- Desactivar pide confirmacion en el modal -->
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="porDesactivar.set(u)"
+                      [id]="'desactivarUsuarioBtn-' + u.id">
+                <i class="bi bi-person-x"></i> Desactivar
+              </button>
+            } @else {
+              <!-- Activar se hace directo -->
+              <button type="button" class="btn btn-outline-success btn-sm" (click)="activar(u)"
+                      [id]="'activarUsuarioBtn-' + u.id">
+                <i class="bi bi-person-check"></i> Activar
+              </button>
+            }
+          }
+        </td>
+      }
+    </tr>
+  }
+</app-tabla-generica>
+
+<!-- Paginador; al cambiar de pagina se actualiza page y se vuelve a consultar -->
+<app-paginador [page]="page()" [totalPages]="resultado()?.totalPages ?? 0"
+               [totalElements]="resultado()?.totalElements ?? 0" (pageChange)="page.set($event)"></app-paginador>
+
+<!-- Modal de confirmacion para desactivar un usuario -->
+<app-confirmar-modal [abierto]="porDesactivar() !== null" titulo="Desactivar usuario"
+                     [mensaje]="'¿Desactivar a ' + (porDesactivar()?.nombre ?? '') + '? No podrá iniciar sesión hasta que lo active de nuevo.'"
+                     textoConfirmar="Desactivar" (confirmar)="confirmarDesactivar()" (cancelar)="porDesactivar.set(null)">
+</app-confirmar-modal>

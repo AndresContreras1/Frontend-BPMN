@@ -1,0 +1,37 @@
+<!-- Formulario de correlación (HU-28): la clave identifica a qué caso pertenece el mensaje. -->
+<form class="row g-2 border-top pt-2 mt-2" [formGroup]="correlacionForm" (ngSubmit)="handleSubmit()" novalidate id="correlacionForm">
+  <!-- Título y explicación. -->
+  <div class="col-12">
+    <span class="fw-semibold small"><i class="bi bi-key"></i> Correlación (HU-28)</span>
+    <p class="small text-body-secondary mb-1">Qué dato del mensaje identifica el caso que lo recibe.</p>
+  </div>
+  <!-- Clave de correlación: el datalist sugiere los campos del mensaje pero permite escribir otro. -->
+  <div class="col-12">
+    <label for="correlacionClave" class="form-label small">Clave</label>
+    <input type="text" id="correlacionClave" class="form-control form-control-sm" formControlName="claveCorrelacion"
+           list="camposDelMensaje" placeholder="numeroSolicitud"
+           [class.is-invalid]="correlacionForm.controls.claveCorrelacion.touched && correlacionForm.controls.claveCorrelacion.invalid" />
+    <!-- Lista de sugerencias enlazada al input por el atributo list. -->
+    <datalist id="camposDelMensaje">
+      <!-- Una sugerencia por cada campo del mensaje. -->
+      @for (campo of mensaje().campos; track campo.nombre) {
+        <option [value]="campo.nombre"></option>
+      }
+    </datalist>
+    <app-campo-error [control]="correlacionForm.controls.claveCorrelacion"></app-campo-error>
+  </div>
+  <!-- Qué hacer si ningún caso coincide con la clave. -->
+  <div class="col-12">
+    <label for="correlacionAccion" class="form-label small">Si no hay un caso que coincida</label>
+    <select id="correlacionAccion" class="form-select form-select-sm" formControlName="accionSinCaso">
+      <option value="DESCARTAR">Descartar el mensaje</option>
+      <option value="INICIAR_CASO_NUEVO">Iniciar un caso nuevo</option>
+    </select>
+  </div>
+  <!-- Botón de guardar: solo si se puede editar. -->
+  @if (editable()) {
+    <div class="col-12 d-flex justify-content-end">
+      <button type="submit" class="btn btn-outline-primary btn-sm" id="guardarCorrelacionBtn" [disabled]="guardando() || correlacionForm.invalid">Guardar correlación</button>
+    </div>
+  }
+</form>

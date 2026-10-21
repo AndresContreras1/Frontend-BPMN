@@ -1,0 +1,68 @@
+# Despliegue del frontend en Kubernetes (microk8s del curso): Deployment + Service + Ingress.
+# Usa el namespace bpmn y el secret ghcr-secret que se crean con el backend (ver el README de Backend-BPMN).
+# nginx sirve la SPA; la API la atiende el Service "backend" del mismo namespace.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-bpmn
+  namespace: bpmn
+  labels:
+    app: frontend-bpmn
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend-bpmn
+  template:
+    metadata:
+      labels:
+        app: frontend-bpmn
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: frontend-bpmn
+          image: ghcr.io/andrescontreras1/frontend-bpmn:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-bpmn
+  namespace: bpmn
+spec:
+  selector:
+    app: frontend-bpmn
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+# La raíz del dominio del grupo va al frontend; /api, /swagger-ui y /v3/api-docs los toma el Ingress del
+# backend (gana la ruta más específica). Cambiar el host por el subdominio asignado al grupo.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-bpmn
+  namespace: bpmn
+spec:
+  ingressClassName: public
+  rules:
+    - host: bpmn.inphotech.co
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-bpmn
+                port:
+                  number: 80

@@ -1,28 +1,263 @@
-// Variables de Bootstrap primero, luego estilos propios
+// Tema propio: primero las variables de Bootstrap (Sass), luego Bootstrap y al final los estilos propios.
+// Así todos los componentes toman los colores, radios y sombras del proyecto y no los de por defecto.
+
+// ---------- Colores del tema (reemplazan los de Bootstrap) ----------
+// Verde menta medio: el color de la marca en botones, enlaces, navbar y selección del lienzo
+$primary: #2a9d78;
+$secondary: #64748b;
+$success: #2f9e44;
+$info: #1c9bb5;
+$warning: #f59f00;
+$danger: #e03131;
+$light: #f1f5f9;
+$dark: #1e293b;
+
+// ---------- Fondo, texto, bordes y sombras ----------
+// Color de fondo y de texto de toda la página
+$body-bg: #f3f8f6;
+$body-color: #1f2937;
+// Peso de la letra en los títulos
+$headings-font-weight: 600;
+// Redondeo de las esquinas (normal, pequeño y grande)
+$border-radius: .5rem;
+$border-radius-sm: .375rem;
+$border-radius-lg: .75rem;
+// Activa las sombras de Bootstrap
+$enable-shadows: true;
+// El menta es claro: con 3 (en vez de 4.5) Bootstrap mantiene el texto blanco sobre los botones primarios
+$min-contrast-ratio: 3;
+// Estilo de las tarjetas (card): borde, fondo del encabezado y sombra
+$card-border-color: rgba(15, 23, 42, .08);
+$card-cap-bg: #fff;
+$card-box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 2px 6px rgba(15, 23, 42, .05);
+// Grosor del resplandor al enfocar inputs y botones
+$input-btn-focus-width: .2rem;
+// Botones planos, sin sombra
+$btn-box-shadow: none;
+// Colores de los enlaces de la navbar oscura (normal y al pasar el mouse)
+$navbar-dark-color: rgba(255, 255, 255, .8);
+$navbar-dark-hover-color: #fff;
+
+// Se importa Bootstrap después de definir las variables para que las tome
+@import "bootstrap/scss/bootstrap";
+
+// Variables CSS propias que usan los estilos del diagrama y la marca
 :root {
-  --bs-primary: #1f6feb;
-  --bs-primary-rgb: 31, 111, 235;
+  // Color de los bordes de las formas del diagrama
   --bpmn-borde: #24292f;
+  // Relleno de las actividades
   --bpmn-actividad: #ffffff;
+  // Relleno de un pool de caja negra
   --bpmn-pool: #f6f8fa;
+  // Relleno de las lanes
   --bpmn-lane: #ffffff;
-  --bpmn-seleccion: #1f6feb;
+  // Color del elemento seleccionado (el mismo $primary)
+  --bpmn-seleccion: #{$primary};
+  // Color de los elementos con error
   --bpmn-error: #cf222e;
+  // Color de los elementos con aviso
   --bpmn-aviso: #bf8700;
+  // Degradado de la marca (fondo de la bienvenida, barra de carga)
+  --degradado-marca: linear-gradient(135deg, #1e8466 0%, #{$primary} 55%, #4fc29c 100%);
 }
 
-body {
-  background-color: #f3f4f6;
-}
-
+// Tarjeta blanca con borde, esquinas redondeadas y sombra suave
 .tarjeta {
   background: #fff;
-  border: 1px solid #d0d7de;
-  border-radius: 0.5rem;
+  border: 1px solid $card-border-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $card-box-shadow;
   padding: 1.25rem;
 }
 
+// Celdas de la tabla de procesos alineadas verticalmente al centro
 .tabla-procesos td,
 .tabla-procesos th {
   vertical-align: middle;
+}
+
+// Lane abierta en el panel del editor
+.active-lane {
+  background-color: var(--bs-primary-bg-subtle);
+}
+
+// ---------- Marca, tarjetas y animaciones ----------
+// Fondo con el degradado de la marca y texto blanco
+.fondo-marca {
+  background: var(--degradado-marca);
+  color: #fff;
+}
+
+// Círculo que contiene un ícono (centrado con flex)
+.icono-circulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  // Evita que el círculo se aplaste dentro de un contenedor flex
+  flex-shrink: 0;
+}
+
+// Círculo con las iniciales del usuario (se ve en la navbar)
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: .85rem;
+  background: rgba(255, 255, 255, .2);
+  color: #fff;
+}
+
+// Tarjeta que se puede pulsar: se eleva un poco al pasar el mouse
+.tarjeta-interactiva {
+  transition: transform .15s ease, box-shadow .15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+// Entrada suave del contenido de cada página
+// Animación: parte transparente y 6px más abajo, y termina visible en su lugar
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Clase que aplica la animación anterior a un elemento
+.aparecer {
+  animation-name: aparecer;
+  animation-duration: .35s;
+  animation-timing-function: ease-out;
+}
+
+// Barra de carga global: se mueve de izquierda a derecha mientras hay peticiones en curso
+// Animación: la barrita pasa de fuera por la izquierda a fuera por la derecha
+@keyframes avanzar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+// Franja delgada fija en la parte de arriba de la pantalla, por encima de la navbar
+.barra-carga {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  // Oculta la parte de la barrita que sale del contenedor
+  overflow: hidden;
+  z-index: $zindex-fixed + 10;
+
+  // La barrita que se mueve, con el degradado de la marca
+  span {
+    display: block;
+    width: 40%;
+    height: 100%;
+    background: var(--degradado-marca);
+    animation-name: avanzar;
+    animation-duration: 1.1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+  }
+}
+
+// Accesibilidad: si el usuario pidió menos movimiento en su sistema, se quitan las animaciones
+@media (prefers-reduced-motion: reduce) {
+  .aparecer,
+  .barra-carga span {
+    animation: none;
+  }
+}
+
+// "lunes, 19 de octubre" → "Lunes, 19 de octubre": solo la primera letra en mayúscula
+.primera-mayuscula::first-letter {
+  text-transform: uppercase;
+}
+
+// El lienzo se adapta al ancho disponible (página de bienvenida)
+.lienzo-adaptable .lienzo-bpmn {
+  width: 100%;
+  height: auto;
+}
+
+// ---------- Lienzo del diagrama (SVG) ----------
+// Caja con scroll que contiene el lienzo; si el diagrama es grande, se desplaza dentro de ella
+.contenedor-lienzo {
+  overflow: auto;
+  max-height: 72vh;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 0.5rem;
+}
+
+// El SVG del diagrama; todo lo de adentro se estiliza aquí porque el SVG se genera en componentes distintos
+.lienzo-bpmn {
+  display: block;
+  font-family: var(--bs-body-font-family);
+  // Evita seleccionar el texto del diagrama al arrastrar
+  user-select: none;
+
+  // Cursor de cruz mientras se está colocando un elemento nuevo
+  &.colocando { cursor: crosshair; }
+
+  // Pools: rectángulo del participante, variante caja negra y variante con error
+  .pool { fill: var(--bpmn-lane); stroke: var(--bpmn-borde); stroke-width: 1.5; }
+  .pool.caja-negra { fill: var(--bpmn-pool); }
+  .pool.con-error { stroke: var(--bpmn-error); stroke-width: 2.5; }
+  // Líneas que separan pools y lanes
+  .separador, .separador-lane { stroke: var(--bpmn-borde); stroke-width: 1; }
+  // Textos del pool y de las lanes
+  .pool-nombre, .pool-nombre-centro { font-size: 13px; font-weight: 600; text-anchor: middle; dominant-baseline: middle; }
+  .pool-detalle { font-size: 11px; fill: #57606a; text-anchor: middle; }
+  .lane-nombre { font-size: 12px; text-anchor: middle; dominant-baseline: middle; fill: #24292f; }
+  .lane-nombre.sin-lane { fill: #8c959f; font-style: italic; }
+
+  // Nodos (actividades, gateways, eventos): forma base, y variantes de inicio y fin
+  .nodo { cursor: pointer; }
+  .nodo .forma { fill: var(--bpmn-actividad); stroke: var(--bpmn-borde); stroke-width: 1.8; }
+  .nodo .forma.evento-inicio { stroke: #1a7f37; stroke-width: 1.8; }
+  .nodo .forma.evento-fin { stroke: #cf222e; stroke-width: 4; }
+  // Detalles dibujados dentro de las formas (marcas del gateway, círculos internos)
+  .nodo .forma-interna { fill: none; stroke: var(--bpmn-borde); stroke-width: 1.2; }
+  .nodo .marca { stroke: var(--bpmn-borde); stroke-width: 3; fill: none; stroke-linecap: round; }
+  .nodo .marca-circulo { fill: none; stroke: var(--bpmn-borde); stroke-width: 3; }
+  // Textos e íconos de los nodos (los íconos usan la fuente bootstrap-icons)
+  .nodo .texto { font-size: 11.5px; text-anchor: middle; dominant-baseline: middle; }
+  .nodo .texto-externo { font-size: 11px; text-anchor: middle; fill: #24292f; }
+  .nodo .icono, .nodo .sobre { font-family: bootstrap-icons; font-size: 13px; fill: #57606a; }
+  .nodo .sobre { text-anchor: middle; dominant-baseline: middle; font-size: 14px; fill: none; stroke: var(--bpmn-borde); stroke-width: 0.6; }
+  .nodo .sobre.sobre-lleno { fill: var(--bpmn-borde); stroke: none; }
+  // Estados del nodo: mouse encima, con aviso, con error, seleccionado y origen de una conexión
+  .nodo:hover .forma { stroke: var(--bpmn-seleccion); }
+  .nodo.con-aviso .forma { stroke: var(--bpmn-aviso); stroke-dasharray: 5 3; }
+  .nodo.con-error .forma { stroke: var(--bpmn-error); stroke-width: 3; }
+  .nodo.seleccionado .forma { stroke: var(--bpmn-seleccion); stroke-width: 3.5; }
+  .nodo.origen-conexion .forma { fill: #dff5ed; stroke: var(--bpmn-seleccion); }
+
+  // Zona invisible y ancha alrededor de las líneas para que sea fácil hacer clic en ellas
+  .zona-clic { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
+  // Arcos (flujos de secuencia): línea, con error, seleccionado y etiqueta
+  .arco .linea { fill: none; stroke: var(--bpmn-borde); stroke-width: 1.6; }
+  .arco.con-error .linea { stroke: var(--bpmn-error); }
+  .arco.seleccionado .linea { stroke: var(--bpmn-seleccion); stroke-width: 2.6; }
+  .arco .etiqueta { font-size: 11px; font-weight: 600; fill: #24292f; }
+
+  // Flujos de mensaje: línea punteada, seleccionado, etiqueta y etiqueta de correlación
+  .flujo-mensaje .linea { fill: none; stroke: #57606a; stroke-width: 1.4; stroke-dasharray: 6 4; }
+  .flujo-mensaje.seleccionado .linea { stroke: var(--bpmn-seleccion); stroke-width: 2.4; }
+  .flujo-mensaje .etiqueta { font-size: 11px; fill: #57606a; }
+  .flujo-mensaje .etiqueta-correlacion { font-size: 10.5px; fill: #8250df; }
+
+  // Puntas de flecha: sólida (secuencia) y hueca (mensaje)
+  .punta-solida { fill: var(--bpmn-borde); }
+  .punta-hueca { fill: #fff; stroke: #57606a; stroke-width: 1.2; }
 }

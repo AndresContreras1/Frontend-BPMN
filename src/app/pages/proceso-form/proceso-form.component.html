@@ -1,0 +1,77 @@
+<div class="d-flex justify-content-center">
+  <div class="col-xl-7 col-lg-9 col-sm-12">
+    <!-- Titulo y subtitulo cambian segun se cree o se edite -->
+    <app-page-title [titulo]="isEdit ? 'Editar proceso' : 'Nuevo proceso'" [hu]="isEdit ? 'HU-05' : 'HU-04'"
+                    [subtitulo]="isEdit ? 'Cambie los datos o publique el proceso' : 'El proceso nace en borrador con el pool de su empresa'">
+    </app-page-title>
+
+    <!-- Aviso cuando el proceso no se puede modificar (compartido o eliminado) -->
+    @if (soloLectura()) {
+      <div class="alert alert-info" id="procesoSoloLecturaMsg"><i class="bi bi-lock"></i> {{ soloLectura() }}</div>
+    }
+
+    <div class="card shadow-sm">
+      <!-- Spinner mientras se carga el proceso a editar -->
+      @if (cargando()) {
+        <div class="card-body text-center text-body-secondary"><span class="spinner-border spinner-border-sm me-2"></span>Cargando…</div>
+      }
+      <!-- novalidate desactiva la validacion nativa del navegador (se usa la de Angular); d-none oculta el form mientras carga -->
+      <form class="p-3 row g-3" [formGroup]="procesoForm" (ngSubmit)="handleSubmit()" novalidate [class.d-none]="cargando()">
+        <!-- Error general devuelto por la API -->
+        <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+        <!-- Campo nombre (obligatorio, maximo 120) -->
+        <div class="col-md-7">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input type="text" id="nombre" class="form-control" formControlName="nombre" placeholder="Solicitud de vacaciones"
+                 [class.is-invalid]="procesoForm.controls.nombre.touched && procesoForm.controls.nombre.invalid" />
+          <app-campo-error [control]="procesoForm.controls.nombre"></app-campo-error>
+        </div>
+
+        <!-- Campo categoria (obligatorio, maximo 60); el datalist sugiere las categorias que ya existen -->
+        <div class="col-md-5">
+          <label for="categoria" class="form-label">Categoría</label>
+          <input type="text" id="categoria" class="form-control" formControlName="categoria" list="categoriasExistentes"
+                 placeholder="Talento humano"
+                 [class.is-invalid]="procesoForm.controls.categoria.touched && procesoForm.controls.categoria.invalid" />
+          <datalist id="categoriasExistentes">
+            @for (c of categorias(); track c) {
+              <option [value]="c"></option>
+            }
+          </datalist>
+          <app-campo-error [control]="procesoForm.controls.categoria"></app-campo-error>
+        </div>
+
+        <!-- Campo descripcion (opcional, maximo 500) con contador de caracteres -->
+        <div class="col-12">
+          <label for="descripcion" class="form-label">Descripción <span class="text-body-secondary">(opcional)</span></label>
+          <textarea id="descripcion" class="form-control" rows="3" formControlName="descripcion"
+                    [class.is-invalid]="procesoForm.controls.descripcion.touched && procesoForm.controls.descripcion.invalid"></textarea>
+          <div class="form-text">{{ procesoForm.controls.descripcion.value?.length ?? 0 }} / 500</div>
+          <app-campo-error [control]="procesoForm.controls.descripcion"></app-campo-error>
+        </div>
+
+        <!-- El estado solo se elige al editar; al crear siempre nace en borrador -->
+        @if (isEdit) {
+          <div class="col-md-5">
+            <label for="estado" class="form-label">Estado</label>
+            <select id="estado" class="form-select" formControlName="estado">
+              <option value="BORRADOR">Borrador</option>
+              <option value="PUBLICADO">Publicado</option>
+            </select>
+            <div class="form-text">Para publicar, el diagrama debe estar completo y sin errores.</div>
+          </div>
+        }
+
+        <!-- Botones: cancelar vuelve al detalle (o al listado) y guardar se deshabilita mientras envia, en solo lectura o con el form invalido -->
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <a class="btn btn-secondary" [routerLink]="isEdit ? ['/procesos', procesoId] : ['/procesos']">Cancelar</a>
+          <button type="submit" class="btn btn-primary" id="guardarProcesoBtn" [disabled]="enviando() || !!soloLectura() || procesoForm.invalid">
+            @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            {{ isEdit ? 'Guardar cambios' : 'Crear proceso' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

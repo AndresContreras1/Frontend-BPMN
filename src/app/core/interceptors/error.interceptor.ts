@@ -14,10 +14,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const sesion = inject(SesionStore);
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
+      // 401 = no autenticado; se excluye el login porque ahí significa "credenciales incorrectas"
       if (err.status === 401 && !req.url.endsWith('/auth/login')) {
+        // Se limpia la sesión local y se manda al login avisando que la sesión expiró
         sesion.cerrar();
         router.navigate(['/login'], { queryParams: { expirada: true } });
       }
+      // El error se vuelve a lanzar para que quien hizo la petición también pueda manejarlo
       return throwError(() => err);
     }),
   );

@@ -1,0 +1,43 @@
+<!-- Rectángulo del pool; cambia de estilo si es caja negra o tiene error -->
+<svg:rect class="pool" [class.caja-negra]="layout().pool.cajaNegra" [class.con-error]="severidad() === 'ERROR'"
+          [attr.data-pool]="layout().pool.id"
+          [attr.x]="layout().x" [attr.y]="layout().y" [attr.width]="layout().ancho" [attr.height]="layout().alto" />
+
+<!-- Caja negra: pool sin detalle interno, solo se muestra su nombre y una leyenda -->
+@if (layout().pool.cajaNegra) {
+  <!-- Nombre centrado en el rectángulo -->
+  <svg:text class="pool-nombre-centro" [attr.x]="layout().x + layout().ancho / 2" [attr.y]="layout().y + layout().alto / 2 - 6">
+    {{ layout().pool.nombre }}
+  </svg:text>
+  <!-- Leyenda "caja negra" justo debajo del nombre -->
+  <svg:text class="pool-detalle" [attr.x]="layout().x + layout().ancho / 2" [attr.y]="layout().y + layout().alto / 2 + 14">
+    caja negra
+  </svg:text>
+<!-- Siguiente rama, pool normal: franja con el nombre vertical y sus lanes -->
+} @else {
+  <!-- Línea vertical que separa la etiqueta del pool del resto -->
+  <svg:line class="separador" [attr.x1]="layout().x + anchoEtiquetaPool" [attr.y1]="layout().y"
+            [attr.x2]="layout().x + anchoEtiquetaPool" [attr.y2]="layout().y + layout().alto" />
+  <!-- Nombre del pool, girado -90 grados y centrado en su franja de etiqueta -->
+  <svg:text class="pool-nombre" [attr.x]="layout().x + anchoEtiquetaPool / 2" [attr.y]="layout().y + layout().alto / 2"
+            [attr.transform]="rotar(layout().x + anchoEtiquetaPool / 2, layout().y + layout().alto / 2)">
+    {{ layout().pool.nombre }}
+  </svg:text>
+
+  <!-- Una franja por cada lane (o una "Sin lane" si hay elementos sin lane) -->
+  @for (franja of layout().franjas; track $index; let primera = $first) {
+    <!-- Línea horizontal entre lanes; la primera no la necesita porque ya está el borde del pool -->
+    @if (!primera) {
+      <svg:line class="separador-lane" [attr.x1]="franja.x" [attr.y1]="franja.y" [attr.x2]="franja.x + franja.ancho" [attr.y2]="franja.y" />
+    }
+    <!-- Línea vertical que separa la etiqueta de la lane del contenido -->
+    <svg:line class="separador" [attr.x1]="franja.x + anchoEtiquetaLane" [attr.y1]="franja.y"
+              [attr.x2]="franja.x + anchoEtiquetaLane" [attr.y2]="franja.y + franja.alto" />
+    <!-- Nombre de la lane girado -90 grados; si es "Sin lane" se pinta distinto -->
+    <svg:text class="lane-nombre" [class.sin-lane]="!franja.lane"
+              [attr.x]="franja.x + anchoEtiquetaLane / 2" [attr.y]="franja.y + franja.alto / 2"
+              [attr.transform]="rotar(franja.x + anchoEtiquetaLane / 2, franja.y + franja.alto / 2)">
+      {{ franja.nombre }}
+    </svg:text>
+  }
+}

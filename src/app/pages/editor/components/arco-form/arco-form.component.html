@@ -1,0 +1,56 @@
+<!-- Formulario reactivo del arco (flujo de secuencia). -->
+<form class="row g-2" [formGroup]="arcoForm" (ngSubmit)="handleSubmit()" novalidate id="arcoForm">
+  <!-- Origen del flujo: se puede elegir cualquier nodo salvo los eventos de fin. -->
+  <div class="col-12">
+    <label for="arcoOrigen" class="form-label small">Desde</label>
+    <select id="arcoOrigen" class="form-select form-select-sm" formControlName="origenId">
+      <option [ngValue]="null" disabled>Elija el origen…</option>
+      <!-- Una opción por cada origen posible. -->
+      @for (n of origenes(); track n.id) {
+        <option [ngValue]="n.id">{{ nombreDeNodo(n) }}</option>
+      }
+    </select>
+    <app-campo-error [control]="arcoForm.controls.origenId"></app-campo-error>
+  </div>
+  <!-- Destino del flujo: solo nodos del mismo pool, distintos del origen y que no sean inicio. -->
+  <div class="col-12">
+    <label for="arcoDestino" class="form-label small">Hacia</label>
+    <select id="arcoDestino" class="form-select form-select-sm" formControlName="destinoId">
+      <option [ngValue]="null" disabled>Elija el destino…</option>
+      <!-- Una opción por cada destino posible. -->
+      @for (n of destinos(); track n.id) {
+        <option [ngValue]="n.id">{{ nombreDeNodo(n) }}</option>
+      }
+    </select>
+    <app-campo-error [control]="arcoForm.controls.destinoId"></app-campo-error>
+  </div>
+  <!-- Etiqueta opcional que se dibuja sobre la flecha. -->
+  <div class="col-12">
+    <label for="arcoEtiqueta" class="form-label small">Etiqueta <span class="text-body-secondary">(opcional)</span></label>
+    <input type="text" id="arcoEtiqueta" class="form-control form-control-sm" formControlName="etiqueta" placeholder="Sí"
+           [class.is-invalid]="arcoForm.controls.etiqueta.touched && arcoForm.controls.etiqueta.invalid" />
+    <app-campo-error [control]="arcoForm.controls.etiqueta"></app-campo-error>
+  </div>
+  <!-- Condición: solo se muestra si el origen es un gateway exclusivo o inclusivo; si es paralelo se explica por qué no lleva. -->
+  @if (admiteCondicion()) {
+    <div class="col-12">
+      <label for="arcoCondicion" class="form-label small">Condición</label>
+      <input type="text" id="arcoCondicion" class="form-control form-control-sm" formControlName="condicion" placeholder="aprobada == true"
+             [class.is-invalid]="arcoForm.controls.condicion.touched && arcoForm.controls.condicion.invalid" />
+      <div class="form-text">Cada salida del gateway necesita una condición distinta.</div>
+      <app-campo-error [control]="arcoForm.controls.condicion"></app-campo-error>
+    </div>
+  } @else if (origen()?.tipo === 'GATEWAY') {
+    <p class="col-12 small text-body-secondary mb-0">El gateway paralelo sigue todos los caminos: sus salidas no llevan condición.</p>
+  }
+  <!-- Botón Guardar: solo si se puede editar; deshabilitado mientras se guarda o si el formulario es inválido. -->
+  @if (editable()) {
+    <div class="col-12 d-flex justify-content-end mt-2">
+      <button type="submit" class="btn btn-primary btn-sm" id="guardarArcoBtn" [disabled]="guardando() || arcoForm.invalid">
+        <!-- Spinner mientras se guarda. -->
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+        Guardar
+      </button>
+    </div>
+  }
+</form>

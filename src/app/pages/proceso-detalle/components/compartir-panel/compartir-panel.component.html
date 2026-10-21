@@ -1,0 +1,77 @@
+<div class="card h-100">
+  <div class="card-header fw-semibold"><i class="bi bi-share"></i> Compartir con otras empresas</div>
+  <div class="card-body">
+    <!-- Mensaje de exito despues de guardar -->
+    @if (aviso()) {
+      <div class="alert alert-success py-2 small" id="avisoComparticion">{{ aviso() }}</div>
+    }
+    <!-- Error de la API o de validacion local -->
+    @if (problema(); as p) {
+      <div class="alert alert-danger py-2 small" id="errorComparticion"><strong>{{ p.title }}.</strong> {{ p.detail }}</div>
+    }
+
+    <!-- Modo edicion: solo para el administrador -->
+    @if (editable()) {
+      <!-- Interruptor para activar o desactivar la comparticion -->
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="compartidoSwitch"
+               [checked]="compartido()" (change)="compartido.set($any($event.target).checked)" />
+        <label class="form-check-label" for="compartidoSwitch">Compartir en solo lectura</label>
+      </div>
+
+      <!-- Solo con el interruptor encendido se piden los NIT -->
+      @if (compartido()) {
+        <label for="nuevoNit" class="form-label small">NIT de la empresa invitada</label>
+        <!-- Campo + boton Agregar; con Enter tambien se agrega (sin enviar ningun formulario) -->
+        <div class="input-group input-group-sm">
+          <input type="text" id="nuevoNit" class="form-control" [formControl]="nuevoNit" placeholder="800987654-3"
+                 (keydown.enter)="$event.preventDefault(); agregarNit()"
+                 [class.is-invalid]="nuevoNit.touched && nuevoNit.invalid" />
+          <button class="btn btn-outline-primary" type="button" id="agregarNitBtn" (click)="agregarNit()">Agregar</button>
+        </div>
+        <!-- Mensaje de error del campo NIT -->
+        <app-campo-error [control]="nuevoNit" [mensajes]="mensajesNit"></app-campo-error>
+
+        <!-- Lista de NIT agregados; cada uno se puede quitar -->
+        <ul class="list-group list-group-flush mt-2" id="nitsCompartidos">
+          @for (nit of nits(); track nit) {
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span>
+                <strong>{{ nit }}</strong>
+                <!-- Si el NIT aun no esta guardado no se conoce el nombre de la empresa -->
+                <span class="small text-body-secondary ms-1">{{ nombreDe(nit) ?? 'sin guardar' }}</span>
+              </span>
+              <button type="button" class="btn btn-sm btn-link text-danger" (click)="quitarNit(nit)" [attr.aria-label]="'Quitar ' + nit">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </li>
+          } @empty {
+            <li class="list-group-item px-0 small text-body-secondary">Aún no hay empresas.</li>
+          }
+        </ul>
+      }
+
+      <!-- Boton Guardar con spinner mientras se envia -->
+      <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-primary btn-sm" id="guardarComparticionBtn" (click)="guardar()" [disabled]="guardando()">
+          @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          Guardar
+        </button>
+      </div>
+    } @else {
+      <!-- Modo lectura: quien no administra solo ve con quien esta compartido -->
+      @if (comparticion(); as c) {
+        @if (c.compartido) {
+          <p class="small mb-2">Compartido en solo lectura con:</p>
+          <ul class="small mb-0">
+            @for (e of c.empresas; track e.nit) {
+              <li>{{ e.nombre }} ({{ e.nit }})</li>
+            }
+          </ul>
+        } @else {
+          <p class="small text-body-secondary mb-0">No está compartido con otras empresas.</p>
+        }
+      }
+    }
+  </div>
+</div>

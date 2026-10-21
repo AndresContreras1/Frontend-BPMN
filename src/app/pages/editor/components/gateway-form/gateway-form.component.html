@@ -1,0 +1,56 @@
+<!-- Formulario reactivo del gateway. -->
+<form class="row g-2" [formGroup]="gatewayForm" (ngSubmit)="handleSubmit()" novalidate id="gatewayForm">
+  <!-- Nombre o pregunta opcional (por ejemplo: ¿Aprobada?). -->
+  <div class="col-12">
+    <label for="gatewayNombre" class="form-label small">Pregunta o nombre <span class="text-body-secondary">(opcional)</span></label>
+    <input type="text" id="gatewayNombre" class="form-control form-control-sm" formControlName="nombre" placeholder="¿Aprobada?"
+           [class.is-invalid]="gatewayForm.controls.nombre.touched && gatewayForm.controls.nombre.invalid" />
+    <app-campo-error [control]="gatewayForm.controls.nombre"></app-campo-error>
+  </div>
+  <!-- Tipo de gateway; debajo se muestra su ayuda. -->
+  <div class="col-12">
+    <label for="gatewayTipo" class="form-label small">Tipo</label>
+    <select id="gatewayTipo" class="form-select form-select-sm" formControlName="tipoGateway">
+      <!-- Una opción por cada tipo de gateway. -->
+      @for (tipo of tipos; track tipo.valor) {
+        <option [value]="tipo.valor">{{ tipo.texto }}</option>
+      }
+    </select>
+    <div class="form-text">{{ ayudaTipo() }}</div>
+  </div>
+  <!-- Lane obligatoria. -->
+  <div class="col-12">
+    <label for="gatewayLane" class="form-label small">Lane</label>
+    <select id="gatewayLane" class="form-select form-select-sm" formControlName="laneId"
+            [class.is-invalid]="gatewayForm.controls.laneId.touched && gatewayForm.controls.laneId.invalid">
+      <option [ngValue]="null" disabled>Elija la lane…</option>
+      <!-- Una opción por cada lane del pool. -->
+      @for (lane of lanes(); track lane.id) {
+        <option [ngValue]="lane.id">{{ lane.nombre }}</option>
+      }
+    </select>
+    <app-campo-error [control]="gatewayForm.controls.laneId" [mensajes]="{ required: 'El gateway va en una lane' }"></app-campo-error>
+  </div>
+  <!-- Posición X. -->
+  <div class="col-6">
+    <label for="gatewayPosX" class="form-label small">Posición X</label>
+    <input type="number" id="gatewayPosX" class="form-control form-control-sm" formControlName="posX" min="0" max="10000" />
+    <app-campo-error [control]="gatewayForm.controls.posX"></app-campo-error>
+  </div>
+  <!-- Posición Y. -->
+  <div class="col-6">
+    <label for="gatewayPosY" class="form-label small">Posición Y</label>
+    <input type="number" id="gatewayPosY" class="form-control form-control-sm" formControlName="posY" min="0" max="10000" />
+    <app-campo-error [control]="gatewayForm.controls.posY"></app-campo-error>
+  </div>
+  <!-- Botón Guardar: solo si se puede editar; deshabilitado mientras se guarda o si hay errores. -->
+  @if (editable()) {
+    <div class="col-12 d-flex justify-content-end mt-2">
+      <button type="submit" class="btn btn-primary btn-sm" id="guardarGatewayBtn" [disabled]="guardando() || gatewayForm.invalid">
+        <!-- Spinner mientras se guarda. -->
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+        Guardar
+      </button>
+    </div>
+  }
+</form>

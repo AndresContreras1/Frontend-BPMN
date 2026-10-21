@@ -1,0 +1,40 @@
+<section class="card mb-3" id="diagramaVista" aria-labelledby="diagramaVistaTitulo">
+  <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <h2 class="h6 mb-0" id="diagramaVistaTitulo"><i class="bi bi-diagram-3 text-primary"></i> Diagrama del proceso</h2>
+    <!-- Resumen con conteos; el ternario pone el texto en singular o plural -->
+    @if (resumen(); as r) {
+      <span class="small text-body-secondary" id="diagramaResumen">
+        {{ r.pools }} {{ r.pools === 1 ? 'pool' : 'pools' }} · {{ r.lanes }} {{ r.lanes === 1 ? 'lane' : 'lanes' }} ·
+        {{ r.elementos }} {{ r.elementos === 1 ? 'elemento' : 'elementos' }} · {{ r.arcos }} {{ r.arcos === 1 ? 'arco' : 'arcos' }} ·
+        {{ r.mensajes }} {{ r.mensajes === 1 ? 'mensaje' : 'mensajes' }}
+        <!-- Solo si hay errores de coherencia se agrega el conteo en rojo -->
+        @if (r.errores) {
+          · <span class="text-danger">{{ r.errores }} {{ r.errores === 1 ? 'error de coherencia' : 'errores de coherencia' }}</span>
+        }
+      </span>
+    }
+  </div>
+  <div class="card-body">
+    <!-- Estado de carga -->
+    @if (cargando()) {
+      <p class="text-body-secondary mb-0"><span class="spinner-border spinner-border-sm me-2"></span>Cargando el diagrama…</p>
+    }
+    <!-- Estado de error (solo cuando ya termino de cargar) -->
+    @if (!cargando() && problema(); as error) {
+      <p class="text-danger mb-0" id="diagramaVistaError">{{ error.detail }}</p>
+    }
+    <!-- Diagrama ya cargado -->
+    @if (!cargando() && diagrama(); as d) {
+      @if (d.nodos.length || d.pools.length) {
+        <!-- El componente app-diagrama-svg dibuja el lienzo BPMN en solo lectura -->
+        <div class="contenedor-lienzo">
+          <app-diagrama-svg [pools]="d.pools" [nodos]="d.nodos" [arcos]="d.arcos" [mensajes]="d.mensajes"
+                            [advertencias]="d.advertencias"></app-diagrama-svg>
+        </div>
+      } @else {
+        <!-- Proceso recien creado, sin elementos -->
+        <p class="text-body-secondary mb-0" id="diagramaVacio">El diagrama todavía no tiene elementos.</p>
+      }
+    }
+  </div>
+</section>

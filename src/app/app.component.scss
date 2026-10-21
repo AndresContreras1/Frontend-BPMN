@@ -1,4 +1,8 @@
+// Navbar arriba, contenido que crece y pie de página siempre al final
+// :host es el propio componente app-root; con flex en columna y altura mínima de pantalla,
+// el main (flex-grow-1) ocupa el espacio libre y empuja el pie hacia abajo
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }

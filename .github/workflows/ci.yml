@@ -7,12 +7,18 @@ on:
 
 jobs:
   build:
-    name: Compilar y probar
+    name: Compilar, probar y analizar
     runs-on: ubuntu-latest
+    # A nivel de job: los secretos no se pueden leer en un "if"
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Sonar necesita el historial completo para distinguir el codigo nuevo
+          fetch-depth: 0
 
       - name: Configurar Node 22
         uses: actions/setup-node@v4
@@ -28,6 +34,13 @@ jobs:
 
       - name: Compilar en modo producción
         run: npx ng build --configuration production
+
+      - name: Analisis SonarCloud
+        # Se omite hasta que exista el secreto SONAR_TOKEN en el repositorio
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
 
   docker:
     name: Construir imagen Docker
