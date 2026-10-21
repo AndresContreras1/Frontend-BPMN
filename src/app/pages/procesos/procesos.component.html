@@ -1,0 +1,101 @@
+<app-page-title titulo="Procesos" subtitulo="Procesos de negocio de su empresa">
+  @if (sesion.puedeEditar()) {
+    <a class="btn btn-primary" routerLink="/procesos/nuevo" id="nuevoProcesoBtn">
+      <i class="bi bi-plus-lg"></i> Nuevo proceso
+    </a>
+  }
+</app-page-title>
+
+@if (eliminado() && !aviso()) {
+  <div class="alert alert-success" id="procesoEliminadoMsg">"{{ eliminado() }}" quedó eliminado. Puede consultarlo en "Ver eliminados".</div>
+}
+@if (aviso()) {
+  <div class="alert alert-success alert-dismissible" id="avisoProcesos">
+    {{ aviso() }}
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
+  </div>
+}
+<app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+<div class="row g-2 mb-3 align-items-center">
+  <div class="col-lg-3 col-md-6">
+    <div class="input-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="search" class="form-control" id="buscarProceso" placeholder="Buscar por nombre" aria-label="Buscar por nombre"
+             [value]="texto()" (input)="buscar($any($event.target).value)" />
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-3 col-6">
+    <select class="form-select" id="filtroEstado" aria-label="Filtrar por estado"
+            [value]="estado()" (change)="filtrarEstado($any($event.target).value)">
+      <option value="">Todos los estados</option>
+      <option value="BORRADOR">Borrador</option>
+      <option value="PUBLICADO">Publicado</option>
+    </select>
+  </div>
+  <div class="col-lg-3 col-md-3 col-6">
+    <select class="form-select" id="filtroCategoria" aria-label="Filtrar por categoría"
+            [value]="categoria()" (change)="filtrarCategoria($any($event.target).value)">
+      <option value="">Todas las categorías</option>
+      @for (c of categorias(); track c) {
+        <option [value]="c" [selected]="c === categoria()">{{ c }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-lg-3 d-flex align-items-center gap-3">
+    <div class="form-check form-switch mb-0">
+      <input class="form-check-input" type="checkbox" role="switch" id="verEliminados"
+             [checked]="verEliminados()" (change)="mostrarEliminados($any($event.target).checked)" />
+      <label class="form-check-label" for="verEliminados">Ver eliminados</label>
+    </div>
+    @if (hayFiltros()) {
+      <button type="button" class="btn btn-link btn-sm p-0" (click)="limpiarFiltros()" id="limpiarFiltrosBtn">Limpiar filtros</button>
+    }
+  </div>
+</div>
+
+<app-tabla-generica [columnas]="columnas" [orden]="orden()" (ordenar)="ordenar($event)"
+                    [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
+                    [mensajeVacio]="verEliminados() ? 'No hay procesos eliminados.' : 'No hay procesos que coincidan con los filtros.'">
+  @for (p of resultado()?.content ?? []; track p.id) {
+    <tr>
+      <td>
+        <a [routerLink]="['/procesos', p.id]" class="fw-semibold text-decoration-none">{{ p.nombre }}</a>
+        @if (p.descripcion) {
+          <div class="small text-body-secondary text-truncate" style="max-width: 28rem">{{ p.descripcion }}</div>
+        }
+      </td>
+      <td>{{ p.categoria }}</td>
+      <td><app-estado-badge [estado]="p.estado" [activo]="p.activo"></app-estado-badge></td>
+      <td class="small">
+        {{ p.modificadoEn | date: 'short' }}
+        <div class="text-body-secondary">{{ p.modificadoPor }}</div>
+      </td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/procesos', p.id]" title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre">
+          <i class="bi bi-eye"></i>
+        </a>
+        @if (p.activo && sesion.puedeEditar()) {
+          <a class="btn btn-outline-primary btn-sm ms-1" [routerLink]="['/procesos/editar', p.id]" title="Editar"
+             [attr.aria-label]="'Editar ' + p.nombre" [id]="'editarProcesoBtn-' + p.id">
+            <i class="bi bi-pencil"></i>
+          </a>
+        }
+        @if (p.activo && sesion.esAdministrador()) {
+          <button type="button" class="btn btn-outline-danger btn-sm ms-1" (click)="porEliminar.set(p)" title="Eliminar"
+                  [attr.aria-label]="'Eliminar ' + p.nombre" [id]="'eliminarProcesoBtn-' + p.id">
+            <i class="bi bi-trash"></i>
+          </button>
+        }
+      </td>
+    </tr>
+  }
+</app-tabla-generica>
+
+<app-paginador [page]="page()" [totalPages]="resultado()?.totalPages ?? 0"
+               [totalElements]="resultado()?.totalElements ?? 0" (pageChange)="page.set($event)"></app-paginador>
+
+<app-confirmar-modal [abierto]="porEliminar() !== null" titulo="Eliminar proceso"
+                     [mensaje]="'¿Eliminar &quot;' + (porEliminar()?.nombre ?? '') + '&quot;? Quedará inactivo: se conserva su diagrama y su historial, pero ya no se podrá editar.'"
+                     textoConfirmar="Eliminar" (confirmar)="confirmarEliminar()" (cancelar)="porEliminar.set(null)">
+</app-confirmar-modal>

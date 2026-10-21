@@ -1,0 +1,36 @@
+<div class="card h-100">
+  <div class="card-header fw-semibold"><i class="bi bi-clock-history"></i> Historial de cambios</div>
+  @if (problema(); as p) {
+    <div class="card-body text-danger small">{{ p.detail }}</div>
+  } @else if (!resultado()) {
+    <div class="card-body text-body-secondary small"><span class="spinner-border spinner-border-sm me-2"></span>Cargando…</div>
+  } @else {
+    <ul class="list-group list-group-flush" id="historialProceso">
+      @for (cambio of resultado()!.content; track cambio.id) {
+        <li class="list-group-item">
+          <div class="d-flex flex-wrap justify-content-between gap-2">
+            <span>
+              <span class="badge {{ colores[cambio.tipo] }}">{{ etiquetas[cambio.tipo] }}</span>
+              <span class="badge text-bg-light border ms-1">{{ cambio.elemento }}</span>
+            </span>
+            <small class="text-body-secondary">{{ cambio.fecha | date: 'medium' }} · {{ cambio.usuario }}</small>
+          </div>
+          <div class="small mt-1">{{ cambio.detalle }}</div>
+          @if (cambio.advertencias.length) {
+            <ul class="small text-warning-emphasis mb-0 mt-1">
+              @for (a of cambio.advertencias; track $index) {
+                <li><i class="bi bi-exclamation-triangle"></i> {{ a }}</li>
+              }
+            </ul>
+          }
+        </li>
+      } @empty {
+        <li class="list-group-item text-body-secondary small">Sin cambios registrados.</li>
+      }
+    </ul>
+    <div class="px-3 pb-2">
+      <app-paginador [page]="page()" [totalPages]="resultado()!.totalPages" [totalElements]="resultado()!.totalElements"
+                     (pageChange)="page.set($event)"></app-paginador>
+    </div>
+  }
+</div>
