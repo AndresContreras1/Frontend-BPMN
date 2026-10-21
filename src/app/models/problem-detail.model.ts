@@ -1,9 +1,14 @@
 /** Error de la API en formato ProblemDetail (RFC 9457). */
 export interface ProblemDetail {
+  /** URI que identifica el tipo de problema (opcional). */
   type?: string;
+  /** Resumen corto del error. */
   title: string;
+  /** Código de estado HTTP. */
   status: number;
+  /** Explicación del error para el usuario. */
   detail: string;
+  /** URI de la petición que falló (opcional). */
   instance?: string;
   /** Código interno estable del error (RECURSO_NO_ENCONTRADO, REGLA_DE_NEGOCIO, SIN_PERMISOS...). */
   codigo?: string;

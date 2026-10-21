@@ -1,3 +1,4 @@
+<!-- Titulo; el boton de crear rol solo lo ve el administrador -->
 <app-page-title titulo="Roles de proceso" hu="HU-17 a HU-20" subtitulo="Funciones responsables de las actividades; cada lane del diagrama usa uno">
   @if (sesion.esAdministrador()) {
     <button type="button" class="btn btn-primary" id="nuevoRolBtn" (click)="nuevo()">
@@ -6,16 +7,20 @@
   }
 </app-page-title>
 
+<!-- Mensaje de exito (creado, actualizado o eliminado) -->
 @if (aviso()) {
   <div class="alert alert-success alert-dismissible" id="avisoRoles">
     {{ aviso() }}
     <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
   </div>
 }
+<!-- Error de la API -->
 <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
 <div class="row g-3">
+  <!-- Columna de la tabla: ocupa todo el ancho, o 8 de 12 cuando hay un panel lateral abierto -->
   <div [class]="editando() !== undefined || seleccionado() ? 'col-lg-8' : 'col-12'">
+    <!-- Busqueda por nombre -->
     <div class="row g-2 mb-3">
       <div class="col-md-6 col-lg-5">
         <div class="input-group">
@@ -26,17 +31,21 @@
       </div>
     </div>
 
+    <!-- Tabla generica: pinta encabezados, spinner y mensaje de vacio; las filas se pasan como contenido -->
     <app-tabla-generica [columnas]="columnas" [orden]="orden()" (ordenar)="ordenar($event)"
                         [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
                         mensajeVacio="No hay roles de proceso. El administrador los crea antes de dibujar las lanes.">
+      <!-- Una fila por rol; se resalta el que esta seleccionado o en edicion -->
       @for (r of resultado()?.content ?? []; track r.id) {
         <tr [class.table-active]="seleccionado()?.id === r.id || editando()?.id === r.id">
+          <!-- Nombre y descripcion del rol -->
           <td>
             <span class="fw-semibold">{{ r.nombre }}</span>
             @if (r.descripcion) {
               <div class="small text-body-secondary">{{ r.descripcion }}</div>
             }
           </td>
+          <!-- Cuantos procesos lo usan (el tooltip lista sus nombres) o "Sin uso" -->
           <td>
             @if (r.enUso) {
               <span class="badge text-bg-info" [title]="'Usado en: ' + nombresProcesos(r)">
@@ -46,6 +55,7 @@
               <span class="badge text-bg-light border">Sin uso</span>
             }
           </td>
+          <!-- Acciones: ver uso para todos; editar y eliminar solo para el administrador -->
           <td class="text-end text-nowrap">
             <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verUso(r)" [id]="'verUsoRolBtn-' + r.id"
                     [attr.aria-label]="'Ver uso de ' + r.nombre" title="Ver uso">
@@ -56,6 +66,7 @@
                       [attr.aria-label]="'Editar ' + r.nombre" title="Editar">
                 <i class="bi bi-pencil"></i>
               </button>
+              <!-- Eliminar queda deshabilitado si el rol esta asignado a lanes (HU-20) -->
               <button type="button" class="btn btn-outline-danger btn-sm ms-1" (click)="porEliminar.set(r)" [id]="'eliminarRolBtn-' + r.id"
                       [disabled]="!r.eliminable" [attr.aria-label]="'Eliminar ' + r.nombre"
                       [title]="r.eliminable ? 'Eliminar' : 'Está asignado a lanes: no se puede eliminar'">
@@ -67,12 +78,15 @@
       }
     </app-tabla-generica>
 
+    <!-- Paginador; al cambiar de pagina se actualiza page y se vuelve a consultar -->
     <app-paginador [page]="page()" [totalPages]="resultado()?.totalPages ?? 0"
                    [totalElements]="resultado()?.totalElements ?? 0" (pageChange)="page.set($event)"></app-paginador>
   </div>
 
+  <!-- Panel lateral: formulario (crear o editar) o, si no, el panel de uso del rol seleccionado -->
   @if (editando() !== undefined) {
     <div class="col-lg-4">
+      <!-- El formulario avisa con (guardar) y (cancelar); la pagina decide que hacer con los datos -->
       <app-rol-form [rol]="editando() ?? null" [guardando]="guardando()" [problema]="problemaForm()"
                     (guardar)="guardar($event)" (cancelar)="editando.set(undefined)"></app-rol-form>
       <app-alerta-error class="d-block mt-2" [problema]="problemaForm()" (cerrar)="problemaForm.set(null)"></app-alerta-error>
@@ -84,6 +98,7 @@
   }
 </div>
 
+<!-- Modal de confirmacion para eliminar un rol -->
 <app-confirmar-modal [abierto]="porEliminar() !== null" titulo="Eliminar rol de proceso"
                      [mensaje]="'¿Eliminar el rol &quot;' + (porEliminar()?.nombre ?? '') + '&quot;? Ya no estará disponible para nuevas lanes.'"
                      textoConfirmar="Eliminar" (confirmar)="confirmarEliminar()" (cancelar)="porEliminar.set(null)">

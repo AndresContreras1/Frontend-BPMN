@@ -10,13 +10,19 @@ import { RolAcceso } from '../../../models/usuario.model';
 import { Posicion } from '../../../components/diagrama/layout';
 import { ProcesoEditorPageComponent } from './proceso-editor-page.component';
 
+/**
+ * Pruebas del editor en la pestaña del lienzo: herramientas para colocar elementos, conectar, mover,
+ * eliminar y validar el diagrama (HU-08 a HU-16, HU-25 a HU-28).
+ */
 describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', () => {
   let fixture: ComponentFixture<ProcesoEditorPageComponent>;
   let pagina: ProcesoEditorPageComponent;
   let backend: HttpTestingController;
   let html: HTMLElement;
 
+  // Datos comunes de los nodos de ejemplo
   const base = { poolId: 1, tipoActividad: null, tipoGateway: null, variante: null, posY: 0 };
+  // Ayuda: diagrama de ejemplo con 2 pools, 3 nodos (inicio, actividad y mensaje), un arco, un mensaje y una advertencia
   const diagrama = (): Diagrama => ({
     proceso: {
       id: 9, nombre: 'Compras', descripcion: null, categoria: 'Compras', estado: 'BORRADOR', activo: true, version: 0,
@@ -42,6 +48,8 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     advertencias: [{ codigo: 'SIN_SALIDA', severidad: 'ERROR', mensaje: "'Registrar' no tiene camino de salida", elementoId: 2 }],
   });
 
+  // Ayuda: arma el editor para un rol: inicia sesión, usa un ActivatedRoute falso con id=9 y responde
+  // las dos peticiones iniciales (catálogo de roles y diagrama).
   const crear = (rol: RolAcceso) => {
     localStorage.clear();
     TestBed.configureTestingModule({
@@ -65,11 +73,14 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     fixture.detectChanges();
   };
 
+  // Ayuda: responde la nueva carga del diagrama que el editor hace después de cada cambio
   const recargar = () => {
     backend.expectOne('/api/v1/procesos/9/diagrama').flush(diagrama());
     fixture.detectChanges();
   };
 
+  // Ayudas: buscar un pool en el store, simular una posición de clic dentro de la lane 10
+  // y simular un clic sobre un nodo del lienzo
   const pool = (id: number) => pagina.store.pools().find((p) => p.id === id)!;
   const enLane = (posX: number, posY = 0): Posicion => ({ pool: pool(1), lane: pool(1).lanes[0], posX, posY });
   const clicNodo = (id: number) => {
@@ -77,8 +88,12 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     fixture.detectChanges();
   };
 
+  // verify falla si quedó alguna petición HTTP sin responder
   afterEach(() => backend.verify());
 
+  // Escenario: se elige la herramienta Actividad y se hace clic en la lane (se llama alClicLienzo directamente).
+  // Esperado: se abre el formulario con la posición del clic, se guarda con un POST, se recarga el diagrama y
+  // se muestra el aviso.
   it('con la herramienta Actividad, un clic en la lane abre el formulario con esa posición y lo guarda', () => {
     crear('EDITOR');
     html.querySelector<HTMLButtonElement>('#herramienta-ACTIVIDAD')!.click();
@@ -100,6 +115,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.querySelector('#panelElemento')).toBeNull();
   });
 
+  // Esperado: un clic en un pool de caja negra, o una actividad fuera de una lane, muestra un aviso y no abre el formulario.
   it('no coloca elementos en un pool de caja negra ni actividades fuera de una lane', () => {
     crear('EDITOR');
     pagina.cambiarHerramienta('INICIO');
@@ -114,6 +130,9 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.querySelector('#panelElemento')).toBeNull();
   });
 
+  // Escenario: con la herramienta Conectar se hace clic en el nodo 2 y luego en el 3.
+  // Esperado: el primero queda marcado como origen; el segundo abre el formulario del arco y al guardar
+  // se envía un POST con origen y destino.
   it('Conectar: el primer clic marca el origen y el segundo abre el arco nuevo', () => {
     crear('EDITOR');
     html.querySelector<HTMLButtonElement>('#herramienta-conectar')!.click();
@@ -132,6 +151,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     recargar();
   });
 
+  // Esperado: al seleccionar un nodo de mensaje se abre su panel con el formulario de correlación.
   it('un clic en un elemento de mensaje abre el mensaje y su correlación', () => {
     crear('EDITOR');
     clicNodo(3);
@@ -139,6 +159,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.querySelector('#correlacionForm')).not.toBeNull();
   });
 
+  // Esperado: mover a otro pool se rechaza con un aviso; mover dentro de su pool envía un PUT con la posición nueva.
   it('Mover: cambia la posición de una actividad, pero no la saca de su pool', () => {
     crear('EDITOR');
     clicNodo(2);
@@ -154,6 +175,8 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     recargar();
   });
 
+  // Esperado: antes de eliminar se consulta el impacto (qué arcos y advertencias genera), el modal lo muestra
+  // y al confirmar se envía el DELETE, se recarga y se avisa.
   it('eliminar pide el impacto, lo muestra y elimina al confirmar (administrador)', () => {
     crear('ADMINISTRADOR');
     clicNodo(2);
@@ -173,6 +196,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.querySelector('#avisoEditor')!.textContent).toContain('Elemento eliminado.');
   });
 
+  // Esperado: al eliminar un arco el modal no dice "También se eliminan..." porque el arco es el propio elemento.
   it('al eliminar un arco no lo cuenta como "también"', () => {
     crear('ADMINISTRADOR');
     html.querySelector('g.arco[data-arco="100"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -184,6 +208,8 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     html.querySelector<HTMLButtonElement>('.modal .btn-secondary')!.click();
   });
 
+  // Esperado: el editor no tiene botón de eliminar; el lector no ve herramientas ni guardar y sus campos están
+  // deshabilitados. resetTestingModule reinicia el módulo para poder crear el editor otra vez con otro rol.
   it('el editor no ve eliminar; el lector no ve herramientas ni guardar', () => {
     crear('EDITOR');
     clicNodo(2);
@@ -197,6 +223,8 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.querySelector<HTMLInputElement>('#actividadNombre')!.disabled).toBeTrue();
   });
 
+  // Esperado: el botón Validar consulta la validación, muestra el conteo y la advertencia; desde la advertencia
+  // se abre y se selecciona el elemento afectado.
   it('Validar muestra el resultado y desde una advertencia se abre el elemento', () => {
     crear('EDITOR');
     html.querySelector<HTMLButtonElement>('#validarDiagramaBtn')!.click();
@@ -211,6 +239,8 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.querySelector('g.nodo[data-nodo="2"]')!.classList).toContain('seleccionado');
   });
 
+  // Escenario: el servidor responde 409 al guardar un cambio que dejaría el diagrama incoherente.
+  // Esperado: se muestran los motivos y el panel sigue abierto.
   it('un cambio incoherente en un proceso publicado muestra los motivos de la API', () => {
     crear('EDITOR');
     clicNodo(2);
@@ -226,6 +256,7 @@ describe('ProcesoEditorPageComponent: lienzo (HU-08 a HU-16, HU-25 a HU-28)', ()
     expect(html.querySelector('#panelElemento')).not.toBeNull();
   });
 
+  // Esperado: guardarCondiciones envía un PUT por arco con la condición, recarga el diagrama y avisa.
   it('HU-15: guardar las condiciones del gateway actualiza cada arco y recarga el diagrama', () => {
     crear('EDITOR');
     const arco = pagina.store.arcos()[0];

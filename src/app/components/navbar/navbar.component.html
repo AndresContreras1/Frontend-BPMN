@@ -1,16 +1,23 @@
+<!-- Cabecera fija arriba (sticky-top) -->
 <header class="sticky-top">
+  <!-- Barra de Bootstrap que se colapsa en pantallas pequeñas (navbar-expand-xl) -->
   <nav class="navbar navbar-expand-xl navbar-dark fondo-marca shadow-sm" aria-label="Menú principal">
     <div class="container-fluid px-lg-4">
+      <!-- Marca: lleva al inicio si hay sesión y a la página de bienvenida si no -->
       <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" [routerLink]="usuario() ? '/inicio' : '/'" id="marcaNavbar">
         <i class="bi bi-diagram-3-fill"></i> Editor BPMN
       </a>
+      <!-- Botón hamburguesa; el plugin Collapse de Bootstrap abre y cierra el menú -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
               aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú">
         <span class="navbar-toggler-icon"></span>
       </button>
+      <!-- Contenido que se esconde en pantallas pequeñas -->
       <div class="collapse navbar-collapse" id="menuPrincipal">
+        <!-- Con sesión iniciada: enlaces del menú y menú del usuario -->
         @if (usuario(); as u) {
           <ul class="navbar-nav me-auto mb-2 mb-xl-0">
+            <!-- Un enlace por cada elemento del arreglo enlaces; routerLinkActive marca el de la página actual -->
             @for (enlace of enlaces; track enlace.ruta) {
               <li class="nav-item">
                 <a class="nav-link text-nowrap" [routerLink]="enlace.ruta" routerLinkActive="active" [id]="enlace.id">
@@ -19,15 +26,19 @@
               </li>
             }
           </ul>
+          <!-- Menú desplegable del usuario (plugin Dropdown de Bootstrap) -->
           <div class="dropdown">
             <button class="btn btn-link nav-link dropdown-toggle d-flex align-items-center gap-2 text-white text-decoration-none px-0"
                     type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" id="menuUsuarioBtn">
+              <!-- Círculo con las iniciales del nombre -->
               <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
+              <!-- Nombre del usuario y de su empresa -->
               <span class="text-start lh-sm">
                 <strong class="d-block" id="usuarioNombre">{{ u.nombre }}</strong>
                 <small class="opacity-75">{{ u.empresaNombre }}</small>
               </span>
             </button>
+            <!-- Opciones del desplegable: datos del usuario, mi empresa y cerrar sesión -->
             <ul class="dropdown-menu dropdown-menu-xl-end shadow" aria-labelledby="menuUsuarioBtn">
               <li class="px-3 py-2 small">
                 <div class="text-body-secondary">{{ u.correo }}</div>
@@ -38,12 +49,14 @@
                 <a class="dropdown-item" routerLink="/empresa" id="navMiEmpresa"><i class="bi bi-building me-2"></i>Mi empresa</a>
               </li>
               <li>
+                <!-- No cierra la sesión aquí: avisa al padre con el output cerrarSesion -->
                 <button class="dropdown-item text-danger" type="button" id="cerrarSesionBtn" (click)="cerrarSesion.emit()">
                   <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
                 </button>
               </li>
             </ul>
           </div>
+        <!-- Siguiente rama, sin sesión: enlaces para iniciar sesión o registrar una empresa -->
         } @else {
           <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-2">
             <li class="nav-item"><a class="nav-link" routerLink="/login" routerLinkActive="active" id="navLogin">Iniciar sesión</a></li>

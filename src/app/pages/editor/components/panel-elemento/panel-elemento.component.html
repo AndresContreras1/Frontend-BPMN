@@ -1,16 +1,22 @@
+<!-- Tarjeta del panel lateral. -->
 <div class="card shadow-sm" id="panelElemento">
+  <!-- Encabezado: icono, título, historias de usuario y botón de cerrar. -->
   <div class="card-header d-flex justify-content-between align-items-center">
     <span class="fw-semibold">
       <i class="bi {{ icono() }} text-primary"></i> {{ titulo() }}
+      <!-- La etiqueta de historias solo se muestra si el padre pasó alguna. -->
       @if (hu()) {
         <span class="badge rounded-pill text-bg-light border fw-normal align-middle" id="historiasPanel" title="Historias de usuario que cubre este elemento">{{ hu() }}</span>
       }
     </span>
+    <!-- Botón de cerrar el panel. -->
     <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar.emit()"></button>
   </div>
+  <!-- Cuerpo: ng-content muestra aquí el formulario que el padre pone dentro de esta etiqueta. -->
   <div class="card-body">
     <ng-content />
   </div>
+  <!-- Pie con el botón Eliminar: solo si el usuario tiene permiso. -->
   @if (puedeEliminar()) {
     <div class="card-footer text-end">
       <button type="button" class="btn btn-outline-danger btn-sm" id="eliminarElementoBtn" (click)="eliminar.emit()">

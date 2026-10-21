@@ -1,13 +1,16 @@
 <div class="card shadow-sm" id="usoRol">
+  <!-- Encabezado con el nombre del rol y boton para cerrar el panel -->
   <div class="card-header d-flex justify-content-between align-items-center">
     <span class="fw-semibold"><i class="bi bi-diagram-2"></i> Uso de «{{ rol().nombre }}»</span>
     <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar.emit()"></button>
   </div>
   <div class="card-body">
+    <!-- Descripcion del rol, si tiene -->
     @if (rol().descripcion) {
       <p class="small">{{ rol().descripcion }}</p>
     }
     <h3 class="h6">Procesos con lanes de este rol</h3>
+    <!-- Si hay procesos, se listan con enlace y se explica por que no se puede eliminar -->
     @if (rol().procesos.length) {
       <ul class="small">
         @for (p of rol().procesos; track p.id) {
@@ -22,6 +25,7 @@
     }
 
     <h3 class="h6">Historial</h3>
+    <!-- historial() es null mientras carga: en ese caso se muestra el "Cargando" del @else -->
     @if (historial(); as cambios) {
       <ul class="list-unstyled small mb-0">
         @for (c of cambios; track c.id) {

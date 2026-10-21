@@ -3,9 +3,12 @@
     <app-page-title titulo="Invitar usuario" hu="HU-02" subtitulo="La persona entra con su correo y la contraseña inicial que usted le asigne"></app-page-title>
 
     <div class="card shadow-sm">
+      <!-- novalidate desactiva la validacion nativa del navegador (se usa la de Angular) -->
       <form class="p-3 row g-3" [formGroup]="usuarioForm" (ngSubmit)="handleSubmit()" novalidate>
+        <!-- Error general devuelto por la API -->
         <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
+        <!-- Campo nombre (obligatorio, maximo 120) -->
         <div class="col-md-6">
           <label for="nombre" class="form-label">Nombre</label>
           <input type="text" id="nombre" class="form-control" formControlName="nombre"
@@ -13,6 +16,7 @@
           <app-campo-error [control]="usuarioForm.controls.nombre"></app-campo-error>
         </div>
 
+        <!-- Campo correo (obligatorio, formato de email, maximo 120) -->
         <div class="col-md-6">
           <label for="correo" class="form-label">Correo</label>
           <input type="email" id="correo" class="form-control" formControlName="correo" autocomplete="off"
@@ -20,6 +24,7 @@
           <app-campo-error [control]="usuarioForm.controls.correo"></app-campo-error>
         </div>
 
+        <!-- Rol de acceso; debajo se muestra que puede hacer el rol elegido -->
         <div class="col-md-6">
           <label for="rol" class="form-label">Rol de acceso</label>
           <select id="rol" class="form-select" formControlName="rol">
@@ -30,6 +35,7 @@
           <div class="form-text">{{ descripcionRol[usuarioForm.controls.rol.value] }}</div>
         </div>
 
+        <!-- Contrasena inicial (8 a 72 caracteres); new-password evita que el navegador la autocomplete -->
         <div class="col-md-6">
           <label for="passwordInicial" class="form-label">Contraseña inicial</label>
           <input type="password" id="passwordInicial" class="form-control" formControlName="passwordInicial" autocomplete="new-password"
@@ -38,6 +44,7 @@
           <app-campo-error [control]="usuarioForm.controls.passwordInicial"></app-campo-error>
         </div>
 
+        <!-- Botones: cancelar vuelve al listado; invitar se deshabilita mientras envia o si el form es invalido -->
         <div class="col-12 d-flex justify-content-end gap-2">
           <a class="btn btn-secondary" routerLink="/usuarios">Cancelar</a>
           <button type="submit" class="btn btn-primary" id="guardarUsuarioBtn" [disabled]="enviando() || usuarioForm.invalid">

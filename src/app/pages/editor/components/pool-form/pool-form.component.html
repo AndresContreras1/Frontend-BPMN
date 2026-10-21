@@ -1,9 +1,13 @@
+<!-- Tarjeta del formulario de pool. -->
 <div class="card shadow-sm" id="poolForm">
+  <!-- Encabezado: título (nuevo o editar) y botón de cerrar. -->
   <div class="card-header d-flex justify-content-between align-items-center">
     <span class="fw-semibold">{{ pool() ? 'Editar pool' : 'Nuevo pool' }}</span>
     <button type="button" class="btn-close" aria-label="Cerrar" (click)="cancelar.emit()"></button>
   </div>
+  <!-- Formulario reactivo del pool. -->
   <form class="card-body row g-3" [formGroup]="poolForm" (ngSubmit)="handleSubmit()" novalidate>
+    <!-- Nombre del pool. -->
     <div class="col-12">
       <label for="poolNombre" class="form-label">Nombre</label>
       <input type="text" id="poolNombre" class="form-control" formControlName="nombre" placeholder="Servicio de correo"
@@ -11,9 +15,11 @@
       <app-campo-error [control]="poolForm.controls.nombre"></app-campo-error>
     </div>
 
+    <!-- Tipo de participante: el propietario solo muestra su propio tipo; los demás eligen entre los externos. -->
     <div class="col-12">
       <label for="poolTipo" class="form-label">Tipo de participante</label>
       <select id="poolTipo" class="form-select" formControlName="tipo">
+        <!-- Propietario: única opción. Otros: una opción por tipo externo. -->
         @if (esPropietario()) {
           <option value="PROPIETARIO">{{ etiquetaTipo.PROPIETARIO }}</option>
         } @else {
@@ -24,12 +30,14 @@
       </select>
     </div>
 
+    <!-- Caja negra y explicación según el tipo. -->
     <div class="col-12">
       <div class="form-check">
         <input class="form-check-input" type="checkbox" id="poolCajaNegra" formControlName="cajaNegra" />
         <label class="form-check-label" for="poolCajaNegra">Caja negra</label>
       </div>
       <div class="form-text">
+        <!-- Texto de ayuda distinto según el tipo (@switch/@case funciona como un switch de TypeScript). -->
         @switch (poolForm.controls.tipo.value) {
           @case ('SISTEMA_EXTERNO') { Un sistema externo siempre es caja negra: solo recibe mensajes. }
           @case ('PROPIETARIO') { El pool de su empresa tiene lanes y elementos: no puede ser caja negra. }
@@ -38,24 +46,29 @@
       </div>
     </div>
 
+    <!-- Botones Cancelar y Guardar. -->
     <div class="col-12 d-flex justify-content-end gap-2">
       <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
       <button type="submit" class="btn btn-primary" id="guardarPoolBtn" [disabled]="guardando() || poolForm.invalid">
+        <!-- Spinner mientras se guarda. -->
         @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Guardar
       </button>
     </div>
   </form>
 
+  <!-- HU-24: permiso de estructura, solo existe para el pool propietario. -->
   @if (esPropietario()) {
     <div class="card-footer">
       <label for="permisoEstructura" class="form-label small fw-semibold mb-1">Quién cambia pools y lanes (HU-24)</label>
+      <!-- El administrador puede cambiarlo; los demás solo lo ven. -->
       @if (esAdministrador()) {
         <div class="input-group input-group-sm">
           <select id="permisoEstructura" class="form-select" [formControl]="permiso">
             <option value="ADMINISTRADOR_Y_EDITOR">Administrador y editor</option>
             <option value="SOLO_ADMINISTRADOR">Solo el administrador</option>
           </select>
+          <!-- Aplicar: solo se habilita si el permiso elegido es distinto del actual. -->
           <button type="button" class="btn btn-outline-primary" id="aplicarPermisoBtn"
                   [disabled]="guardando() || permiso.value === pool()?.permisoEstructura"
                   (click)="cambiarPermiso.emit(permiso.value)">Aplicar</button>

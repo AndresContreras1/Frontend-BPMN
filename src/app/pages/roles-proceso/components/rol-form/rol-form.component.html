@@ -1,21 +1,27 @@
 <div class="card shadow-sm">
+  <!-- El encabezado cambia segun se edite un rol o se cree uno nuevo -->
   <div class="card-header fw-semibold">{{ rol() ? 'Editar rol' : 'Nuevo rol de proceso' }}</div>
+  <!-- novalidate desactiva la validacion nativa del navegador (se usa la de Angular) -->
   <form class="card-body row g-3" [formGroup]="rolForm" (ngSubmit)="handleSubmit()" novalidate>
+    <!-- Campo nombre (obligatorio, maximo 80) -->
     <div class="col-12">
       <label for="rolNombre" class="form-label">Nombre</label>
       <input type="text" id="rolNombre" class="form-control" formControlName="nombre" placeholder="Analista"
              [class.is-invalid]="rolForm.controls.nombre.touched && rolForm.controls.nombre.invalid" />
       <app-campo-error [control]="rolForm.controls.nombre"></app-campo-error>
+      <!-- Aviso: renombrar un rol en uso tambien renombra las lanes que lo usan -->
       @if (rol()?.enUso) {
         <div class="form-text"><i class="bi bi-info-circle"></i> Las lanes que usan este rol cambian de nombre con él.</div>
       }
     </div>
+    <!-- Campo descripcion (opcional, maximo 300) -->
     <div class="col-12">
       <label for="rolDescripcion" class="form-label">Descripción <span class="text-body-secondary">(opcional)</span></label>
       <textarea id="rolDescripcion" class="form-control" rows="3" formControlName="descripcion"
                 [class.is-invalid]="rolForm.controls.descripcion.touched && rolForm.controls.descripcion.invalid"></textarea>
       <app-campo-error [control]="rolForm.controls.descripcion"></app-campo-error>
     </div>
+    <!-- Botones: cancelar avisa al padre; guardar se deshabilita mientras envia o si el form es invalido -->
     <div class="col-12 d-flex justify-content-end gap-2">
       <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
       <button type="submit" class="btn btn-primary" id="guardarRolBtn" [disabled]="guardando() || rolForm.invalid">

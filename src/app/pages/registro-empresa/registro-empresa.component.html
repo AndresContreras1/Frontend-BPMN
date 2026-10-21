@@ -1,7 +1,9 @@
+<!-- Tarjeta centrada con dos columnas: panel de marca (solo pantallas grandes) y formulario -->
 <div class="row justify-content-center py-lg-4 aparecer">
   <div class="col-xl-10">
     <div class="card shadow overflow-hidden">
       <div class="row g-0">
+        <!-- Panel decorativo con los pasos del registro -->
         <aside class="col-lg-4 fondo-marca p-5 d-none d-lg-flex flex-column justify-content-between">
           <div>
             <h2 class="h4 fw-bold mb-2"><i class="bi bi-building-add me-2"></i>Su empresa, su espacio</h2>
@@ -14,7 +16,9 @@
           </ol>
         </aside>
 
+        <!-- Columna del formulario -->
         <div class="col-lg-8 p-4 p-lg-5">
+          <!-- Título con la etiqueta de la historia de usuario que cubre -->
           <h1 class="h3 mb-1">
             Registrar empresa
             <span class="badge rounded-pill text-bg-light border fw-normal fs-6 align-middle" id="historiasPagina">HU-01</span>
@@ -23,9 +27,12 @@
             La persona que registra la empresa queda como <strong>administrador</strong> y entra con el correo de contacto.
           </p>
 
+          <!-- Formulario reactivo; novalidate desactiva la validación del navegador para usar la de Angular -->
           <form class="row g-3" [formGroup]="registroForm" (ngSubmit)="handleSubmit()" novalidate>
+            <!-- Error de la API; el output cerrar lo borra -->
             <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
+            <!-- Nombre de la empresa; is-invalid pinta el borde rojo si lo tocó y es inválido -->
             <div class="col-md-7">
               <div class="form-floating">
                 <input type="text" id="nombre" class="form-control" formControlName="nombre" placeholder="Nombre de la empresa"
@@ -35,6 +42,7 @@
               </div>
             </div>
 
+            <!-- NIT, con su mensaje de error propio -->
             <div class="col-md-5">
               <div class="form-floating">
                 <input type="text" id="nit" class="form-control" formControlName="nit" placeholder="900123456-1"
@@ -45,6 +53,7 @@
               <div class="form-text">Ejemplo: 900123456-1</div>
             </div>
 
+            <!-- Nombre del representante -->
             <div class="col-md-6">
               <div class="form-floating">
                 <input type="text" id="nombreRepresentante" class="form-control" formControlName="nombreRepresentante" placeholder="Nombre del representante"
@@ -54,6 +63,7 @@
               </div>
             </div>
 
+            <!-- Correo de contacto -->
             <div class="col-md-6">
               <div class="form-floating">
                 <input type="email" id="correoContacto" class="form-control" formControlName="correoContacto" placeholder="Correo de contacto" autocomplete="username"
@@ -63,6 +73,7 @@
               </div>
             </div>
 
+            <!-- Contraseña (autocomplete new-password para que el navegador sugiera una nueva) -->
             <div class="col-md-6">
               <div class="form-floating">
                 <input type="password" id="password" class="form-control" formControlName="password" placeholder="Contraseña" autocomplete="new-password"
@@ -73,6 +84,7 @@
               <div class="form-text">Entre 8 y 72 caracteres.</div>
             </div>
 
+            <!-- Enlace para quien ya tiene cuenta y botón de registrar, deshabilitado mientras envía o si el formulario es inválido -->
             <div class="col-12 d-flex justify-content-between align-items-center">
               <a routerLink="/login" class="small">Ya tengo cuenta</a>
               <button type="submit" class="btn btn-primary btn-lg" id="registrarEmpresaBtn" [disabled]="enviando() || registroForm.invalid">

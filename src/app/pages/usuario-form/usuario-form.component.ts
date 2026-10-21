@@ -26,29 +26,41 @@ export const DESCRIPCION_ROL: Record<RolAcceso, string> = {
   templateUrl: './usuario-form.component.html',
 })
 export class UsuarioFormComponent {
+  /** Servicio que habla con la API de usuarios. */
   private readonly usuarioService = inject(UsuarioService);
+  /** Para navegar al listado despues de invitar. */
   private readonly router = inject(Router);
 
+  /** Roles de acceso disponibles, para las opciones del select. */
   readonly roles = ROLES_ACCESO;
+  /** Descripcion de cada rol, que se muestra debajo del select. */
   readonly descripcionRol = DESCRIPCION_ROL;
+  /** True mientras se envia el formulario (deshabilita el boton). */
   enviando = signal(false);
+  /** Error devuelto por la API para mostrarlo en la alerta. */
   problema = signal<ProblemDetail | null>(null);
 
+  /** Formulario reactivo con sus validaciones (los maximos coinciden con los de la API). */
   usuarioForm = new FormGroup({
     nombre: new FormControl('', [Validators.required, Validators.maxLength(120)]),
     correo: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(120)]),
+    // nonNullable: nunca vale null; por defecto se invita como EDITOR
     rol: new FormControl<RolAcceso>('EDITOR', { nonNullable: true, validators: [Validators.required] }),
     passwordInicial: new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(72)]),
   });
 
+  /** Envia el formulario y crea el usuario. */
   handleSubmit(): void {
+    // Con campos invalidos se marcan como tocados para mostrar los errores y no se envia nada
     if (this.usuarioForm.invalid) {
       this.usuarioForm.markAllAsTouched();
       return;
     }
     this.enviando.set(true);
     this.problema.set(null);
+    // getRawValue incluye tambien los campos deshabilitados
     const v = this.usuarioForm.getRawValue();
+    // Se limpian espacios de nombre y correo; la contrasena se envia tal cual
     const usuario: UsuarioRequest = {
       nombre: (v.nombre ?? '').trim(),
       correo: (v.correo ?? '').trim(),
@@ -60,9 +72,11 @@ export class UsuarioFormComponent {
       .crear(usuario)
       .pipe(finalize(() => this.enviando.set(false)))
       .subscribe({
+        // Al terminar vuelve al listado y le pasa el nombre para que muestre el aviso de exito
         next: (creado) => this.router.navigate(['/usuarios'], { queryParams: { creado: creado.nombre } }),
         error: (err) => {
           const problema = problemaDe(err);
+          // Los errores por campo que reporta la API (por ejemplo correo repetido) se pintan en el formulario
           aplicarErroresDelServidor(this.usuarioForm, problema);
           this.problema.set(problema);
         },

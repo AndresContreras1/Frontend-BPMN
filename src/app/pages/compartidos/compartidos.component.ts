@@ -20,13 +20,19 @@ import { ProcesoService } from '../../service/proceso.service';
   templateUrl: './compartidos.component.html',
 })
 export class CompartidosComponent {
+  /** Servicio que habla con la API de procesos. */
   private readonly procesoService = inject(ProcesoService);
 
+  /** Pagina actual (empieza en 0). */
   page = signal(0);
+  /** Orden en formato "campo,direccion" que entiende la API. */
   orden = signal('nombre,asc');
+  /** True mientras llega la lista. */
   cargando = signal(true);
+  /** Error de la API para mostrar en la alerta. */
   problema = signal<ProblemDetail | null>(null);
 
+  /** Columnas de la tabla; la de empresa propietaria no se puede ordenar. */
   columnas: Columna[] = [
     { clave: 'nombre', titulo: 'Nombre', ordenable: true },
     { clave: '', titulo: 'Empresa propietaria' },
@@ -35,17 +41,22 @@ export class CompartidosComponent {
     { clave: 'modificadoEn', titulo: 'Última modificación', ordenable: true },
   ];
 
+  /** Parametros de paginacion; al ser computed cambia sola cuando cambia la pagina o el orden. */
   private readonly consulta = computed(() => ({ page: this.page(), size: 10, sort: this.orden() }));
 
+  /** Pagina de procesos compartidos como signal (null hasta que llega la primera respuesta). */
   resultado = toSignal(
     toObservable(this.consulta).pipe(
+      // switchMap: si llega una consulta nueva, cancela la anterior que siga en vuelo
       switchMap((paginacion) => {
         this.cargando.set(true);
         return this.procesoService.compartidosConmigo(paginacion).pipe(
+          // Si falla se guarda el error y se emite null
           catchError((err) => {
             this.problema.set(problemaDe(err));
             return of(null);
           }),
+          // Apaga el spinner al terminar, con exito o con error
           finalize(() => this.cargando.set(false)),
         );
       }),
@@ -53,6 +64,7 @@ export class CompartidosComponent {
     { initialValue: null },
   );
 
+  /** Cambia el orden (lo emite la tabla) y vuelve a la primera pagina. */
   ordenar(orden: string): void {
     this.orden.set(orden);
     this.page.set(0);

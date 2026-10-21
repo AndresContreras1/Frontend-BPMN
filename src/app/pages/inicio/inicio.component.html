@@ -1,8 +1,12 @@
+<!-- Todo el contenido del inicio -->
 <section class="aparecer" aria-labelledby="saludoInicio">
+  <!-- Encabezado: fecha, saludo y empresa a la izquierda; botones a la derecha -->
   <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
     <div>
+      <!-- Fecha de hoy con el pipe date -->
       <p class="text-body-secondary small mb-1 primera-mayuscula">{{ hoy | date: 'fullDate' }}</p>
       <h1 class="h3 mb-1" id="saludoInicio">Hola, {{ primerNombre() }}</h1>
+      <!-- Nombre de la empresa del usuario -->
       @if (sesion.usuario(); as u) {
         <p class="text-body-secondary mb-0">
           <i class="bi bi-building me-1"></i>{{ u.empresaNombre }}
@@ -11,6 +15,7 @@
       }
     </div>
     <div class="d-flex flex-wrap gap-2">
+      <!-- Solo administradores y editores pueden crear procesos -->
       @if (sesion.puedeEditar()) {
         <a class="btn btn-primary" routerLink="/procesos/nuevo" id="inicioNuevoProcesoBtn">
           <i class="bi bi-plus-lg"></i> Nuevo proceso
@@ -20,52 +25,66 @@
     </div>
   </div>
 
+  <!-- La pantalla muestra una sola de tres cosas según el estado: cargando, error o lista -->
   @switch (estado()) {
+    <!-- Mientras llegan los datos -->
     @case ('cargando') {
       <div class="text-center text-body-secondary py-5" id="inicioCargando">
         <span class="spinner-border spinner-border-sm me-2"></span>Cargando el resumen de su empresa…
       </div>
     }
+    <!-- Falló la carga: mensaje y botón para reintentar -->
     @case ('error') {
       <div class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2" id="inicioError">
         <span><strong>{{ problema()?.title }}.</strong> {{ problema()?.detail }}</span>
         <button type="button" class="btn btn-outline-danger btn-sm" (click)="cargar()">Reintentar</button>
       </div>
     }
+    <!-- Datos cargados -->
     @case ('listo') {
       @if (datos(); as d) {
+        <!-- Fila de tarjetas indicadoras; las que llevan parametros abren la lista de procesos ya filtrada -->
         <div class="row g-3 mb-4">
           <div class="col-xl col-md-4 col-6">
+            <!-- Total de procesos activos -->
             <app-indicador clave="total" titulo="Procesos activos" [valor]="d.resumen.total" icono="bi-diagram-3"
                            color="primary" ruta="/procesos"></app-indicador>
           </div>
           <div class="col-xl col-md-4 col-6">
+            <!-- Procesos en borrador (enlace filtrado por estado) -->
             <app-indicador clave="borradores" titulo="En borrador" [valor]="d.resumen.borradores" icono="bi-pencil-square"
                            color="warning" ruta="/procesos" [parametros]="{ estado: 'BORRADOR' }"></app-indicador>
           </div>
           <div class="col-xl col-md-4 col-6">
+            <!-- Procesos publicados -->
             <app-indicador clave="publicados" titulo="Publicados" [valor]="d.resumen.publicados" icono="bi-check2-circle"
                            color="success" ruta="/procesos" [parametros]="{ estado: 'PUBLICADO' }"></app-indicador>
           </div>
           <div class="col-xl col-md-6 col-6">
+            <!-- Procesos que otras empresas compartieron con esta -->
             <app-indicador clave="compartidos" titulo="Compartidos conmigo" [valor]="d.resumen.compartidosConmigo"
                            icono="bi-share" color="info" ruta="/compartidos"></app-indicador>
           </div>
           <div class="col-xl col-md-6 col-12">
+            <!-- Procesos eliminados (se pueden ver con el filtro eliminados) -->
             <app-indicador clave="eliminados" titulo="Eliminados" [valor]="d.resumen.eliminados" icono="bi-archive"
                            color="secondary" ruta="/procesos" [parametros]="{ eliminados: 'true' }"></app-indicador>
           </div>
         </div>
 
+        <!-- Segunda fila: lista de recientes a la izquierda y paneles laterales a la derecha -->
         <div class="row g-3">
+          <!-- Procesos modificados recientemente -->
           <section class="col-lg-8" aria-labelledby="tituloRecientes">
             <div class="card h-100">
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="h6 mb-0" id="tituloRecientes"><i class="bi bi-clock-history me-1"></i> Modificados recientemente</h2>
                 <a class="small" routerLink="/procesos">Ver todos</a>
               </div>
+              <!-- Si hay procesos, se listan; si no, se muestra un mensaje -->
               @if (d.recientes.length) {
                 <ul class="list-group list-group-flush">
+                  <!-- Un renglón por proceso: nombre con enlace a su detalle, categoría, fecha, autor y estado -->
                   @for (p of d.recientes; track p.id) {
                     <li class="list-group-item d-flex justify-content-between align-items-center gap-3 proceso-reciente">
                       <div class="text-truncate">
@@ -76,6 +95,7 @@
                     </li>
                   }
                 </ul>
+              <!-- Siguiente rama, empresa sin procesos: mensaje y, si puede editar, enlace para crear el primero -->
               } @else {
                 <div class="card-body text-center text-body-secondary py-5" id="inicioSinProcesos">
                   <i class="bi bi-diagram-3 fs-1 d-block mb-2"></i>
@@ -88,6 +108,7 @@
             </div>
           </section>
 
+          <!-- Panel lateral -->
           <aside class="col-lg-4 d-flex flex-column gap-3">
             <div class="card">
               <div class="card-body">
@@ -95,6 +116,7 @@
                 <p class="small text-body-secondary mb-2">
                   {{ d.resumen.publicados }} de {{ d.resumen.total }} procesos activos están publicados.
                 </p>
+                <!-- Barra de progreso; el ancho es el porcentaje de publicados y aria-valuenow lo comunica a lectores de pantalla -->
                 <div class="progress" role="progressbar" aria-label="Procesos publicados"
                      [attr.aria-valuenow]="avancePublicacion()" aria-valuemin="0" aria-valuemax="100">
                   <div class="progress-bar bg-success" [style.width.%]="avancePublicacion()">{{ avancePublicacion() }} %</div>
@@ -104,6 +126,7 @@
 
             <div class="card">
               <div class="card-body">
+                <!-- Accesos a usuarios y roles con su cantidad -->
                 <h2 class="h6"><i class="bi bi-people me-1"></i> Su espacio</h2>
                 <ul class="list-unstyled small mb-0 d-grid gap-2">
                   <li class="d-flex justify-content-between">
@@ -112,6 +135,7 @@
                   <li class="d-flex justify-content-between">
                     <a routerLink="/roles">Roles de proceso</a><strong id="inicioRoles">{{ d.roles }}</strong>
                   </li>
+                  <!-- Invitar usuarios es solo del administrador -->
                   @if (sesion.esAdministrador()) {
                     <li><a routerLink="/usuarios/nuevo"><i class="bi bi-person-plus me-1"></i>Invitar a un usuario</a></li>
                   }

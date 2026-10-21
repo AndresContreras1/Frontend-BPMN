@@ -1,8 +1,14 @@
+<!-- Grupo SVG del flujo de mensaje; data-mensaje ayuda a las pruebas -->
 <svg:g class="flujo-mensaje" [class.seleccionado]="seleccionado()" [attr.data-mensaje]="mensaje().id" (click)="alClic($event)">
+  <!-- Texto al pasar el mouse: nombre del mensaje y, si hay, su clave de correlación -->
   <svg:title>Mensaje {{ mensaje().nombre }}{{ mensaje().claveCorrelacion ? ' · correlación por ' + mensaje().claveCorrelacion : '' }}</svg:title>
+  <!-- Línea ancha e invisible para que sea fácil hacer clic -->
   <svg:path class="zona-clic" [attr.d]="ruta().d" />
+  <!-- Línea punteada visible con círculo al inicio y punta hueca al final -->
   <svg:path class="linea" [attr.d]="ruta().d" marker-start="url(#origen-mensaje)" marker-end="url(#flecha-mensaje)" />
+  <!-- Nombre del mensaje; "ancla" decide si el texto empieza en x o se centra en x -->
   <svg:text class="etiqueta" [attr.text-anchor]="ruta().ancla ?? 'middle'" [attr.x]="ruta().etiquetaX" [attr.y]="ruta().etiquetaY">{{ mensaje().nombre }}</svg:text>
+  <!-- Segunda línea de texto con la clave de correlación, si existe -->
   @if (mensaje().claveCorrelacion) {
     <svg:text class="etiqueta-correlacion" [attr.text-anchor]="ruta().ancla ?? 'middle'" [attr.x]="ruta().etiquetaX" [attr.y]="ruta().etiquetaY + 13">
       clave: {{ mensaje().claveCorrelacion }}

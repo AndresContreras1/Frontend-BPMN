@@ -16,8 +16,12 @@ import { Proceso } from '../../../../models/proceso.model';
   styleUrl: './proceso-tarjeta.component.scss',
 })
 export class ProcesoTarjetaComponent {
+  /** Proceso que se dibuja en la tarjeta (obligatorio). */
   proceso = input.required<Proceso>();
+  /** Si es true se muestra el boton Editar; lo decide la pagina segun el rol. */
   puedeEditar = input(false);
+  /** Si es true se muestra el boton Eliminar; lo decide la pagina segun el rol. */
   puedeEliminar = input(false);
+  /** Avisa a la pagina que se pidio eliminar este proceso (la pagina abre la confirmacion). */
   eliminar = output<Proceso>();
 }

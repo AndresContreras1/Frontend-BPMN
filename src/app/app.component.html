@@ -1,9 +1,15 @@
+<!-- Barra de carga global: se ve solo mientras haya peticiones HTTP en curso -->
 @if (carga.cargando()) {
   <div class="barra-carga" role="progressbar" aria-label="Cargando" id="barraCarga"><span></span></div>
 }
+<!-- Barra de navegación: recibe el usuario de la sesión y avisa cuando se pide cerrar sesión -->
 <app-navbar [usuario]="sesion.usuario()" (cerrarSesion)="cerrarSesion()"></app-navbar>
+<!-- Contenido principal: la clase cambia según la página (ver claseContenido en el .ts) -->
 <main class="flex-grow-1" [class]="claseContenido()">
+  <!-- Aquí el router coloca la página que corresponde a la URL -->
   <router-outlet></router-outlet>
 </main>
+<!-- Pie de página -->
 <app-pie-pagina></app-pie-pagina>
+<!-- Avisos (toasts) que publican las demás páginas -->
 <app-notificaciones></app-notificaciones>

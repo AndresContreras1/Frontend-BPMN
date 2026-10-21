@@ -1,37 +1,52 @@
+<!-- Grupo del nodo movido al centro (cx, cy): así las formas se dibujan alrededor de (0, 0). Las clases marcan selección, error, aviso y origen de conexión -->
 <svg:g class="nodo" [attr.transform]="'translate(' + layout().cx + ' ' + layout().cy + ')'"
        [class.seleccionado]="seleccionado()" [class.con-error]="severidad() === 'ERROR'" [class.con-aviso]="severidad() === 'AVISO'"
        [class.origen-conexion]="origen()" [attr.data-nodo]="layout().nodo.id" (click)="alClic($event)">
+  <!-- Texto al pasar el mouse -->
   <svg:title>{{ titulo() }}</svg:title>
 
+  <!-- Cada forma se dibuja distinto según el tipo de nodo -->
   @switch (layout().forma) {
+    <!-- Actividad: rectángulo redondeado de 120 x 60 con el nombre adentro -->
     @case ('actividad') {
+      <!-- Cuerpo de la actividad (centrado: va de -60 a 60 en x y de -30 a 30 en y) -->
       <svg:rect class="forma" x="-60" y="-30" width="120" height="60" rx="10" ry="10" />
+      <!-- Ícono del tipo de actividad (usuario, servicio, etc.) en la esquina -->
       @if (icono()) {
         <svg:text class="icono" x="-53" y="-15">{{ icono() }}</svg:text>
       }
+      <!-- Nombre partido en renglones; cada uno baja 13 px respecto al anterior -->
       @for (linea of lineas(); track $index) {
         <svg:text class="texto" x="0" [attr.y]="inicioTexto() + $index * 13">{{ linea }}</svg:text>
       }
     }
+    <!-- Gateway: rombo de 50 x 50 con una marca según su tipo -->
     @case ('gateway') {
+      <!-- Los 4 vértices: arriba, derecha, abajo, izquierda -->
       <svg:polygon class="forma" points="0,-25 25,0 0,25 -25,0" />
+      <!-- Marca interna: X (exclusivo), + (paralelo) u O (inclusivo) -->
       @switch (layout().nodo.tipoGateway) {
         @case ('EXCLUSIVO') { <svg:path class="marca" d="M -8 -8 L 8 8 M 8 -8 L -8 8" /> }
         @case ('PARALELO') { <svg:path class="marca" d="M 0 -12 V 12 M -12 0 H 12" /> }
         @case ('INCLUSIVO') { <svg:circle class="marca-circulo" r="10" /> }
       }
+      <!-- Nombre debajo del rombo (fuera de la figura porque es pequeña) -->
       @for (linea of lineas(); track $index) {
         <svg:text class="texto-externo" x="0" [attr.y]="40 + $index * 13">{{ linea }}</svg:text>
       }
     }
+    <!-- Evento: círculo; el borde cambia según sea inicio, fin o intermedio (lo define el CSS con las clases) -->
     @case ('evento') {
       <svg:circle class="forma" [class.evento-inicio]="tipoEvento() === 'inicio'" [class.evento-fin]="tipoEvento() === 'fin'" r="18" />
+      <!-- El evento intermedio lleva un segundo círculo interior (borde doble) -->
       @if (tipoEvento() === 'intermedio') {
         <svg:circle class="forma-interna" r="14" />
       }
+      <!-- Sobre de mensaje: lleno si envía y vacío si recibe -->
       @if (sobre()) {
         <svg:text class="sobre" [class.sobre-lleno]="mensaje()?.direccion === 'ENVIO'" x="0" y="1">{{ sobre() }}</svg:text>
       }
+      <!-- Nombre debajo del círculo -->
       @for (linea of lineas(); track $index) {
         <svg:text class="texto-externo" x="0" [attr.y]="33 + $index * 13">{{ linea }}</svg:text>
       }

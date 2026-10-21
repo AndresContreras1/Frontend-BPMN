@@ -1,3 +1,4 @@
+<!-- Titulo de la pagina; el boton de crear solo lo ven editores y administradores -->
 <app-page-title titulo="Procesos" hu="HU-04, HU-06, HU-07" subtitulo="Procesos de negocio de su empresa">
   @if (sesion.puedeEditar()) {
     <a class="btn btn-primary" routerLink="/procesos/nuevo" id="nuevoProcesoBtn">
@@ -6,18 +7,23 @@
   }
 </app-page-title>
 
+<!-- Aviso al llegar desde el detalle despues de eliminar (viene en la URL) -->
 @if (eliminado() && !aviso()) {
   <div class="alert alert-success" id="procesoEliminadoMsg">"{{ eliminado() }}" quedó eliminado. Puede consultarlo en "Ver eliminados".</div>
 }
+<!-- Aviso al eliminar desde esta misma pagina -->
 @if (aviso()) {
   <div class="alert alert-success alert-dismissible" id="avisoProcesos">
     {{ aviso() }}
     <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
   </div>
 }
+<!-- Error de la API -->
 <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
+<!-- Barra de filtros: busqueda, estado, categoria, ver eliminados y selector de vista -->
 <div class="row g-2 mb-3 align-items-center">
+  <!-- Busqueda por nombre -->
   <div class="col-lg-3 col-md-6">
     <div class="input-group">
       <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -25,6 +31,7 @@
              [value]="texto()" (input)="buscar($any($event.target).value)" />
     </div>
   </div>
+  <!-- Filtro por estado -->
   <div class="col-lg-3 col-md-3 col-6">
     <select class="form-select" id="filtroEstado" aria-label="Filtrar por estado"
             [value]="estado()" (change)="filtrarEstado($any($event.target).value)">
@@ -33,6 +40,7 @@
       <option value="PUBLICADO">Publicado</option>
     </select>
   </div>
+  <!-- Filtro por categoria (las opciones vienen de la API) -->
   <div class="col-lg-3 col-md-3 col-6">
     <select class="form-select" id="filtroCategoria" aria-label="Filtrar por categoría"
             [value]="categoria()" (change)="filtrarCategoria($any($event.target).value)">
@@ -43,14 +51,17 @@
     </select>
   </div>
   <div class="col-lg-3 d-flex align-items-center gap-3 flex-wrap">
+    <!-- Interruptor para ver los procesos eliminados (HU-06) -->
     <div class="form-check form-switch mb-0">
       <input class="form-check-input" type="checkbox" role="switch" id="verEliminados"
              [checked]="verEliminados()" (change)="mostrarEliminados($any($event.target).checked)" />
       <label class="form-check-label" for="verEliminados">Ver eliminados</label>
     </div>
+    <!-- Solo aparece cuando hay algun filtro aplicado -->
     @if (hayFiltros()) {
       <button type="button" class="btn btn-link btn-sm p-0" (click)="limpiarFiltros()" id="limpiarFiltrosBtn">Limpiar filtros</button>
     }
+    <!-- Selector de vista: tabla o tarjetas; el boton activo se marca con la clase active -->
     <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Cómo ver la lista">
       <button type="button" class="btn btn-outline-secondary" [class.active]="vista() === 'tabla'" [attr.aria-pressed]="vista() === 'tabla'"
               (click)="cambiarVista('tabla')" id="vistaTablaBtn" title="Ver como tabla">
@@ -64,18 +75,23 @@
   </div>
 </div>
 
+<!-- Vista de tarjetas -->
 @if (vista() === 'tarjetas') {
+  <!-- Spinner solo en la primera carga; despues se mantiene la lista anterior mientras llega la nueva -->
   @if (cargando() && !resultado()) {
     <div class="text-center text-body-secondary py-5"><span class="spinner-border spinner-border-sm me-2"></span>Cargando…</div>
   } @else {
     <div class="row g-3" id="tarjetasProcesos">
+      <!-- "?? []" evita errores mientras resultado es null -->
       @for (p of resultado()?.content ?? []; track p.id) {
         <div class="col-xxl-3 col-lg-4 col-sm-6">
+          <!-- Los permisos se calculan aqui; la tarjeta emite (eliminar) y la pagina abre el modal -->
           <app-proceso-tarjeta [proceso]="p" [puedeEditar]="p.activo && sesion.puedeEditar()"
                                [puedeEliminar]="p.activo && sesion.esAdministrador()" (eliminar)="porEliminar.set($event)">
           </app-proceso-tarjeta>
         </div>
       } @empty {
+        <!-- Lista vacia -->
         <div class="col-12">
           <div class="tarjeta text-center text-body-secondary py-5">
             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
@@ -87,11 +103,14 @@
   }
 } @else {
 
+<!-- Vista de tabla: la tabla generica pinta encabezados, spinner y mensaje de vacio; las filas se pasan como contenido -->
 <app-tabla-generica [columnas]="columnas" [orden]="orden()" (ordenar)="ordenar($event)"
                     [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
                     [mensajeVacio]="verEliminados() ? 'No hay procesos eliminados.' : 'No hay procesos que coincidan con los filtros.'">
+  <!-- Una fila por proceso -->
   @for (p of resultado()?.content ?? []; track p.id) {
     <tr class="fila-proceso">
+      <!-- Nombre (enlace al detalle) y descripcion cortada a una linea -->
       <td>
         <a [routerLink]="['/procesos', p.id]" class="fw-semibold text-decoration-none nombre-proceso">{{ p.nombre }}</a>
         @if (p.descripcion) {
@@ -100,10 +119,12 @@
       </td>
       <td>{{ p.categoria }}</td>
       <td><app-estado-badge [estado]="p.estado" [activo]="p.activo"></app-estado-badge></td>
+      <!-- Fecha y autor de la ultima modificacion -->
       <td class="small">
         {{ p.modificadoEn | date: 'short' }}
         <div class="text-body-secondary">{{ p.modificadoPor }}</div>
       </td>
+      <!-- Acciones: ver siempre; editar y eliminar segun rol y solo en procesos activos -->
       <td class="text-end text-nowrap">
         <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/procesos', p.id]" title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre">
           <i class="bi bi-eye"></i>
@@ -126,9 +147,11 @@
 </app-tabla-generica>
 }
 
+<!-- Paginador compartido por las dos vistas; al cambiar de pagina se actualiza page y se vuelve a consultar -->
 <app-paginador [page]="page()" [totalPages]="resultado()?.totalPages ?? 0"
                [totalElements]="resultado()?.totalElements ?? 0" (pageChange)="page.set($event)"></app-paginador>
 
+<!-- Modal de confirmacion; esta abierto mientras haya un proceso en porEliminar -->
 <app-confirmar-modal [abierto]="porEliminar() !== null" titulo="Eliminar proceso"
                      [mensaje]="'¿Eliminar &quot;' + (porEliminar()?.nombre ?? '') + '&quot;? Quedará inactivo: se conserva su diagrama y su historial, pero ya no se podrá editar.'"
                      textoConfirmar="Eliminar" (confirmar)="confirmarEliminar()" (cancelar)="porEliminar.set(null)">
