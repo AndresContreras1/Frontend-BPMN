@@ -1,21 +1,24 @@
 // Tema propio: primero las variables de Bootstrap (Sass), luego Bootstrap y al final los estilos propios.
 // Así todos los componentes toman los colores, radios y sombras del proyecto y no los de por defecto.
-$primary: #3451b2;
+// Verde menta medio: el color de la marca en botones, enlaces, navbar y selección del lienzo
+$primary: #2a9d78;
 $secondary: #64748b;
 $success: #2f9e44;
-$info: #1c7ed6;
+$info: #1c9bb5;
 $warning: #f59f00;
 $danger: #e03131;
 $light: #f1f5f9;
 $dark: #1e293b;
 
-$body-bg: #f4f6fb;
+$body-bg: #f3f8f6;
 $body-color: #1f2937;
 $headings-font-weight: 600;
 $border-radius: .5rem;
 $border-radius-sm: .375rem;
 $border-radius-lg: .75rem;
 $enable-shadows: true;
+// El menta es claro: con 3 (en vez de 4.5) Bootstrap mantiene el texto blanco sobre los botones primarios
+$min-contrast-ratio: 3;
 $card-border-color: rgba(15, 23, 42, .08);
 $card-cap-bg: #fff;
 $card-box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 2px 6px rgba(15, 23, 42, .05);
@@ -34,7 +37,7 @@ $navbar-dark-hover-color: #fff;
   --bpmn-seleccion: #{$primary};
   --bpmn-error: #cf222e;
   --bpmn-aviso: #bf8700;
-  --degradado-marca: linear-gradient(135deg, #{$primary} 0%, #4c6ef5 55%, #15aabf 100%);
+  --degradado-marca: linear-gradient(135deg, #1e8466 0%, #{$primary} 55%, #4fc29c 100%);
 }
 
 .tarjeta {
@@ -193,7 +196,7 @@ $navbar-dark-hover-color: #fff;
   .nodo.con-aviso .forma { stroke: var(--bpmn-aviso); stroke-dasharray: 5 3; }
   .nodo.con-error .forma { stroke: var(--bpmn-error); stroke-width: 3; }
   .nodo.seleccionado .forma { stroke: var(--bpmn-seleccion); stroke-width: 3.5; }
-  .nodo.origen-conexion .forma { fill: #ddf4ff; stroke: var(--bpmn-seleccion); }
+  .nodo.origen-conexion .forma { fill: #dff5ed; stroke: var(--bpmn-seleccion); }
 
   .zona-clic { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
   .arco .linea { fill: none; stroke: var(--bpmn-borde); stroke-width: 1.6; }
