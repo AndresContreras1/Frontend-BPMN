@@ -1,0 +1,57 @@
+<div class="mt-4 d-flex justify-content-center">
+  <div class="col-xl-6 col-lg-7 col-md-9 col-sm-12">
+    <div class="card shadow-sm">
+      <div class="card-header text-center fw-bold fs-4">Registrar empresa</div>
+      <form class="p-3 row g-3" [formGroup]="registroForm" (ngSubmit)="handleSubmit()" novalidate>
+        <p class="col-12 text-body-secondary small mb-0">
+          La persona que registra la empresa queda como <strong>administrador</strong> y entra con el correo de contacto.
+        </p>
+        <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
+
+        <div class="col-md-7">
+          <label for="nombre" class="form-label">Nombre de la empresa</label>
+          <input type="text" id="nombre" class="form-control" formControlName="nombre"
+                 [class.is-invalid]="registroForm.controls.nombre.touched && registroForm.controls.nombre.invalid" />
+          <app-campo-error [control]="registroForm.controls.nombre"></app-campo-error>
+        </div>
+
+        <div class="col-md-5">
+          <label for="nit" class="form-label">NIT</label>
+          <input type="text" id="nit" class="form-control" formControlName="nit" placeholder="900123456-1"
+                 [class.is-invalid]="registroForm.controls.nit.touched && registroForm.controls.nit.invalid" />
+          <app-campo-error [control]="registroForm.controls.nit" [mensajes]="mensajesNit"></app-campo-error>
+        </div>
+
+        <div class="col-md-6">
+          <label for="nombreRepresentante" class="form-label">Nombre del representante</label>
+          <input type="text" id="nombreRepresentante" class="form-control" formControlName="nombreRepresentante"
+                 [class.is-invalid]="registroForm.controls.nombreRepresentante.touched && registroForm.controls.nombreRepresentante.invalid" />
+          <app-campo-error [control]="registroForm.controls.nombreRepresentante"></app-campo-error>
+        </div>
+
+        <div class="col-md-6">
+          <label for="correoContacto" class="form-label">Correo de contacto</label>
+          <input type="email" id="correoContacto" class="form-control" formControlName="correoContacto" autocomplete="username"
+                 [class.is-invalid]="registroForm.controls.correoContacto.touched && registroForm.controls.correoContacto.invalid" />
+          <app-campo-error [control]="registroForm.controls.correoContacto"></app-campo-error>
+        </div>
+
+        <div class="col-md-6">
+          <label for="password" class="form-label">Contraseña</label>
+          <input type="password" id="password" class="form-control" formControlName="password" autocomplete="new-password"
+                 [class.is-invalid]="registroForm.controls.password.touched && registroForm.controls.password.invalid" />
+          <div class="form-text">Entre 8 y 72 caracteres.</div>
+          <app-campo-error [control]="registroForm.controls.password"></app-campo-error>
+        </div>
+
+        <div class="col-12 d-flex justify-content-between align-items-center">
+          <a routerLink="/login" class="small">Ya tengo cuenta</a>
+          <button type="submit" class="btn btn-primary" id="registrarEmpresaBtn" [disabled]="enviando()">
+            @if (enviando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            Registrar empresa
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -49,10 +49,31 @@ La imagen compila la SPA con Node y la sirve con nginx en el puerto 80. nginx re
 src/app/
 ├── core/            # sesión, token, interceptores HTTP y guards
 ├── models/          # interfaces que reflejan los DTO de la API
-├── components/      # piezas reutilizables (navbar, paginador, alertas, modal)
+├── service/         # un servicio por recurso de la API; solo peticiones, retornan Observable
+├── components/      # piezas reutilizables (navbar, paginador, alertas, modal, errores de campo)
 └── pages/           # una carpeta por pantalla
 ```
 
-- **Sesión:** `SesionStore` guarda el usuario con signals y el token en `localStorage`.
-- **Interceptores:** `authInterceptor` agrega `Authorization: Bearer` solo a la API; `errorInterceptor` cierra la sesión ante un 401.
-- **Errores:** la API responde `ProblemDetail`; `problemaDe()` lo normaliza y `app-alerta-error` lo muestra con los errores por campo.
+- **Sesión:** `SesionStore` guarda el usuario con signals y el token en `localStorage`. Cerrar sesión en una pestaña la cierra en todas.
+- **Interceptores:** `authInterceptor` agrega `Authorization: Bearer` solo a la API; `errorInterceptor` cierra la sesión ante un 401 y lleva a `/login?expirada=true`.
+- **Guards:** `authGuard` exige sesión y recuerda la URL pedida (`returnUrl`); `invitadoGuard` saca del login a quien ya entró; `rolGuard` limita rutas por rol de acceso (la API aplica el mismo permiso).
+- **Errores:** la API responde `ProblemDetail`; `problemaDe()` lo normaliza, `app-alerta-error` lo muestra y `aplicarErroresDelServidor()` pone los errores de validación (400) debajo de cada campo.
+- **Formularios:** reactivos con `Validators`; los mensajes aparecen con `touched && invalid` (`app-campo-error`).
+
+## Pantallas por historia de usuario
+
+| Ruta | Pantalla | HU |
+|---|---|---|
+| `/login` | Inicio de sesión; vuelve a la ruta pedida | HU-03 |
+| `/registro` | Registro de empresa; el representante entra como administrador | HU-01 |
+| `/empresa` | Datos de la empresa y del usuario en sesión | HU-01, HU-03 |
+| botón **Salir** | Cierre de sesión (`POST /auth/logout`) | HU-03 |
+
+### Usuarios de prueba (datos demo del backend)
+
+| Correo | Contraseña | Rol |
+|---|---|---|
+| `admin@demo.com` | `admin123` | ADMINISTRADOR |
+| `editor@demo.com` | `editor123` | EDITOR |
+| `lector@demo.com` | `lector123` | LECTOR |
+| `admin@andina.com` | `admin123` | ADMINISTRADOR (otra empresa) |
