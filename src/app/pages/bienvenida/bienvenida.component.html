@@ -1,0 +1,111 @@
+<!-- Página pública: qué hace el sistema y cómo empezar (HU-01 y HU-03) -->
+<section class="fondo-marca hero">
+  <div class="container-xxl py-5 text-center aparecer">
+    <span class="badge rounded-pill bg-white bg-opacity-25 mb-3">Visor y editor de procesos multiempresa</span>
+    <h1 class="display-5 fw-bold mb-3">Modele los procesos de su empresa con BPMN</h1>
+    <p class="lead mx-auto mb-4 texto-hero">
+      Registre su empresa, invite a su equipo con roles de acceso y dibuje cada proceso con pools, lanes,
+      actividades, gateways y mensajes. Todo queda aislado por empresa y con historial de cambios.
+    </p>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+      <a class="btn btn-light btn-lg" routerLink="/registro" id="empezarRegistroBtn">
+        <i class="bi bi-building-add me-1"></i> Registrar mi empresa
+      </a>
+      <a class="btn btn-outline-light btn-lg" routerLink="/login" id="empezarLoginBtn">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar sesión
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="container-xxl ejemplo" aria-labelledby="tituloEjemplo">
+  <div class="card shadow aparecer">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <h2 class="h6 mb-0" id="tituloEjemplo"><i class="bi bi-diagram-3 text-primary me-1"></i> Solicitud de vacaciones</h2>
+      <span class="small text-body-secondary">El ejemplo del enunciado: 2 pools, 3 lanes, un gateway exclusivo y un mensaje con correlación</span>
+    </div>
+    <div class="card-body lienzo-adaptable p-2">
+      <app-diagrama-svg [pools]="pools" [nodos]="nodos" [arcos]="arcos" [mensajes]="mensajes"></app-diagrama-svg>
+    </div>
+  </div>
+</section>
+
+<section class="container-xxl py-5" aria-labelledby="tituloFunciones">
+  <h2 class="h3 text-center mb-2" id="tituloFunciones">Todo lo que pide un proceso, en un solo lugar</h2>
+  <p class="text-center text-body-secondary mb-4">Las 28 historias de usuario del proyecto, agrupadas en seis frentes.</p>
+  <div class="row g-3">
+    @for (f of funciones; track f.titulo) {
+      <div class="col-xl-4 col-md-6">
+        <article class="card h-100 tarjeta-interactiva">
+          <div class="card-body">
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <span class="icono-circulo" [class]="'bg-' + f.color + '-subtle text-' + f.color + '-emphasis'" aria-hidden="true">
+                <i class="bi" [class]="f.icono"></i>
+              </span>
+              <div>
+                <h3 class="h6 mb-0">{{ f.titulo }}</h3>
+                <span class="badge rounded-pill text-bg-light border fw-normal">{{ f.hu }}</span>
+              </div>
+            </div>
+            <p class="card-text text-body-secondary small mb-0">{{ f.texto }}</p>
+          </div>
+        </article>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="bg-body-tertiary border-top border-bottom py-5" aria-labelledby="tituloElementos">
+  <div class="container-xxl">
+    <h2 class="h3 text-center mb-4" id="tituloElementos">Los elementos del diagrama</h2>
+    <div id="carruselElementos" class="carousel slide carrusel-elementos mx-auto" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+        @for (e of elementos; track e.nombre; let i = $index) {
+          <button type="button" data-bs-target="#carruselElementos" [attr.data-bs-slide-to]="i"
+                  [class.active]="i === 0" [attr.aria-current]="i === 0 ? 'true' : null"
+                  [attr.aria-label]="e.nombre"></button>
+        }
+      </div>
+      <div class="carousel-inner rounded-4 shadow-sm">
+        @for (e of elementos; track e.nombre; let i = $index) {
+          <div class="carousel-item" [class.active]="i === 0">
+            <div class="diapositiva text-center p-5">
+              <i class="bi display-4 text-primary" [class]="e.icono" aria-hidden="true"></i>
+              <h3 class="h4 mt-3">{{ e.nombre }}</h3>
+              <p class="text-body-secondary mx-auto mb-1 texto-diapositiva">{{ e.texto }}</p>
+              <span class="badge rounded-pill text-bg-light border fw-normal">{{ e.hu }}</span>
+            </div>
+          </div>
+        }
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#carruselElementos" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carruselElementos" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Siguiente</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="container-xxl py-5" aria-labelledby="tituloPasos">
+  <h2 class="h3 text-center mb-4" id="tituloPasos">Cómo empezar</h2>
+  <ol class="row g-3 list-unstyled mb-0">
+    @for (p of pasos; track p.titulo; let i = $index) {
+      <li class="col-lg-3 col-sm-6">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <span class="numero-paso fondo-marca mb-2">{{ i + 1 }}</span>
+            <h3 class="h6">{{ p.titulo }}</h3>
+            <p class="small text-body-secondary mb-0">{{ p.texto }}</p>
+          </div>
+        </div>
+      </li>
+    }
+  </ol>
+  <div class="text-center mt-4">
+    <a class="btn btn-primary btn-lg" routerLink="/registro">Crear el espacio de mi empresa</a>
+  </div>
+</section>

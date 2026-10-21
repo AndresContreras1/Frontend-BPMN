@@ -38,7 +38,7 @@ describe('Guards de navegación', () => {
 
   it('invitadoGuard con sesión manda al inicio', () => {
     entrar('EDITOR');
-    expect(router.serializeUrl(ejecutar(invitadoGuard) as UrlTree)).toBe('/');
+    expect(router.serializeUrl(ejecutar(invitadoGuard) as UrlTree)).toBe('/inicio');
   });
 
   it('invitadoGuard sin sesión deja ver el login', () => {
@@ -47,7 +47,7 @@ describe('Guards de navegación', () => {
 
   it('rolGuard solo deja pasar a los roles de la ruta', () => {
     entrar('EDITOR');
-    expect(router.serializeUrl(ejecutar(rolGuard, { roles: ['ADMINISTRADOR'] }) as UrlTree)).toBe('/');
+    expect(router.serializeUrl(ejecutar(rolGuard, { roles: ['ADMINISTRADOR'] }) as UrlTree)).toBe('/inicio');
     expect(ejecutar(rolGuard, { roles: ['ADMINISTRADOR', 'EDITOR'] })).toBeTrue();
   });
 

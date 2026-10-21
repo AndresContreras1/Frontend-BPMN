@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 import { AlertaErrorComponent } from '../../components/alerta-error/alerta-error.component';
 import { CampoErrorComponent } from '../../components/campo-error/campo-error.component';
 import { problemaDe } from '../../core/services/errores';
+import { NotificacionesService } from '../../core/services/notificaciones.service';
 import { SesionStore } from '../../core/services/sesion.store';
 import { ProblemDetail } from '../../models/problem-detail.model';
 import { AuthService } from '../../service/auth.service';
@@ -19,6 +20,7 @@ import { AuthService } from '../../service/auth.service';
 export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly sesion = inject(SesionStore);
+  private readonly notificaciones = inject(NotificacionesService);
   private readonly router = inject(Router);
 
   private readonly route = inject(ActivatedRoute);
@@ -58,15 +60,16 @@ export class LoginComponent implements OnInit {
       .subscribe({
         next: (respuesta) => {
           this.sesion.iniciar(respuesta);
+          this.notificaciones.exito(`Bienvenido(a), ${respuesta.usuario.nombre}.`);
           this.router.navigateByUrl(this.destino());
         },
         error: (err) => this.problema.set(problemaDe(err)),
       });
   }
 
-  /** Solo se vuelve a rutas internas de la app (evita redirecciones a otros sitios). */
+  /** Solo se vuelve a rutas internas de la app (evita redirecciones a otros sitios); si no, al inicio. */
   private destino(): string {
     const url = this.returnUrl();
-    return url && url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/login') ? url : '/';
+    return url && url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/login') ? url : '/inicio';
   }
 }

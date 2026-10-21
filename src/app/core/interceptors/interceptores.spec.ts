@@ -3,9 +3,11 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
+import { CargaService } from '../services/carga.service';
 import { SesionStore } from '../services/sesion.store';
 import { TokenService } from '../services/token.service';
 import { authInterceptor } from './auth.interceptor';
+import { cargaInterceptor } from './carga.interceptor';
 import { errorInterceptor } from './error.interceptor';
 
 describe('Interceptores HTTP', () => {
@@ -19,7 +21,7 @@ describe('Interceptores HTTP', () => {
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+        provideHttpClient(withInterceptors([authInterceptor, errorInterceptor, cargaInterceptor])),
         provideHttpClientTesting(),
         { provide: Router, useValue: router },
       ],
@@ -30,6 +32,18 @@ describe('Interceptores HTTP', () => {
   });
 
   afterEach(() => backend.verify());
+
+  it('la barra de carga se ve mientras haya peticiones en curso, terminen bien o con error', () => {
+    const carga = TestBed.inject(CargaService);
+    http.get('/api/v1/procesos').subscribe();
+    http.get('/api/v1/usuarios').subscribe({ error: () => undefined });
+    expect(carga.cargando()).toBeTrue();
+
+    backend.expectOne('/api/v1/procesos').flush([]);
+    expect(carga.cargando()).toBeTrue();
+    backend.expectOne('/api/v1/usuarios').flush(null, { status: 500, statusText: 'Error' });
+    expect(carga.cargando()).toBeFalse();
+  });
 
   it('agrega el Bearer a las peticiones de la API', () => {
     tokens.guardar('abc');

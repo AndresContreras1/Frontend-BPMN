@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 
+import { NotificacionesService } from '../../core/services/notificaciones.service';
 import { SesionStore } from '../../core/services/sesion.store';
 import { LoginResponse } from '../../models/usuario.model';
 import { LoginComponent } from './login.component';
@@ -91,6 +92,7 @@ describe('LoginComponent (HU-03)', () => {
 
     expect(TestBed.inject(SesionStore).autenticado()).toBeTrue();
     expect(router.navigateByUrl).toHaveBeenCalledWith('/empresa');
+    expect(TestBed.inject(NotificacionesService).avisos()[0].tipo).toBe('exito');
   });
 
   for (const externa of ['https://malicioso.com', '//malicioso.com', '/login']) {
@@ -102,7 +104,7 @@ describe('LoginComponent (HU-03)', () => {
       fixture.detectChanges();
       enviar();
       backend.expectOne('/api/v1/auth/login').flush(respuesta);
-      expect(router.navigateByUrl).toHaveBeenCalledWith('/');
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/inicio');
     });
   }
 

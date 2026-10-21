@@ -42,7 +42,7 @@
       }
     </select>
   </div>
-  <div class="col-lg-3 d-flex align-items-center gap-3">
+  <div class="col-lg-3 d-flex align-items-center gap-3 flex-wrap">
     <div class="form-check form-switch mb-0">
       <input class="form-check-input" type="checkbox" role="switch" id="verEliminados"
              [checked]="verEliminados()" (change)="mostrarEliminados($any($event.target).checked)" />
@@ -51,8 +51,41 @@
     @if (hayFiltros()) {
       <button type="button" class="btn btn-link btn-sm p-0" (click)="limpiarFiltros()" id="limpiarFiltrosBtn">Limpiar filtros</button>
     }
+    <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Cómo ver la lista">
+      <button type="button" class="btn btn-outline-secondary" [class.active]="vista() === 'tabla'" [attr.aria-pressed]="vista() === 'tabla'"
+              (click)="cambiarVista('tabla')" id="vistaTablaBtn" title="Ver como tabla">
+        <i class="bi bi-table"></i><span class="visually-hidden">Tabla</span>
+      </button>
+      <button type="button" class="btn btn-outline-secondary" [class.active]="vista() === 'tarjetas'" [attr.aria-pressed]="vista() === 'tarjetas'"
+              (click)="cambiarVista('tarjetas')" id="vistaTarjetasBtn" title="Ver como tarjetas">
+        <i class="bi bi-grid-3x2-gap"></i><span class="visually-hidden">Tarjetas</span>
+      </button>
+    </div>
   </div>
 </div>
+
+@if (vista() === 'tarjetas') {
+  @if (cargando() && !resultado()) {
+    <div class="text-center text-body-secondary py-5"><span class="spinner-border spinner-border-sm me-2"></span>Cargando…</div>
+  } @else {
+    <div class="row g-3" id="tarjetasProcesos">
+      @for (p of resultado()?.content ?? []; track p.id) {
+        <div class="col-xxl-3 col-lg-4 col-sm-6">
+          <app-proceso-tarjeta [proceso]="p" [puedeEditar]="p.activo && sesion.puedeEditar()"
+                               [puedeEliminar]="p.activo && sesion.esAdministrador()" (eliminar)="porEliminar.set($event)">
+          </app-proceso-tarjeta>
+        </div>
+      } @empty {
+        <div class="col-12">
+          <div class="tarjeta text-center text-body-secondary py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            {{ verEliminados() ? 'No hay procesos eliminados.' : 'No hay procesos que coincidan con los filtros.' }}
+          </div>
+        </div>
+      }
+    </div>
+  }
+} @else {
 
 <app-tabla-generica [columnas]="columnas" [orden]="orden()" (ordenar)="ordenar($event)"
                     [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
@@ -91,6 +124,7 @@
     </tr>
   }
 </app-tabla-generica>
+}
 
 <app-paginador [page]="page()" [totalPages]="resultado()?.totalPages ?? 0"
                [totalElements]="resultado()?.totalElements ?? 0" (pageChange)="page.set($event)"></app-paginador>

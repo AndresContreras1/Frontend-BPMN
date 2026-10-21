@@ -1,0 +1,52 @@
+// El hero termina bajo la tarjeta del ejemplo, que se monta encima con margen negativo
+.hero {
+  padding-bottom: 6rem;
+}
+
+.texto-hero {
+  max-width: 46rem;
+  opacity: .92;
+}
+
+.ejemplo {
+  margin-top: -5rem;
+}
+
+.carrusel-elementos {
+  max-width: 48rem;
+
+  .carousel-inner {
+    background: #fff;
+  }
+
+  .diapositiva {
+    min-height: 17rem;
+  }
+
+  // Los controles de Bootstrap son flechas blancas: sobre fondo blanco se les pone un círculo del color primario
+  .carousel-control-prev-icon,
+  .carousel-control-next-icon {
+    background-color: var(--bs-primary);
+    background-size: 50%;
+    border-radius: 50%;
+    padding: 20px;
+  }
+
+  .carousel-indicators [data-bs-target] {
+    background-color: var(--bs-primary);
+  }
+}
+
+.texto-diapositiva {
+  max-width: 32rem;
+}
+
+.numero-paso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-weight: 700;
+}

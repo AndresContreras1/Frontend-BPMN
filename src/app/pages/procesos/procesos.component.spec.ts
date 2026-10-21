@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 
 import { SesionStore } from '../../core/services/sesion.store';
 import { Proceso } from '../../models/proceso.model';
@@ -143,5 +143,37 @@ describe('ProcesosComponent (HU-06, HU-07)', () => {
     fixture.detectChanges();
     expect(html.textContent).toContain('Su rol no permite realizar esta operación');
     expect(html.querySelectorAll('tbody tr').length).toBe(2);
+  }));
+
+  it('la vista de tarjetas muestra los mismos procesos y se recuerda en el navegador', fakeAsync(() => {
+    crear('ADMINISTRADOR');
+    html.querySelector<HTMLButtonElement>('#vistaTarjetasBtn')!.click();
+    fixture.detectChanges();
+
+    expect(html.querySelector('table')).toBeNull();
+    expect(html.querySelectorAll('app-proceso-tarjeta').length).toBe(2);
+    expect(html.querySelector('#eliminarProcesoBtn-2')).not.toBeNull();
+    expect(localStorage.getItem('preferencia.vistaProcesos')).toBe('tarjetas');
+
+    html.querySelector<HTMLButtonElement>('#eliminarProcesoBtn-2')!.click();
+    fixture.detectChanges();
+    expect(html.querySelector('.modal')!.textContent).toContain('Aprobación de compras');
+  }));
+
+  it('aplica los filtros que llegan en la URL desde los indicadores del inicio', fakeAsync(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [ProcesosComponent],
+      providers: [
+        provideRouter([]), provideHttpClient(), provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ estado: 'PUBLICADO', eliminados: 'true' }) } } },
+      ],
+    });
+    backend = TestBed.inject(HttpTestingController);
+    const params = crear('LECTOR').request.params;
+
+    expect(params.get('estado')).toBe('PUBLICADO');
+    expect(params.get('activo')).toBe('false');
+    expect(html.querySelector<HTMLInputElement>('#verEliminados')!.checked).toBeTrue();
   }));
 });

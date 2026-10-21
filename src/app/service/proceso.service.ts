@@ -7,7 +7,7 @@ import { parametros } from '../core/services/parametros';
 import { HistorialCambio } from '../models/historial.model';
 import { PageResponse, Paginacion } from '../models/page-response.model';
 import {
-  Comparticion, FiltroProceso, Proceso, ProcesoActualizacionRequest, ProcesoCompartido, ProcesoRequest,
+  Comparticion, FiltroProceso, Proceso, ProcesoActualizacionRequest, ProcesoCompartido, ProcesoRequest, ResumenProcesos,
 } from '../models/proceso.model';
 
 /** HU-04 a HU-07 y HU-23: procesos de la empresa, su historial y la compartición con otras empresas. */
@@ -25,6 +25,11 @@ export class ProcesoService {
         activo: filtro.activo,
       }),
     });
+  }
+
+  /** Indicadores del inicio: activos por estado, eliminados y compartidos conmigo. */
+  resumen(): Observable<ResumenProcesos> {
+    return this.http.get<ResumenProcesos>(`${this.url}/resumen`);
   }
 
   categorias(): Observable<string[]> {

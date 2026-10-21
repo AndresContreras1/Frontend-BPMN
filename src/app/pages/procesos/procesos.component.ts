@@ -11,26 +11,33 @@ import { PageTitleComponent } from '../../components/page-title/page-title.compo
 import { PaginadorComponent } from '../../components/paginador/paginador.component';
 import { Columna, TablaGenericaComponent } from '../../components/tabla-generica/tabla-generica.component';
 import { problemaDe } from '../../core/services/errores';
+import { PreferenciasService } from '../../core/services/preferencias.service';
 import { SesionStore } from '../../core/services/sesion.store';
 import { ProblemDetail } from '../../models/problem-detail.model';
 import { EstadoProceso, Proceso } from '../../models/proceso.model';
 import { ProcesoService } from '../../service/proceso.service';
+import { ProcesoTarjetaComponent } from './components/proceso-tarjeta/proceso-tarjeta.component';
+
+const VISTAS = ['tabla', 'tarjetas'] as const;
+export type VistaProcesos = (typeof VISTAS)[number];
 
 /**
  * HU-07: procesos de la empresa con búsqueda por nombre, filtros por estado y categoría, orden y
  * paginación. "Ver eliminados" lista los inactivos (HU-06), que se conservan para consulta.
+ * La lista se ve como tabla o como tarjetas; la elección se recuerda en el navegador.
  */
 @Component({
   selector: 'app-procesos',
   imports: [
     DatePipe, RouterLink, PageTitleComponent, PaginadorComponent, AlertaErrorComponent, ConfirmarModalComponent,
-    EstadoBadgeComponent, TablaGenericaComponent,
+    EstadoBadgeComponent, TablaGenericaComponent, ProcesoTarjetaComponent,
   ],
   templateUrl: './procesos.component.html',
   styleUrl: './procesos.component.scss',
 })
 export class ProcesosComponent implements OnInit {
   private readonly procesoService = inject(ProcesoService);
+  private readonly preferencias = inject(PreferenciasService);
   readonly sesion = inject(SesionStore);
 
   private readonly route = inject(ActivatedRoute);
@@ -50,6 +57,7 @@ export class ProcesosComponent implements OnInit {
   problema = signal<ProblemDetail | null>(null);
   aviso = signal('');
   porEliminar = signal<Proceso | null>(null);
+  vista = signal<VistaProcesos>(this.preferencias.leer('vistaProcesos', VISTAS, 'tabla'));
 
   categorias = toSignal(this.procesoService.categorias().pipe(catchError(() => of([] as string[]))), {
     initialValue: [] as string[],
@@ -88,10 +96,26 @@ export class ProcesosComponent implements OnInit {
 
   hayFiltros = computed(() => this.texto() !== '' || this.estado() !== '' || this.categoria() !== '');
 
-  // Cualquier cambio de filtro u orden vuelve a la primera página
+  /**
+   * Parámetros de la URL: ?eliminado=<nombre> (aviso al volver de eliminar), ?estado=BORRADOR|PUBLICADO y
+   * ?eliminados=true (los enlaces de los indicadores del inicio).
+   */
   ngOnInit(): void {
-    this.eliminado.set(this.route.snapshot.queryParamMap.get('eliminado'));
+    const parametros = this.route.snapshot.queryParamMap;
+    this.eliminado.set(parametros.get('eliminado'));
+    const estado = parametros.get('estado');
+    if (estado === 'BORRADOR' || estado === 'PUBLICADO') {
+      this.estado.set(estado);
+    }
+    this.verEliminados.set(parametros.get('eliminados') === 'true');
   }
+
+  cambiarVista(vista: VistaProcesos): void {
+    this.vista.set(vista);
+    this.preferencias.guardar('vistaProcesos', vista);
+  }
+
+  // Cualquier cambio de filtro u orden vuelve a la primera página
 
   buscar(texto: string): void {
     this.texto.set(texto);

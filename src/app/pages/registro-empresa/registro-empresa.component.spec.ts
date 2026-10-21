@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
+import { NotificacionesService } from '../../core/services/notificaciones.service';
 import { SesionStore } from '../../core/services/sesion.store';
 import { RegistroEmpresaComponent } from './registro-empresa.component';
 
@@ -78,7 +79,8 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     });
 
     expect(TestBed.inject(SesionStore).esAdministrador()).toBeTrue();
-    expect(router.navigate).toHaveBeenCalledWith(['/']);
+    expect(router.navigate).toHaveBeenCalledWith(['/inicio']);
+    expect(TestBed.inject(NotificacionesService).avisos()[0].mensaje).toContain('Facimus S.A.S. quedó registrada');
   });
 
   it('NIT repetido: muestra la regla de negocio (409) y no inicia sesión', () => {

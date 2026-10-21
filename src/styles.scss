@@ -1,24 +1,47 @@
-// Variables de Bootstrap primero, luego estilos propios
+// Tema propio: primero las variables de Bootstrap (Sass), luego Bootstrap y al final los estilos propios.
+// Así todos los componentes toman los colores, radios y sombras del proyecto y no los de por defecto.
+$primary: #3451b2;
+$secondary: #64748b;
+$success: #2f9e44;
+$info: #1c7ed6;
+$warning: #f59f00;
+$danger: #e03131;
+$light: #f1f5f9;
+$dark: #1e293b;
+
+$body-bg: #f4f6fb;
+$body-color: #1f2937;
+$headings-font-weight: 600;
+$border-radius: .5rem;
+$border-radius-sm: .375rem;
+$border-radius-lg: .75rem;
+$enable-shadows: true;
+$card-border-color: rgba(15, 23, 42, .08);
+$card-cap-bg: #fff;
+$card-box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 2px 6px rgba(15, 23, 42, .05);
+$input-btn-focus-width: .2rem;
+$btn-box-shadow: none;
+$navbar-dark-color: rgba(255, 255, 255, .8);
+$navbar-dark-hover-color: #fff;
+
+@import "bootstrap/scss/bootstrap";
+
 :root {
-  --bs-primary: #1f6feb;
-  --bs-primary-rgb: 31, 111, 235;
   --bpmn-borde: #24292f;
   --bpmn-actividad: #ffffff;
   --bpmn-pool: #f6f8fa;
   --bpmn-lane: #ffffff;
-  --bpmn-seleccion: #1f6feb;
+  --bpmn-seleccion: #{$primary};
   --bpmn-error: #cf222e;
   --bpmn-aviso: #bf8700;
-}
-
-body {
-  background-color: #f3f4f6;
+  --degradado-marca: linear-gradient(135deg, #{$primary} 0%, #4c6ef5 55%, #15aabf 100%);
 }
 
 .tarjeta {
   background: #fff;
-  border: 1px solid #d0d7de;
-  border-radius: 0.5rem;
+  border: 1px solid $card-border-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $card-box-shadow;
   padding: 1.25rem;
 }
 
@@ -30,6 +53,103 @@ body {
 // Lane abierta en el panel del editor
 .active-lane {
   background-color: var(--bs-primary-bg-subtle);
+}
+
+// ---------- Marca, tarjetas y animaciones ----------
+.fondo-marca {
+  background: var(--degradado-marca);
+  color: #fff;
+}
+
+.icono-circulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: .85rem;
+  background: rgba(255, 255, 255, .2);
+  color: #fff;
+}
+
+// Tarjeta que se puede pulsar: se eleva un poco al pasar el mouse
+.tarjeta-interactiva {
+  transition: transform .15s ease, box-shadow .15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+// Entrada suave del contenido de cada página
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.aparecer {
+  animation-name: aparecer;
+  animation-duration: .35s;
+  animation-timing-function: ease-out;
+}
+
+// Barra de carga global: se mueve de izquierda a derecha mientras hay peticiones en curso
+@keyframes avanzar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+.barra-carga {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  overflow: hidden;
+  z-index: $zindex-fixed + 10;
+
+  span {
+    display: block;
+    width: 40%;
+    height: 100%;
+    background: var(--degradado-marca);
+    animation-name: avanzar;
+    animation-duration: 1.1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aparecer,
+  .barra-carga span {
+    animation: none;
+  }
+}
+
+// "lunes, 19 de octubre" → "Lunes, 19 de octubre": solo la primera letra en mayúscula
+.primera-mayuscula::first-letter {
+  text-transform: uppercase;
+}
+
+// El lienzo se adapta al ancho disponible (página de bienvenida)
+.lienzo-adaptable .lienzo-bpmn {
+  width: 100%;
+  height: auto;
 }
 
 // ---------- Lienzo del diagrama (SVG) ----------
