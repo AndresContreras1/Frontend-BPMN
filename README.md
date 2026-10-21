@@ -72,11 +72,22 @@ src/app/
 | `/procesos/nuevo` | Crear proceso (nace en borrador con el pool de la empresa) | HU-04 |
 | `/procesos/editar/:id` | Editar nombre, descripción, categoría y estado, con control de versión | HU-04, HU-05 |
 | `/procesos/:id` | Ficha con publicar o volver a borrador, eliminar, historial de cambios y compartir por NIT | HU-04 a HU-07, HU-23 |
-| `/procesos/:id/diagrama` | Editor del diagrama: pools (participantes, caja negra), lanes por rol con orden, permisos de estructura | HU-21, HU-22, HU-24 |
+| `/procesos/:id/diagrama` | Editor del diagrama (ver abajo) | HU-08 a HU-16, HU-21, HU-22, HU-24 a HU-28 |
 | `/compartidos` | Procesos que otras empresas compartieron, en solo lectura | HU-23 |
 | `/roles` | Catálogo de roles de proceso: crear, editar, ver en qué procesos se usa y eliminar si no está en uso | HU-17 a HU-20 |
 | `/usuarios` | Lista paginada con búsqueda y orden; el administrador cambia el rol y desactiva o reactiva | HU-02 |
 | `/usuarios/nuevo` | Invitar usuario con contraseña inicial y rol (solo administrador) | HU-02 |
+
+### Editor del diagrama
+
+El lienzo es SVG y se dibuja con funciones puras (`pages/editor/layout.ts`). No hay arrastrar y soltar: la posición se elige con un clic.
+
+- **Símbolos BPMN:** actividad con el ícono de su tipo, gateway exclusivo (X), paralelo (+) e inclusivo (O), inicio (círculo delgado), fin (círculo grueso), eventos de mensaje con sobre lleno (envía) o vacío (recibe).
+- **Flujos:** secuencia con línea continua y punta sólida; mensajes con línea punteada, círculo de origen, punta hueca, nombre y clave de correlación.
+- **Herramientas:** Inicio, Actividad, Gateway y Fin se colocan con un clic en la lane; Conectar une dos elementos del mismo pool; Enviar mensaje, Recibir mensaje y Notificación externa crean los flujos entre pools; Mover reubica el elemento elegido dentro de su pool.
+- **Panel lateral:** formulario del elemento abierto (crear o editar), estructura de pools y lanes, y advertencias del validador (los errores impiden publicar; clic en una advertencia la ubica en el lienzo).
+- **Eliminar:** solo el administrador. Antes de confirmar se muestra el impacto: arcos que se van con el elemento y advertencias que quedarían.
+- **Permisos:** el lector y las empresas invitadas ven el diagrama en solo lectura. En un proceso publicado la API rechaza los cambios que lo dejen incoherente y la página muestra los motivos.
 
 ### Usuarios de prueba (datos demo del backend)
 

@@ -1,0 +1,40 @@
+<svg:g class="nodo" [attr.transform]="'translate(' + layout().cx + ' ' + layout().cy + ')'"
+       [class.seleccionado]="seleccionado()" [class.con-error]="severidad() === 'ERROR'" [class.con-aviso]="severidad() === 'AVISO'"
+       [class.origen-conexion]="origen()" [attr.data-nodo]="layout().nodo.id" (click)="alClic($event)">
+  <svg:title>{{ titulo() }}</svg:title>
+
+  @switch (layout().forma) {
+    @case ('actividad') {
+      <svg:rect class="forma" x="-60" y="-30" width="120" height="60" rx="10" ry="10" />
+      @if (icono()) {
+        <svg:text class="icono" x="-53" y="-15">{{ icono() }}</svg:text>
+      }
+      @for (linea of lineas(); track $index) {
+        <svg:text class="texto" x="0" [attr.y]="inicioTexto() + $index * 13">{{ linea }}</svg:text>
+      }
+    }
+    @case ('gateway') {
+      <svg:polygon class="forma" points="0,-25 25,0 0,25 -25,0" />
+      @switch (layout().nodo.tipoGateway) {
+        @case ('EXCLUSIVO') { <svg:path class="marca" d="M -8 -8 L 8 8 M 8 -8 L -8 8" /> }
+        @case ('PARALELO') { <svg:path class="marca" d="M 0 -12 V 12 M -12 0 H 12" /> }
+        @case ('INCLUSIVO') { <svg:circle class="marca-circulo" r="10" /> }
+      }
+      @for (linea of lineas(); track $index) {
+        <svg:text class="texto-externo" x="0" [attr.y]="40 + $index * 13">{{ linea }}</svg:text>
+      }
+    }
+    @case ('evento') {
+      <svg:circle class="forma" [class.evento-inicio]="tipoEvento() === 'inicio'" [class.evento-fin]="tipoEvento() === 'fin'" r="18" />
+      @if (tipoEvento() === 'intermedio') {
+        <svg:circle class="forma-interna" r="14" />
+      }
+      @if (sobre()) {
+        <svg:text class="sobre" [class.sobre-lleno]="mensaje()?.direccion === 'ENVIO'" x="0" y="1">{{ sobre() }}</svg:text>
+      }
+      @for (linea of lineas(); track $index) {
+        <svg:text class="texto-externo" x="0" [attr.y]="33 + $index * 13">{{ linea }}</svg:text>
+      }
+    }
+  }
+</svg:g>

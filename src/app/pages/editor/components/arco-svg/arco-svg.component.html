@@ -1,0 +1,9 @@
+<svg:g class="arco" [class.seleccionado]="seleccionado()" [class.con-error]="conError()" [attr.data-arco]="arco().id" (click)="alClic($event)">
+  <svg:title>{{ arco().condicion ? 'Condición: ' + arco().condicion : 'Flujo de secuencia' }}</svg:title>
+  <!-- Línea ancha e invisible: facilita hacer clic sobre el arco -->
+  <svg:path class="zona-clic" [attr.d]="ruta().d" />
+  <svg:path class="linea" [attr.d]="ruta().d" marker-end="url(#flecha-secuencia)" />
+  @if (arco().etiqueta) {
+    <svg:text class="etiqueta" [attr.x]="ruta().etiquetaX" [attr.y]="ruta().etiquetaY">{{ arco().etiqueta }}</svg:text>
+  }
+</svg:g>

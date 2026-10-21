@@ -1,0 +1,11 @@
+<svg:g class="flujo-mensaje" [class.seleccionado]="seleccionado()" [attr.data-mensaje]="mensaje().id" (click)="alClic($event)">
+  <svg:title>Mensaje {{ mensaje().nombre }}{{ mensaje().claveCorrelacion ? ' · correlación por ' + mensaje().claveCorrelacion : '' }}</svg:title>
+  <svg:path class="zona-clic" [attr.d]="ruta().d" />
+  <svg:path class="linea" [attr.d]="ruta().d" marker-start="url(#origen-mensaje)" marker-end="url(#flecha-mensaje)" />
+  <svg:text class="etiqueta" [attr.text-anchor]="ruta().ancla ?? 'middle'" [attr.x]="ruta().etiquetaX" [attr.y]="ruta().etiquetaY">{{ mensaje().nombre }}</svg:text>
+  @if (mensaje().claveCorrelacion) {
+    <svg:text class="etiqueta-correlacion" [attr.text-anchor]="ruta().ancla ?? 'middle'" [attr.x]="ruta().etiquetaX" [attr.y]="ruta().etiquetaY + 13">
+      clave: {{ mensaje().claveCorrelacion }}
+    </svg:text>
+  }
+</svg:g>

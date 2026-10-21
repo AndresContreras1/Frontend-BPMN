@@ -10,7 +10,7 @@ import { PermisoEstructura } from '../../../models/pool.model';
 import { RolAcceso } from '../../../models/usuario.model';
 import { ProcesoEditorPageComponent } from './proceso-editor-page.component';
 
-describe('ProcesoEditorPageComponent: estructura (HU-21, HU-22, HU-24)', () => {
+describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, HU-24)', () => {
   let fixture: ComponentFixture<ProcesoEditorPageComponent>;
   let backend: HttpTestingController;
   let html: HTMLElement;
@@ -58,6 +58,8 @@ describe('ProcesoEditorPageComponent: estructura (HU-21, HU-22, HU-24)', () => {
       roles.flush({ content: [{ id: 1, nombre: 'Empleado' }, { id: 4, nombre: 'Analista' }], page: 0, size: 200, totalElements: 2, totalPages: 1 });
     }
     diagramaReq.flush(d);
+    fixture.detectChanges();
+    html.querySelector<HTMLButtonElement>('#pestanaEstructura')?.click();
     fixture.detectChanges();
   };
 

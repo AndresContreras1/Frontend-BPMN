@@ -19,60 +19,193 @@
     </ol>
   </nav>
 
-  <app-page-title [titulo]="'Diagrama: ' + proceso.nombre" subtitulo="Pools, lanes y elementos del proceso">
+  <app-page-title [titulo]="'Diagrama: ' + proceso.nombre" subtitulo="Pools, lanes, elementos, flujos de secuencia y mensajes">
     <app-estado-badge [estado]="proceso.estado" [activo]="proceso.activo"></app-estado-badge>
     @if (!store.editable()) {
       <span class="badge text-bg-secondary" id="soloLecturaBadge"><i class="bi bi-lock"></i> Solo lectura</span>
     }
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="validar()" [disabled]="validando()" id="validarDiagramaBtn">
+      <i class="bi bi-check2-square"></i> Validar
+    </button>
   </app-page-title>
 
-  @if (store.editable() && !store.estructuraEditable()) {
-    <div class="alert alert-info small" id="estructuraRestringidaMsg">
-      <i class="bi bi-shield-lock"></i> El administrador restringió los cambios de pools y lanes de este proceso.
+  @if (proceso.estado === 'PUBLICADO' && store.editable()) {
+    <div class="alert alert-info py-2 small" id="publicadoMsg">
+      <i class="bi bi-info-circle"></i> Proceso publicado: la API rechaza los cambios que lo dejen incoherente.
     </div>
   }
   @if (aviso()) {
     <div class="alert alert-success alert-dismissible py-2" id="avisoEditor">
       {{ aviso() }}
+      @if (avisosGuardado().length) {
+        <ul class="mb-0 small" id="avisosGuardado">
+          @for (a of avisosGuardado(); track $index) {
+            <li>{{ a.mensaje }}</li>
+          }
+        </ul>
+      }
       <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
     </div>
   }
   <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
   <div class="row g-3">
-    <div class="col-lg-8">
-      <app-estructura-panel [pools]="store.pools()" [editable]="store.estructuraEditable()" [seleccion]="store.seleccion()"
-                            (seleccionar)="store.seleccionar($event)" (moverLane)="moverLane($event)"
-                            (eliminarPool)="eliminarPool($event)" (eliminarLane)="eliminarLane($event)">
-      </app-estructura-panel>
+    <div class="col-xl-8">
+      @if (store.editable()) {
+        <app-herramientas-barra [herramienta]="store.herramienta()" [conectando]="store.origenConexion() !== null"
+                                (cambiar)="cambiarHerramienta($event)"></app-herramientas-barra>
+      }
+      <div class="contenedor-lienzo">
+        <app-diagrama-svg [pools]="store.pools()" [nodos]="store.nodos()" [arcos]="store.arcos()" [mensajes]="store.mensajes()"
+                          [advertencias]="store.advertencias()" [resaltado]="store.idResaltado()"
+                          [arcoResaltado]="store.arcoSeleccionado()?.id ?? null" [mensajeResaltado]="store.mensajeSeleccionado()?.id ?? null"
+                          [origenConexion]="store.origenConexion()" [herramienta]="store.editable() ? store.herramienta() : 'seleccionar'"
+                          (clicLienzo)="alClicLienzo($event)" (clicNodo)="alClicNodo($event)"
+                          (clicArco)="alClicArco($event)" (clicMensaje)="alClicMensaje($event)">
+        </app-diagrama-svg>
+      </div>
     </div>
 
-    <div class="col-lg-4">
-      @switch (store.seleccion()?.tipo) {
-        @case ('pool') {
-          <app-pool-form [pool]="store.poolSeleccionado()" [esAdministrador]="sesion.esAdministrador()"
-                         [guardando]="guardando()" [problema]="problema()"
-                         (guardar)="guardarPool($event)" (cambiarPermiso)="cambiarPermiso($event)" (cancelar)="cerrarPanel()">
-          </app-pool-form>
-        }
-        @case ('lane') {
-          @if (store.poolDeLane(); as pool) {
-            <app-lane-form [lane]="store.laneSeleccionada()" [pool]="pool" [roles]="store.roles()"
-                           [esAdministrador]="sesion.esAdministrador()" [guardando]="guardando()"
-                           (guardar)="guardarLane($event)" (cancelar)="cerrarPanel()">
-            </app-lane-form>
+    <div class="col-xl-4">
+      <ul class="nav nav-tabs mb-2">
+        <li class="nav-item">
+          <button type="button" class="nav-link" [class.active]="pestana() === 'elemento'" (click)="pestana.set('elemento')" id="pestanaElemento">Elemento</button>
+        </li>
+        <li class="nav-item">
+          <button type="button" class="nav-link" [class.active]="pestana() === 'estructura'" (click)="pestana.set('estructura')" id="pestanaEstructura">Estructura</button>
+        </li>
+        <li class="nav-item">
+          <button type="button" class="nav-link" [class.active]="pestana() === 'advertencias'" (click)="pestana.set('advertencias')" id="pestanaAdvertencias">
+            Advertencias
+            @if (store.advertencias().length) {
+              <span class="badge rounded-pill" [class.text-bg-danger]="hayErrores()" [class.text-bg-warning]="!hayErrores()">
+                {{ store.advertencias().length }}
+              </span>
+            }
+          </button>
+        </li>
+      </ul>
+
+      @switch (pestana()) {
+        @case ('elemento') {
+          @switch (store.seleccion()?.tipo) {
+            @case ('nuevo') {
+              @if (store.seleccion(); as s) {
+                @if (s.tipo === 'nuevo') {
+                  <app-panel-elemento [titulo]="tituloNuevo(s.clase)" icono="bi-plus-circle" (cerrar)="cerrarPanel()">
+                    @switch (s.clase) {
+                      @case ('ACTIVIDAD') {
+                        <app-actividad-form [ubicacion]="s.ubicacion" [lanes]="lanesDe(s.ubicacion.poolId)"
+                                            [guardando]="guardando()" [problema]="problema()" (guardar)="guardarActividad($event)"></app-actividad-form>
+                      }
+                      @case ('GATEWAY') {
+                        <app-gateway-form [ubicacion]="s.ubicacion" [lanes]="lanesDe(s.ubicacion.poolId)"
+                                          [guardando]="guardando()" [problema]="problema()" (guardar)="guardarGateway($event)"></app-gateway-form>
+                      }
+                      @case ('INICIO') {
+                        <app-evento-form [ubicacion]="s.ubicacion" tipoInicial="INICIO" [lanes]="lanesDe(s.ubicacion.poolId)"
+                                         [guardando]="guardando()" [problema]="problema()" (guardar)="guardarEvento($event)"></app-evento-form>
+                      }
+                      @case ('FIN') {
+                        <app-evento-form [ubicacion]="s.ubicacion" tipoInicial="FIN" [lanes]="lanesDe(s.ubicacion.poolId)"
+                                         [guardando]="guardando()" [problema]="problema()" (guardar)="guardarEvento($event)"></app-evento-form>
+                      }
+                      @default {
+                        <app-mensaje-form [clase]="claseMensaje(s.clase)" [ubicacion]="s.ubicacion" [pools]="store.pools()" [nodos]="store.nodos()"
+                                          [guardando]="guardando()" [problema]="problema()" (guardar)="guardarMensaje($event)"></app-mensaje-form>
+                      }
+                    }
+                  </app-panel-elemento>
+                }
+              }
+            }
+            @case ('nodo') {
+              @if (store.nodoSeleccionado(); as nodo) {
+                <app-panel-elemento [titulo]="tituloNodo(nodo)" icono="bi-bounding-box" [puedeEliminar]="puedeEliminar()"
+                                    (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
+                  @switch (nodo.tipo) {
+                    @case ('ACTIVIDAD') {
+                      <app-actividad-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
+                                          [guardando]="guardando()" [problema]="problema()" (guardar)="guardarActividad($event)"></app-actividad-form>
+                    }
+                    @case ('GATEWAY') {
+                      <app-gateway-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
+                                        [guardando]="guardando()" [problema]="problema()" (guardar)="guardarGateway($event)"></app-gateway-form>
+                    }
+                    @default {
+                      <app-evento-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
+                                       [guardando]="guardando()" [problema]="problema()" (guardar)="guardarEvento($event)"></app-evento-form>
+                    }
+                  }
+                </app-panel-elemento>
+              }
+            }
+            @case ('mensaje') {
+              @if (store.mensajeSeleccionado(); as mensaje) {
+                <app-panel-elemento [titulo]="mensaje.direccion === 'RECEPCION' ? 'Recepción de mensaje' : (mensaje.tipoDestino ? 'Notificación externa' : 'Envío de mensaje')"
+                                    [icono]="mensaje.direccion === 'RECEPCION' ? 'bi-envelope' : 'bi-envelope-fill'"
+                                    [puedeEliminar]="puedeEliminar()" (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
+                  <app-mensaje-form [mensaje]="mensaje" [pools]="store.pools()" [nodos]="store.nodos()" [editable]="store.editable()"
+                                    [guardando]="guardando()" [problema]="problema()" (guardar)="guardarMensaje($event)"></app-mensaje-form>
+                  <app-correlacion-form [mensaje]="mensaje" [editable]="store.editable()" [guardando]="guardando()"
+                                        (guardar)="guardarCorrelacion($event)"></app-correlacion-form>
+                </app-panel-elemento>
+              }
+            }
+            @case ('arco') {
+              @if (store.seleccion(); as s) {
+                @if (s.tipo === 'arco') {
+                  <app-panel-elemento [titulo]="s.id === null ? 'Nuevo flujo de secuencia' : 'Flujo de secuencia'" icono="bi-arrow-right"
+                                      [puedeEliminar]="puedeEliminar() && s.id !== null" (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
+                    <app-arco-form [arco]="store.arcoSeleccionado()" [origenId]="s.origenId" [destinoId]="s.destinoId" [nodos]="store.nodos()"
+                                   [editable]="store.editable()" [guardando]="guardando()" [problema]="problema()"
+                                   (guardar)="guardarArco($event)"></app-arco-form>
+                  </app-panel-elemento>
+                }
+              }
+            }
+            @case ('pool') {
+              <app-pool-form [pool]="store.poolSeleccionado()" [esAdministrador]="sesion.esAdministrador()"
+                             [guardando]="guardando()" [problema]="problema()"
+                             (guardar)="guardarPool($event)" (cambiarPermiso)="cambiarPermiso($event)" (cancelar)="cerrarPanel()">
+              </app-pool-form>
+            }
+            @case ('lane') {
+              @if (store.poolDeLane(); as pool) {
+                <app-lane-form [lane]="store.laneSeleccionada()" [pool]="pool" [roles]="store.roles()"
+                               [esAdministrador]="sesion.esAdministrador()" [guardando]="guardando()"
+                               (guardar)="guardarLane($event)" (cancelar)="cerrarPanel()">
+                </app-lane-form>
+              }
+            }
+            @default {
+              <div class="card">
+                <div class="card-body small text-body-secondary" id="ayudaPanel">
+                  @if (store.editable()) {
+                    Elija una herramienta y haga clic en el lienzo para agregar elementos, o seleccione uno para editarlo.
+                    Pools y lanes se administran en la pestaña <strong>Estructura</strong>.
+                  } @else {
+                    Seleccione un elemento del diagrama para ver su detalle.
+                  }
+                </div>
+              </div>
+            }
           }
         }
-        @default {
-          <div class="card">
-            <div class="card-body small text-body-secondary">
-              @if (store.estructuraEditable()) {
-                Elija un pool o una lane para editarlo, o agregue participantes al proceso.
-              } @else {
-                Consulta de la estructura: su usuario no puede cambiar pools ni lanes de este proceso.
-              }
+        @case ('estructura') {
+          @if (store.editable() && !store.estructuraEditable()) {
+            <div class="alert alert-info small py-2" id="estructuraRestringidaMsg">
+              <i class="bi bi-shield-lock"></i> El administrador restringió los cambios de pools y lanes de este proceso.
             </div>
-          </div>
+          }
+          <app-estructura-panel [pools]="store.pools()" [editable]="store.estructuraEditable()" [seleccion]="store.seleccion()"
+                                (seleccionar)="store.seleccionar($event); pestana.set('elemento')" (moverLane)="moverLane($event)"
+                                (eliminarPool)="eliminarPool($event)" (eliminarLane)="eliminarLane($event)">
+          </app-estructura-panel>
+        }
+        @case ('advertencias') {
+          <app-advertencias-panel [advertencias]="store.advertencias()" [validando]="validando()"
+                                  (validar)="validar()" (elegir)="irAAdvertencia($event)"></app-advertencias-panel>
         }
       }
     </div>
@@ -80,6 +213,6 @@
 }
 
 <app-confirmar-modal [abierto]="confirmacion() !== null" [titulo]="confirmacion()?.titulo ?? ''"
-                     [mensaje]="confirmacion()?.mensaje ?? ''" textoConfirmar="Eliminar"
-                     (confirmar)="confirmar()" (cancelar)="confirmacion.set(null)">
+                     [mensaje]="confirmacion()?.mensaje ?? ''" [advertencias]="confirmacion()?.advertencias ?? []"
+                     textoConfirmar="Eliminar" (confirmar)="confirmar()" (cancelar)="confirmacion.set(null)">
 </app-confirmar-modal>

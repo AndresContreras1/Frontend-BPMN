@@ -1,0 +1,32 @@
+<svg class="lienzo-bpmn" [class.colocando]="herramienta() !== 'seleccionar'" id="lienzoDiagrama"
+     [attr.width]="layout().ancho" [attr.height]="layout().alto" [attr.viewBox]="'0 0 ' + layout().ancho + ' ' + layout().alto"
+     role="img" aria-label="Diagrama BPMN del proceso" (click)="clicFondo($event)">
+  <defs>
+    <marker id="flecha-secuencia" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="punta-solida" />
+    </marker>
+    <marker id="flecha-mensaje" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="punta-hueca" />
+    </marker>
+    <marker id="origen-mensaje" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8">
+      <circle cx="5" cy="5" r="4" class="punta-hueca" />
+    </marker>
+  </defs>
+
+  @for (pool of layout().pools; track pool.pool.id) {
+    <g app-pool-svg [layout]="pool" [severidad]="severidadPools().get(pool.pool.id) ?? null"></g>
+  }
+  @for (a of rutasArcos(); track a.arco.id) {
+    <g app-arco-svg [arco]="a.arco" [ruta]="a.ruta" [seleccionado]="arcoResaltado() === a.arco.id"
+       [conError]="severidadArcos().get(a.arco.id) === 'ERROR'" (elegir)="clicArco.emit(a.arco.id)"></g>
+  }
+  @for (m of rutasMensajes(); track m.mensaje.id) {
+    <g app-mensaje-svg [mensaje]="m.mensaje" [ruta]="m.ruta" [seleccionado]="mensajeResaltado() === m.mensaje.id"
+       (elegir)="clicMensaje.emit(m.mensaje.id)"></g>
+  }
+  @for (n of nodosLayout(); track n.nodo.id) {
+    <g app-nodo-svg [layout]="n" [mensaje]="mensajePorNodo().get(n.nodo.id) ?? null" [seleccionado]="resaltado() === n.nodo.id"
+       [severidad]="severidadNodos().get(n.nodo.id) ?? null" [origen]="origenConexion() === n.nodo.id"
+       (elegir)="clicNodo.emit(n.nodo.id)"></g>
+  }
+</svg>
