@@ -1,10 +1,15 @@
+<!-- Título de la página con las historias de usuario que cubre -->
 <app-page-title titulo="Mi empresa" hu="HU-01, HU-03" subtitulo="Datos registrados y su sesión actual"></app-page-title>
+<!-- Error de la API si falla la carga -->
 <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
+<!-- Dos tarjetas lado a lado: la empresa y el usuario -->
 <div class="row g-3">
+  <!-- Tarjeta de la empresa -->
   <div class="col-lg-6">
     <div class="card h-100">
       <div class="card-header fw-semibold"><i class="bi bi-building"></i> Empresa</div>
+      <!-- Cuando la empresa ya llegó se muestran sus datos -->
       @if (empresa(); as e) {
         <dl class="card-body row mb-0" id="datosEmpresa">
           <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">{{ e.nombre }}</dd>
@@ -12,11 +17,13 @@
           <dt class="col-sm-4">Correo de contacto</dt><dd class="col-sm-8">{{ e.correoContacto }}</dd>
           <dt class="col-sm-4">Registrada</dt><dd class="col-sm-8">{{ e.creadoEn | date: 'medium' }}</dd>
         </dl>
+      <!-- Siguiente rama: sin empresa y sin error significa que todavía está cargando -->
       } @else if (!problema()) {
         <div class="card-body text-body-secondary">Cargando…</div>
       }
     </div>
   </div>
+  <!-- Tarjeta del usuario con sesión (sale de la sesión, no de la API) -->
   <div class="col-lg-6">
     <div class="card h-100">
       <div class="card-header fw-semibold"><i class="bi bi-person-badge"></i> Mi usuario</div>

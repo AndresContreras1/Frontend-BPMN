@@ -9,18 +9,24 @@ import { Proceso } from '../../models/proceso.model';
 import { RolAcceso } from '../../models/usuario.model';
 import { ProcesoDetalleComponent } from './proceso-detalle.component';
 
+/** Pruebas de la página de detalle de un proceso: acciones según el rol, estado del proceso y paneles hijos (HU-04 a HU-07, HU-23). */
 describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
   let fixture: ComponentFixture<ProcesoDetalleComponent>;
   let backend: HttpTestingController;
   let router: Router;
   let html: HTMLElement;
 
+  // Proceso base: borrador, activo y propio de la empresa; las pruebas lo modifican con spread
   const base: Proceso = {
     id: 5, nombre: 'Contratación', descripcion: null, categoria: 'Talento humano', estado: 'BORRADOR', activo: true,
     version: 1, propio: true, creadoEn: '', creadoPor: 'a@a.com', modificadoEn: '', modificadoPor: 'a@a.com',
   };
+  // Página vacía para responder el historial
   const vacio = { content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 };
 
+  // Ayuda: arma toda la página para un rol y un proceso (null simula un 404).
+  // Se inicia sesión con ese rol, el ActivatedRoute se reemplaza por uno falso con id=5 y el backend
+  // simulado responde el proceso y las peticiones de los paneles hijos.
   const crear = (rol: RolAcceso, proceso: Proceso | null) => {
     localStorage.clear();
     TestBed.configureTestingModule({
@@ -57,14 +63,17 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     fixture.detectChanges();
   };
 
+  // verify falla si quedó alguna petición HTTP sin responder
   afterEach(() => backend.verify());
 
+  // Esperado: un lector que abre un proceso de otra empresa ve igualmente el diagrama.
   it('HU-07: al abrir el proceso se ve su diagrama, también si es compartido por otra empresa', () => {
     crear('LECTOR', { ...base, propio: false });
     expect(html.querySelector('app-diagrama-vista')).not.toBeNull();
     expect(html.querySelector('#diagramaVacio')).not.toBeNull();
   });
 
+  // Esperado: el administrador dispone de todas las acciones y paneles.
   it('el administrador ve editar, publicar, eliminar, historial y compartir', () => {
     crear('ADMINISTRADOR', base);
     expect(html.querySelector('#editarProcesoBtn')).not.toBeNull();
@@ -74,6 +83,7 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     expect(html.querySelector('#compartidoSwitch')).not.toBeNull();
   });
 
+  // Esperado: el lector no ve botones de acción ni el interruptor de compartir, pero sí el historial.
   it('el lector solo consulta: ve el historial, pero sin acciones ni edición de la compartición', () => {
     crear('LECTOR', base);
     expect(html.querySelector('#editarProcesoBtn')).toBeNull();
@@ -83,6 +93,7 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     expect(html.querySelector('#compartidoSwitch')).toBeNull();
   });
 
+  // Esperado: si el proceso no es propio (propio=false) hay mensaje de compartido y ninguna acción ni panel de gestión.
   it('un proceso compartido por otra empresa: solo lectura, sin historial ni compartición', () => {
     crear('ADMINISTRADOR', { ...base, propio: false });
     expect(html.querySelector('#procesoCompartidoMsg')).not.toBeNull();
@@ -91,6 +102,7 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     expect(html.querySelector('app-compartir-panel')).toBeNull();
   });
 
+  // Esperado: con activo=false se muestra el mensaje de eliminado y desaparecen publicar y eliminar.
   it('un proceso eliminado se consulta sin acciones', () => {
     crear('ADMINISTRADOR', { ...base, activo: false });
     expect(html.querySelector('#procesoEliminadoMsg')).not.toBeNull();
@@ -98,6 +110,8 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     expect(html.querySelector('#eliminarProcesoBtn')).toBeNull();
   });
 
+  // Escenario: el editor pulsa publicar y el servidor responde 409 con los motivos.
+  // Esperado: el PUT envía estado PUBLICADO con la versión actual; se muestran los motivos y el proceso sigue en borrador.
   it('publicar un diagrama incoherente muestra los motivos y no cambia el estado', () => {
     crear('EDITOR', base);
     html.querySelector<HTMLButtonElement>('#publicarBtn')!.click();
@@ -114,6 +128,7 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     expect(html.querySelector('#publicarBtn')).not.toBeNull();
   });
 
+  // Esperado: si el PUT tiene éxito aparece el aviso, cambia el botón a "volver a borrador" y se recarga el historial.
   it('publicar con éxito cambia el estado y recarga el historial', () => {
     crear('EDITOR', base);
     html.querySelector<HTMLButtonElement>('#publicarBtn')!.click();
@@ -125,6 +140,8 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     backend.expectOne((r) => r.url === '/api/v1/procesos/5/historial').flush(vacio);
   });
 
+  // Escenario: eliminar pide confirmación; al confirmar se hace el DELETE.
+  // Esperado: respuesta 204 y navegación a la lista con el nombre del proceso eliminado.
   it('eliminar confirma y vuelve a la lista con el aviso', () => {
     crear('ADMINISTRADOR', base);
     html.querySelector<HTMLButtonElement>('#eliminarProcesoBtn')!.click();
@@ -134,6 +151,7 @@ describe('ProcesoDetalleComponent (HU-04 a HU-07, HU-23)', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/procesos'], { queryParams: { eliminado: 'Contratación' } });
   });
 
+  // Esperado: si el servidor responde 404, se muestra "El proceso no existe".
   it('un proceso de otra empresa (404) muestra que no existe', () => {
     crear('ADMINISTRADOR', null);
     expect(html.querySelector('#procesoNoEncontrado')!.textContent).toContain('El proceso no existe');

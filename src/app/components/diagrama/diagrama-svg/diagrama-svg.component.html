@@ -1,29 +1,38 @@
+<!-- Lienzo principal: su tamaño sale del layout calculado; "colocando" cambia el cursor; un clic en el fondo se maneja en clicFondo -->
 <svg class="lienzo-bpmn" [class.colocando]="colocando()" id="lienzoDiagrama"
      [attr.width]="layout().ancho" [attr.height]="layout().alto" [attr.viewBox]="'0 0 ' + layout().ancho + ' ' + layout().alto"
      role="img" aria-label="Diagrama BPMN del proceso" (click)="clicFondo($event)">
+  <!-- Definiciones reutilizables: las puntas de flecha que usan los arcos y los mensajes -->
   <defs>
+    <!-- Punta sólida al final de un flujo de secuencia -->
     <marker id="flecha-secuencia" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" class="punta-solida" />
     </marker>
+    <!-- Punta hueca al final de un flujo de mensaje -->
     <marker id="flecha-mensaje" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" class="punta-hueca" />
     </marker>
+    <!-- Círculo hueco al inicio de un flujo de mensaje -->
     <marker id="origen-mensaje" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8">
       <circle cx="5" cy="5" r="4" class="punta-hueca" />
     </marker>
   </defs>
 
+  <!-- 1. Pools primero: son el fondo sobre el que se dibuja lo demás -->
   @for (pool of layout().pools; track pool.pool.id) {
     <g app-pool-svg [layout]="pool" [severidad]="severidadPools().get(pool.pool.id) ?? null"></g>
   }
+  <!-- 2. Arcos (flujos de secuencia) encima de los pools -->
   @for (a of rutasArcos(); track a.arco.id) {
     <g app-arco-svg [arco]="a.arco" [ruta]="a.ruta" [seleccionado]="arcoResaltado() === a.arco.id"
        [conError]="severidadArcos().get(a.arco.id) === 'ERROR'" (elegir)="clicArco.emit(a.arco.id)"></g>
   }
+  <!-- 3. Flujos de mensaje entre pools -->
   @for (m of rutasMensajes(); track m.mensaje.id) {
     <g app-mensaje-svg [mensaje]="m.mensaje" [ruta]="m.ruta" [seleccionado]="mensajeResaltado() === m.mensaje.id"
        (elegir)="clicMensaje.emit(m.mensaje.id)"></g>
   }
+  <!-- 4. Nodos al final para que queden por encima de las líneas -->
   @for (n of nodosLayout(); track n.nodo.id) {
     <g app-nodo-svg [layout]="n" [mensaje]="mensajePorNodo().get(n.nodo.id) ?? null" [seleccionado]="resaltado() === n.nodo.id"
        [severidad]="severidadNodos().get(n.nodo.id) ?? null" [origen]="origenConexion() === n.nodo.id"

@@ -1,4 +1,5 @@
 // Selector del tipo de dato de cada campo del mensaje: angosto para que quepa al lado del nombre
+// (El selector de tipo de dato tiene ancho máximo para dejar espacio al nombre del campo.)
 .tipo-dato {
   max-width: 7.5rem;
 }

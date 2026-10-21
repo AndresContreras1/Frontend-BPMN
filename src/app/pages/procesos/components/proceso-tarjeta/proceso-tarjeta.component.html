@@ -1,19 +1,24 @@
 <article class="card h-100 tarjeta-interactiva tarjeta-proceso">
   <div class="card-body d-flex flex-column">
+    <!-- Nombre (enlace al detalle; stretched-link hace clicable toda la tarjeta) y estado -->
     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
       <h2 class="h6 mb-0">
         <a [routerLink]="['/procesos', proceso().id]" class="stretched-link text-decoration-none nombre-proceso">{{ proceso().nombre }}</a>
       </h2>
       <app-estado-badge [estado]="proceso().estado" [activo]="proceso().activo"></app-estado-badge>
     </div>
+    <!-- Categoria como etiqueta -->
     <span class="badge rounded-pill text-bg-light border fw-normal align-self-start mb-2">
       <i class="bi bi-tag me-1"></i>{{ proceso().categoria }}
     </span>
+    <!-- Descripcion (el SCSS la recorta a tres lineas) -->
     <p class="small text-body-secondary descripcion mb-3">{{ proceso().descripcion || 'Sin descripción.' }}</p>
+    <!-- Ultima modificacion; mt-auto la empuja al fondo de la tarjeta -->
     <p class="small text-body-secondary mt-auto mb-0">
       <i class="bi bi-clock me-1"></i>{{ proceso().modificadoEn | date: 'short' }} · {{ proceso().modificadoPor }}
     </p>
   </div>
+  <!-- Pie con acciones: solo aparece si el usuario puede editar o eliminar -->
   @if (puedeEditar() || puedeEliminar()) {
     <div class="card-footer bg-transparent d-flex justify-content-end gap-1 acciones">
       @if (puedeEditar()) {
@@ -23,6 +28,7 @@
         </a>
       }
       @if (puedeEliminar()) {
+        <!-- No elimina aqui: emite el proceso para que la pagina pida confirmacion -->
         <button type="button" class="btn btn-outline-danger btn-sm" (click)="eliminar.emit(proceso())"
                 [attr.aria-label]="'Eliminar ' + proceso().nombre" [id]="'eliminarProcesoBtn-' + proceso().id">
           <i class="bi bi-trash"></i> Eliminar

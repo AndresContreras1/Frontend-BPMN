@@ -9,11 +9,14 @@ import { ANCHO_ETIQUETA_LANE, ANCHO_ETIQUETA_POOL, PoolLayout } from '../layout'
   templateUrl: './pool-svg.component.html',
 })
 export class PoolSvgComponent {
+  /** Posición del pool y de sus franjas (lanes) ya calculadas en layout.ts. */
   layout = input.required<PoolLayout>();
   /** Advertencia del pool completo (sin inicio, sin fin, caja negra con elementos). */
   severidad = input<Severidad | null>(null);
 
+  /** Ancho de la columna donde va el nombre del pool (se usa en el template). */
   readonly anchoEtiquetaPool = ANCHO_ETIQUETA_POOL;
+  /** Ancho de la columna donde va el nombre de cada lane. */
   readonly anchoEtiquetaLane = ANCHO_ETIQUETA_LANE;
 
   /** Gira el texto -90° alrededor de su centro. */

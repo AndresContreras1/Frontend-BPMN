@@ -10,11 +10,13 @@ import { PermisoEstructura } from '../../../models/pool.model';
 import { RolAcceso } from '../../../models/usuario.model';
 import { ProcesoEditorPageComponent } from './proceso-editor-page.component';
 
+/** Pruebas de la pestaña "Estructura" del editor: pools, lanes y permisos de estructura (HU-21, HU-22, HU-24). */
 describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, HU-24)', () => {
   let fixture: ComponentFixture<ProcesoEditorPageComponent>;
   let backend: HttpTestingController;
   let html: HTMLElement;
 
+  // Ayuda: crea un diagrama de ejemplo con un pool propietario y tres lanes; se puede cambiar el permiso de estructura
   const diagrama = (permiso: PermisoEstructura = 'ADMINISTRADOR_Y_EDITOR', propio = true): Diagrama => ({
     proceso: {
       id: 9, nombre: 'Compras', descripcion: null, categoria: 'Compras', estado: 'BORRADOR', activo: true, version: 0,
@@ -31,6 +33,9 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     nodos: [], arcos: [], mensajes: [], advertencias: [],
   });
 
+  // Ayuda: arma el editor para un rol. Se inicia sesión, se reemplaza el ActivatedRoute por uno con id=9,
+  // se responden las dos peticiones iniciales (catálogo de roles y diagrama) y se abre la pestaña Estructura.
+  // "rolesFallan" simula que el catálogo de roles responde con error.
   const crear = (rol: RolAcceso, d: Diagrama = diagrama(), rolesFallan = false) => {
     localStorage.clear();
     TestBed.configureTestingModule({
@@ -63,19 +68,24 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     fixture.detectChanges();
   };
 
+  // Ayuda: responde la nueva carga del diagrama que el editor hace después de cada cambio
   const recargarDiagrama = (d: Diagrama = diagrama()) => {
     backend.expectOne('/api/v1/procesos/9/diagrama').flush(d);
     fixture.detectChanges();
   };
 
+  // verify falla si quedó alguna petición HTTP sin responder
   afterEach(() => backend.verify());
 
+  // Esperado: si el catálogo de roles falla, el diagrama se muestra igual con sus lanes.
   it('carga el diagrama aunque falle el catálogo de roles', () => {
     crear('EDITOR', diagrama(), true);
     expect(html.textContent).toContain('Diagrama: Compras');
     expect(html.querySelector('#estructuraDiagrama')!.textContent).toContain('Talento humano');
   });
 
+  // Escenario: el editor abre el formulario de pool, escribe un nombre y guarda.
+  // Esperado: POST con los datos del pool, recarga del diagrama, aviso de éxito y formulario cerrado.
   it('agrega un pool y recarga el diagrama (las advertencias quedan al día)', () => {
     crear('EDITOR');
     html.querySelector<HTMLButtonElement>('#agregarPoolBtn')!.click();
@@ -95,6 +105,7 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     expect(html.querySelector('#poolForm')).toBeNull();
   });
 
+  // Esperado: subir "Talento humano" (de 3.ª a 2.ª posición) envía el orden completo de ids: [10, 12, 11].
   it('subir una lane envía el orden completo del pool', () => {
     crear('ADMINISTRADOR');
     html.querySelector<HTMLButtonElement>('button[aria-label="Subir Talento humano"]')!.click();
@@ -104,6 +115,7 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     recargarDiagrama();
   });
 
+  // Esperado: el select de roles ofrece solo los roles que el pool todavía no usa (aquí, "Analista").
   it('agrega una lane con un rol libre del catálogo', () => {
     crear('EDITOR');
     html.querySelector<HTMLButtonElement>('#agregarLaneBtn-1')!.click();
@@ -112,6 +124,8 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     expect(opciones).toEqual(['Elija un rol…', 'Analista']);
   });
 
+  // Escenario: se confirma eliminar una lane y el servidor responde 409 porque contiene elementos.
+  // Esperado: se muestra el motivo del servidor.
   it('eliminar una lane con elementos muestra el motivo de la API', () => {
     crear('EDITOR');
     html.querySelector<HTMLButtonElement>('#eliminarLaneBtn-10')!.click();
@@ -125,6 +139,8 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     expect(html.textContent).toContain("La lane 'Empleado' contiene 3 elementos");
   });
 
+  // Esperado: el administrador edita el pool, elige "solo administrador" y aplica; se envía el PUT de permisos,
+  // se recarga el diagrama y se muestra el aviso.
   it('el administrador cambia el permiso de estructura del pool propietario', () => {
     crear('ADMINISTRADOR');
     html.querySelector<HTMLButtonElement>('#editarPoolBtn-1')!.click();
@@ -141,6 +157,7 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     expect(html.querySelector('#avisoEditor')!.textContent).toContain('Permisos de estructura actualizados.');
   });
 
+  // Esperado: si el permiso es solo administrador, un editor ve el aviso de restricción y no tiene botones de estructura.
   it('HU-24: con "solo administrador" el editor ve la estructura sin acciones', () => {
     crear('EDITOR', diagrama('SOLO_ADMINISTRADOR'));
     expect(html.querySelector('#estructuraRestringidaMsg')).not.toBeNull();
@@ -148,12 +165,15 @@ describe('ProcesoEditorPageComponent: estructura en su pestaña (HU-21, HU-22, H
     expect(html.querySelector('#eliminarLaneBtn-10')).toBeNull();
   });
 
+  // Esperado: el lector ve la insignia de solo lectura y ningún botón para agregar.
   it('el lector y los procesos compartidos se ven en solo lectura', () => {
     crear('LECTOR');
     expect(html.querySelector('#soloLecturaBadge')).not.toBeNull();
     expect(html.querySelector('#agregarPoolBtn')).toBeNull();
   });
 
+  // Escenario: el diagrama responde 404.
+  // Esperado: se muestra el mensaje de que el proceso no existe. Aquí no se usa "crear" porque ese caso es distinto.
   it('un proceso que no existe muestra el 404', () => {
     localStorage.clear();
     TestBed.configureTestingModule({

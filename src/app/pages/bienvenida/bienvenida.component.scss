@@ -3,22 +3,27 @@
   padding-bottom: 6rem;
 }
 
+// Limita el ancho del párrafo del hero y lo hace un poco transparente
 .texto-hero {
   max-width: 46rem;
   opacity: .92;
 }
 
+// Margen negativo: sube la tarjeta del ejemplo para que se monte sobre el hero
 .ejemplo {
   margin-top: -5rem;
 }
 
+// Carrusel de elementos del diagrama: ancho máximo para que no se estire
 .carrusel-elementos {
   max-width: 48rem;
 
+  // Fondo blanco de las diapositivas
   .carousel-inner {
     background: #fff;
   }
 
+  // Alto mínimo para que el carrusel no salte de tamaño entre diapositivas
   .diapositiva {
     min-height: 17rem;
   }
@@ -32,15 +37,18 @@
     padding: 20px;
   }
 
+  // Los puntos de abajo también toman el color primario
   .carousel-indicators [data-bs-target] {
     background-color: var(--bs-primary);
   }
 }
 
+// Ancho máximo del texto de cada diapositiva, para que se lea cómodo
 .texto-diapositiva {
   max-width: 32rem;
 }
 
+// Círculo con el número de cada paso de "Cómo empezar"
 .numero-paso {
   display: inline-flex;
   align-items: center;

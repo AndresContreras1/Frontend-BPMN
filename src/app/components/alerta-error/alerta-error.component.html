@@ -1,7 +1,10 @@
+<!-- Solo se dibuja si hay un error; si problema() es null no sale nada -->
 @if (problema(); as p) {
+  <!-- Caja roja de Bootstrap con el título y el detalle del error -->
   <div class="alert alert-danger d-flex justify-content-between align-items-start" role="alert">
     <div>
       <strong>{{ p.title }}.</strong> {{ p.detail }}
+      <!-- Lista de detalles extra que mande la API, si los hay -->
       @if (p.detalles?.length) {
         <ul class="mb-0 mt-1">
           @for (detalle of p.detalles; track $index) {
@@ -9,6 +12,7 @@
           }
         </ul>
       }
+      <!-- Lista de errores de validación: campo y su mensaje -->
       @if (erroresPorCampo().length) {
         <ul class="mb-0 mt-1">
           @for (error of erroresPorCampo(); track error.campo) {
@@ -17,6 +21,7 @@
         </ul>
       }
     </div>
+    <!-- Botón X: avisa al padre para que oculte la alerta -->
     <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar.emit()"></button>
   </div>
 }

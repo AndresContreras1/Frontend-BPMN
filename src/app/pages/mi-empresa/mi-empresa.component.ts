@@ -17,18 +17,25 @@ import { EmpresaService } from '../../service/empresa.service';
   templateUrl: './mi-empresa.component.html',
 })
 export class MiEmpresaComponent {
+  // Trae los datos de la empresa de la API
   private readonly empresaService = inject(EmpresaService);
+  /** Datos del usuario con sesión; el template muestra su nombre, correo y rol. */
   readonly sesion = inject(SesionStore);
 
+  /** Error de la API si no se pudo cargar la empresa. */
   problema = signal<ProblemDetail | null>(null);
 
+  /** Empresa del usuario. toSignal convierte la petición en un signal; vale null mientras carga o si falla. */
   empresa = toSignal(
+    // Pide la empresa de la sesión actual
     this.empresaService.actual().pipe(
+      // Si falla, se guarda el error para mostrarlo y se devuelve null para que el signal no se rompa
       catchError((err) => {
         this.problema.set(problemaDe(err));
         return of(null);
       }),
     ),
+    // Valor inicial mientras llega la respuesta
     { initialValue: null },
   );
 }

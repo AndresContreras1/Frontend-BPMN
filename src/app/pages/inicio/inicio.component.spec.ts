@@ -8,19 +8,23 @@ import { Proceso } from '../../models/proceso.model';
 import { RolAcceso } from '../../models/usuario.model';
 import { InicioComponent } from './inicio.component';
 
+/** Pruebas de la página de inicio (panel con indicadores, procesos recientes y accesos rápidos) (HU-07). */
 describe('InicioComponent (HU-07)', () => {
   let fixture: ComponentFixture<InicioComponent>;
   let backend: HttpTestingController;
   let html: HTMLElement;
 
+  // Proceso de ejemplo para la lista de recientes
   const vacaciones: Proceso = {
     id: 1, nombre: 'Solicitud de vacaciones', descripcion: null, categoria: 'Talento humano', estado: 'PUBLICADO',
     activo: true, version: 1, propio: true, creadoEn: '2026-10-01T10:00:00Z', creadoPor: 'a@a.com',
     modificadoEn: '2026-10-02T10:00:00Z', modificadoPor: 'a@a.com',
   };
+  // Ayuda: arma una respuesta paginada como la del backend
   const pagina = <T>(content: T[], totalElements = content.length) =>
     ({ content, page: 0, size: 1, totalElements, totalPages: 1 });
 
+  // Ayuda: inicia sesión con el rol indicado y crea la página (esto dispara las consultas al backend)
   const abrir = (rol: RolAcceso) => {
     TestBed.inject(SesionStore).iniciar({
       token: 't', tipo: 'Bearer', expiraEnSegundos: 1800,
@@ -31,6 +35,7 @@ describe('InicioComponent (HU-07)', () => {
     fixture.detectChanges();
   };
 
+  // Ayuda: responde con flush las cuatro consultas que hace la página (resumen, recientes, usuarios y roles)
   const responder = () => {
     backend.expectOne('/api/v1/procesos/resumen')
       .flush({ total: 3, borradores: 2, publicados: 1, eliminados: 4, compartidosConmigo: 5 });
@@ -43,6 +48,7 @@ describe('InicioComponent (HU-07)', () => {
     fixture.detectChanges();
   };
 
+  // Ayuda: lee el número que muestra el indicador con esa clave
   const valor = (clave: string) => html.querySelector(`#indicador-${clave} .valor-indicador`)?.textContent?.trim();
 
   beforeEach(() => {
@@ -54,8 +60,12 @@ describe('InicioComponent (HU-07)', () => {
     backend = TestBed.inject(HttpTestingController);
   });
 
+  // verify falla si quedó alguna petición HTTP sin responder
   afterEach(() => backend.verify());
 
+  // Escenario: un administrador abre el inicio.
+  // Esperado: primero se ve "cargando"; al responder las consultas aparecen saludo, indicadores,
+  // totales de usuarios y roles, un proceso reciente y el porcentaje de publicados.
   it('pide las cuatro consultas a la vez y muestra los indicadores de la empresa', () => {
     abrir('ADMINISTRADOR');
     expect(html.querySelector('#inicioCargando')).not.toBeNull();
@@ -74,6 +84,7 @@ describe('InicioComponent (HU-07)', () => {
     expect(html.textContent).toContain('33 %');
   });
 
+  // Esperado: un lector no ve el botón de nuevo proceso ni la opción de invitar usuarios.
   it('los accesos dependen del rol: el lector no crea procesos ni invita usuarios', () => {
     abrir('LECTOR');
     responder();
@@ -82,6 +93,8 @@ describe('InicioComponent (HU-07)', () => {
     expect(html.textContent).not.toContain('Invitar a un usuario');
   });
 
+  // Escenario: la primera consulta responde 500.
+  // Esperado: las demás se cancelan, se muestra el error y el botón de reintentar vuelve a cargar todo.
   it('si falla una consulta muestra el error y deja reintentar', () => {
     abrir('EDITOR');
     backend.expectOne('/api/v1/procesos/resumen').flush(null, { status: 500, statusText: 'Error' });

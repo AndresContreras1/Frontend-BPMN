@@ -8,5 +8,6 @@ import { NotificacionesService } from '../../core/services/notificaciones.servic
   templateUrl: './notificaciones.component.html',
 })
 export class NotificacionesComponent {
+  /** Servicio compartido que guarda los avisos; el template lee sus avisos() y los cierra. */
   readonly notificaciones = inject(NotificacionesService);
 }

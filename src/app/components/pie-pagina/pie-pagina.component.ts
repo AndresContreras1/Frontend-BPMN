@@ -6,7 +6,9 @@ import { Component } from '@angular/core';
   templateUrl: './pie-pagina.component.html',
 })
 export class PiePaginaComponent {
+  /** Año actual, para el texto del pie. */
   readonly anio = new Date().getFullYear();
+  /** Bloques de historias de usuario que cubre el proyecto, uno por renglón en el pie. */
   readonly bloques = [
     'HU-01 a HU-03 · Empresas y usuarios',
     'HU-04 a HU-07 · Procesos',

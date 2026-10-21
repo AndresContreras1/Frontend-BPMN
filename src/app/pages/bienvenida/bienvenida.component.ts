@@ -5,18 +5,29 @@ import { DiagramaSvgComponent } from '../../components/diagrama/diagrama-svg/dia
 import { ColorIndicador } from '../../components/indicador/indicador.component';
 import { ARCOS_EJEMPLO, MENSAJES_EJEMPLO, NODOS_EJEMPLO, POOLS_EJEMPLO } from './ejemplo-vacaciones';
 
+/** Una tarjeta de la sección "Todo lo que pide un proceso". */
 interface Funcion {
+  /** Nombre del frente funcional. */
   titulo: string;
+  /** Historias de usuario que cubre (por ejemplo "HU-01 a HU-03"). */
   hu: string;
+  /** Descripción corta. */
   texto: string;
+  /** Clase del ícono de Bootstrap Icons. */
   icono: string;
+  /** Color de Bootstrap del círculo del ícono. */
   color: ColorIndicador;
 }
 
+/** Una diapositiva del carrusel "Los elementos del diagrama". */
 interface Elemento {
+  /** Nombre del elemento BPMN. */
   nombre: string;
+  /** Historias de usuario relacionadas. */
   hu: string;
+  /** Explicación corta del elemento. */
   texto: string;
+  /** Clase del ícono de Bootstrap Icons. */
   icono: string;
 }
 
@@ -31,11 +42,17 @@ interface Elemento {
   styleUrl: './bienvenida.component.scss',
 })
 export class BienvenidaComponent {
+  // Datos del ejemplo del enunciado que se pasan al lienzo (ver ejemplo-vacaciones.ts)
+  /** Pools del diagrama de ejemplo. */
   readonly pools = POOLS_EJEMPLO;
+  /** Nodos (actividades, gateway, eventos) del ejemplo. */
   readonly nodos = NODOS_EJEMPLO;
+  /** Flujos de secuencia del ejemplo. */
   readonly arcos = ARCOS_EJEMPLO;
+  /** Flujos de mensaje del ejemplo. */
   readonly mensajes = MENSAJES_EJEMPLO;
 
+  /** Tarjetas de funciones: el template las recorre con @for. */
   readonly funciones: Funcion[] = [
     { titulo: 'Empresas y usuarios', hu: 'HU-01 a HU-03', icono: 'bi-building', color: 'primary',
       texto: 'Cada empresa se registra con su administrador, invita a su equipo y asigna roles de administrador, editor o lector.' },
@@ -51,6 +68,7 @@ export class BienvenidaComponent {
       texto: 'Envíos y recepciones con su contenido, notificaciones a sistemas externos y la clave de correlación de cada caso.' },
   ];
 
+  /** Diapositivas del carrusel de elementos del diagrama. */
   readonly elementos: Elemento[] = [
     { nombre: 'Actividad', hu: 'HU-08 a HU-10', icono: 'bi-square',
       texto: 'Una tarea del proceso. Vive en una lane, que define el rol responsable de hacerla.' },
@@ -64,6 +82,7 @@ export class BienvenidaComponent {
       texto: 'La comunicación entre pools: un participante envía, otro recibe, y la correlación indica a qué caso pertenece.' },
   ];
 
+  /** Pasos de "Cómo empezar"; el número de cada uno lo calcula el template con el índice. */
   readonly pasos = [
     { titulo: 'Registre su empresa', texto: 'Con su NIT y el administrador inicial.' },
     { titulo: 'Invite a su equipo', texto: 'Con el rol de acceso de cada persona.' },

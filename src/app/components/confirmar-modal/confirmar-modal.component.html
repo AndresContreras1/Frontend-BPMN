@@ -1,14 +1,20 @@
+<!-- El modal solo existe en el DOM mientras abierto() sea true -->
 @if (abierto()) {
+  <!-- Fondo oscuro que tapa la página -->
   <div class="modal-backdrop fade show"></div>
+  <!-- Ventana del modal; "show d-block" la hace visible sin usar el JS de Bootstrap -->
   <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
+        <!-- Encabezado: título y botón X que cancela -->
         <div class="modal-header">
           <h2 class="modal-title fs-5">{{ titulo() }}</h2>
           <button type="button" class="btn-close" aria-label="Cancelar" (click)="cancelar.emit()"></button>
         </div>
+        <!-- Cuerpo: el mensaje y, si hay, las advertencias de lo que pasaría -->
         <div class="modal-body">
           <p class="mb-2">{{ mensaje() }}</p>
+          <!-- Cuadro amarillo con cada consecuencia de eliminar -->
           @if (advertencias().length) {
             <div class="alert alert-warning mb-0">
               <strong>Al eliminar quedará:</strong>
@@ -20,6 +26,7 @@
             </div>
           }
         </div>
+        <!-- Pie: botón para cancelar y botón rojo para confirmar -->
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="cancelar.emit()">Cancelar</button>
           <button type="button" class="btn btn-danger" id="confirmarEliminarBtn" (click)="confirmar.emit()">

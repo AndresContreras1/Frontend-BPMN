@@ -1,16 +1,22 @@
+<!-- Tarjeta del indicador; el id depende de clave() para poder encontrarla en las pruebas -->
 <article class="card h-100 tarjeta-interactiva indicador" [id]="'indicador-' + clave()">
+  <!-- Ícono a la izquierda y textos a la derecha -->
   <div class="card-body d-flex align-items-center gap-3">
+    <!-- Círculo con el ícono; el color de fondo y del ícono salen de color() -->
     <span class="icono-circulo" [class]="'bg-' + color() + '-subtle text-' + color() + '-emphasis'" aria-hidden="true">
       <i class="bi" [class]="icono()"></i>
     </span>
+    <!-- Título, número grande y descripción opcional -->
     <div class="flex-grow-1">
       <p class="small text-body-secondary mb-1">{{ titulo() }}</p>
       <p class="fs-3 fw-semibold lh-1 mb-0 valor-indicador">{{ valor() }}</p>
+      <!-- Texto pequeño extra, solo si el padre lo manda -->
       @if (descripcion()) {
         <p class="small text-body-secondary mb-0 mt-1">{{ descripcion() }}</p>
       }
     </div>
   </div>
+  <!-- Enlace invisible que cubre toda la tarjeta (stretched-link) para que sea clicable -->
   @if (ruta()) {
     <a class="stretched-link" [routerLink]="ruta()" [queryParams]="parametros()" [attr.aria-label]="'Ver ' + titulo()"></a>
   }

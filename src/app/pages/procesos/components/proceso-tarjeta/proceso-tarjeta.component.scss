@@ -1,5 +1,6 @@
 // La descripción se corta en tres líneas para que todas las tarjetas midan parecido
 .descripcion {
+  // Estas propiedades juntas son la forma de recortar un texto a N lineas y poner "..." al final
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;

@@ -9,14 +9,21 @@ import { Ruta } from '../layout';
   templateUrl: './arco-svg.component.html',
 })
 export class ArcoSvgComponent {
+  /** Datos del arco (id, origen, destino, condición, etiqueta). */
   arco = input.required<Arco>();
+  /** Trazado ya calculado en layout.ts: el path SVG y dónde poner la etiqueta. */
   ruta = input.required<Ruta>();
+  /** Si el usuario lo eligió en el editor (se resalta). */
   seleccionado = input<boolean>(false);
+  /** Si el validador reportó un ERROR sobre este arco (se pinta de rojo). */
   conError = input<boolean>(false);
 
+  /** Se emite cuando el usuario hace clic sobre el arco. */
   elegir = output<void>();
 
+  /** Clic en el arco: avisa al padre que lo eligieron. */
   alClic(evento: MouseEvent): void {
+    // Evita que el clic llegue al lienzo (allí agregaría un elemento nuevo)
     evento.stopPropagation();
     this.elegir.emit();
   }

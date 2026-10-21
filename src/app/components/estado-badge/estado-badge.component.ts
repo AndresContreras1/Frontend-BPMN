@@ -8,6 +8,8 @@ import { EstadoProceso } from '../../models/proceso.model';
   templateUrl: './estado-badge.component.html',
 })
 export class EstadoBadgeComponent {
+  /** Estado del proceso: BORRADOR o PUBLICADO. */
   estado = input.required<EstadoProceso>();
+  /** Si es false el proceso fue eliminado (borrado lógico) y se muestra como "Eliminado". */
   activo = input<boolean>(true);
 }

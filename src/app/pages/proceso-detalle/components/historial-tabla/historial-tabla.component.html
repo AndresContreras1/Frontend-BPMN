@@ -1,21 +1,27 @@
 <div class="card h-100">
   <div class="card-header fw-semibold"><i class="bi bi-clock-history"></i> Historial de cambios</div>
+  <!-- Tres estados: error, cargando (aun no hay resultado) o lista de cambios -->
   @if (problema(); as p) {
     <div class="card-body text-danger small">{{ p.detail }}</div>
   } @else if (!resultado()) {
     <div class="card-body text-body-secondary small"><span class="spinner-border spinner-border-sm me-2"></span>Cargando…</div>
   } @else {
     <ul class="list-group list-group-flush" id="historialProceso">
+      <!-- Un item por cada cambio de la pagina actual -->
       @for (cambio of resultado()!.content; track cambio.id) {
         <li class="list-group-item">
           <div class="d-flex flex-wrap justify-content-between gap-2">
             <span>
+              <!-- Badge del tipo de cambio (texto y color salen de los mapas del .ts) y badge del elemento afectado -->
               <span class="badge {{ colores[cambio.tipo] }}">{{ etiquetas[cambio.tipo] }}</span>
               <span class="badge text-bg-light border ms-1">{{ cambio.elemento }}</span>
             </span>
+            <!-- Cuando y quien hizo el cambio -->
             <small class="text-body-secondary">{{ cambio.fecha | date: 'medium' }} · {{ cambio.usuario }}</small>
           </div>
+          <!-- Descripcion de lo que cambio -->
           <div class="small mt-1">{{ cambio.detalle }}</div>
+          <!-- Advertencias de coherencia que habia en ese momento, si las hubo -->
           @if (cambio.advertencias.length) {
             <ul class="small text-warning-emphasis mb-0 mt-1">
               @for (a of cambio.advertencias; track $index) {
@@ -28,6 +34,7 @@
         <li class="list-group-item text-body-secondary small">Sin cambios registrados.</li>
       }
     </ul>
+    <!-- Paginador: al cambiar de pagina se actualiza la signal page y eso dispara una nueva consulta -->
     <div class="px-3 pb-2">
       <app-paginador [page]="page()" [totalPages]="resultado()!.totalPages" [totalElements]="resultado()!.totalElements"
                      (pageChange)="page.set($event)"></app-paginador>

@@ -7,12 +7,15 @@ import { NotificacionesService } from '../../core/services/notificaciones.servic
 import { SesionStore } from '../../core/services/sesion.store';
 import { RegistroEmpresaComponent } from './registro-empresa.component';
 
+/** Pruebas del formulario de registro de una empresa y su administrador (HU-01). */
 describe('RegistroEmpresaComponent (HU-01)', () => {
   let fixture: ComponentFixture<RegistroEmpresaComponent>;
   let backend: HttpTestingController;
   let router: Router;
   let html: HTMLElement;
 
+  // Ayuda: rellena el formulario con datos válidos (se pueden cambiar algunos con "cambios").
+  // Por cada campo se asigna el valor y se lanzan los eventos "input" y "blur" para que Angular lo registre.
   const llenar = (cambios: Partial<Record<string, string>> = {}) => {
     const datos: Record<string, string> = {
       nombre: 'Facimus S.A.S.', nit: '900123456-1', correoContacto: 'laura@facimus.com',
@@ -27,12 +30,14 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     fixture.detectChanges();
   };
 
+  // Ayuda: pulsa el botón de registrar
   const enviar = () => {
     fixture.detectChanges();
     html.querySelector<HTMLButtonElement>('#registrarEmpresaBtn')!.click();
     fixture.detectChanges();
   };
 
+  // Preparar: backend HTTP simulado, router vacío y un espía en router.navigate para no navegar de verdad
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
@@ -47,8 +52,10 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     fixture.detectChanges();
   });
 
+  // verify falla si quedó alguna petición HTTP sin responder
   afterEach(() => backend.verify());
 
+  // Esperado: con un NIT inválido no se llama a la API y se muestra el mensaje de validación.
   it('rechaza un NIT con formato inválido sin llamar a la API', () => {
     llenar({ nit: '12-ab' });
     enviar();
@@ -56,6 +63,7 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     expect(html.textContent).toContain('El NIT debe tener entre 5 y 15 dígitos');
   });
 
+  // Esperado: una contraseña corta no se envía y se muestra el mensaje de longitud mínima.
   it('exige contraseña de al menos 8 caracteres', () => {
     llenar({ password: 'corta' });
     enviar();
@@ -63,6 +71,9 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     expect(html.textContent).toContain('Debe tener al menos 8 caracteres');
   });
 
+  // Escenario: registro correcto (el nombre se envía con espacios de más).
+  // Esperado: POST de la empresa con el nombre limpio; luego login automático con el correo de contacto;
+  // queda la sesión de administrador, se navega a /inicio y se muestra un aviso de éxito.
   it('registra la empresa y entra con el correo de contacto', () => {
     llenar({ nombre: '  Facimus S.A.S.  ' });
     enviar();
@@ -83,6 +94,8 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     expect(TestBed.inject(NotificacionesService).avisos()[0].mensaje).toContain('Facimus S.A.S. quedó registrada');
   });
 
+  // Escenario: el servidor responde 409 (el NIT ya existe).
+  // Esperado: se muestra el detalle, no se hace el login y no hay sesión.
   it('NIT repetido: muestra la regla de negocio (409) y no inicia sesión', () => {
     llenar();
     enviar();
@@ -97,6 +110,8 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     expect(TestBed.inject(SesionStore).autenticado()).toBeFalse();
   });
 
+  // Escenario: el servidor responde 400 con errores por campo.
+  // Esperado: el mensaje aparece bajo el campo correspondiente y el control queda con el error "servidor".
   it('pone debajo de cada campo los errores de validación del backend (400)', () => {
     llenar();
     enviar();
@@ -112,6 +127,8 @@ describe('RegistroEmpresaComponent (HU-01)', () => {
     expect(fixture.componentInstance.registroForm.controls.correoContacto.hasError('servidor')).toBeTrue();
   });
 
+  // Escenario: la empresa se crea (201) pero el login automático falla (500).
+  // Esperado: se redirige a /login con el parámetro "registrada" y no se queda iniciada la sesión.
   it('si el login posterior falla, lleva al login con el aviso de registro', () => {
     llenar();
     enviar();

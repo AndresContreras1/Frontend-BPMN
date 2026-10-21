@@ -3,10 +3,15 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { UsuarioResumen } from '../../models/usuario.model';
 
+/** Datos de un enlace del menú principal. */
 interface EnlaceMenu {
+  /** Id del HTML, útil para las pruebas. */
   id: string;
+  /** Ruta de Angular a la que lleva. */
   ruta: string;
+  /** Texto visible. */
   texto: string;
+  /** Clase del ícono de Bootstrap Icons. */
   icono: string;
 }
 
@@ -20,9 +25,12 @@ interface EnlaceMenu {
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
+  /** Usuario con sesión iniciada; null si nadie inició sesión (se muestran los enlaces públicos). */
   usuario = input<UsuarioResumen | null>(null);
+  /** Se emite al pulsar "Cerrar sesión"; el padre se encarga de cerrarla. */
   cerrarSesion = output<void>();
 
+  /** Enlaces del menú para el usuario con sesión; el template los recorre con @for. */
   readonly enlaces: EnlaceMenu[] = [
     { id: 'navInicio', ruta: '/inicio', texto: 'Inicio', icono: 'bi-house-door' },
     { id: 'navProcesos', ruta: '/procesos', texto: 'Procesos', icono: 'bi-diagram-3' },
@@ -34,10 +42,15 @@ export class NavbarComponent {
   /** Iniciales para el avatar: primera letra de las dos primeras palabras del nombre. */
   iniciales = computed(() =>
     (this.usuario()?.nombre ?? '')
+      // Separamos el nombre por espacios
       .split(' ')
+      // Quitamos textos vacíos (por si hay espacios dobles)
       .filter((parte) => parte.length > 0)
+      // Nos quedamos con las dos primeras palabras
       .slice(0, 2)
+      // Primera letra de cada palabra, en mayúscula
       .map((parte) => parte[0].toUpperCase())
+      // Las unimos: "Ana Pérez" queda "AP"
       .join(''),
   );
 }

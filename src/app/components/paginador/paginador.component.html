@@ -1,20 +1,26 @@
+<!-- Con más de una página: texto con el total y botones de navegación -->
 @if (totalPages() > 1) {
   <nav aria-label="Paginación" class="d-flex justify-content-between align-items-center mt-3">
+    <!-- Ejemplo: "25 resultados - página 1 de 3" (page() empieza en 0, por eso se suma 1) -->
     <small class="text-body-secondary">{{ totalElements() }} {{ totalElements() === 1 ? 'resultado' : 'resultados' }} · página {{ page() + 1 }} de {{ totalPages() }}</small>
     <ul class="pagination pagination-sm mb-0">
+      <!-- Botón Anterior: deshabilitado en la primera página -->
       <li class="page-item" [class.disabled]="page() === 0">
         <button class="page-link" type="button" (click)="ir(page() - 1)" [disabled]="page() === 0">Anterior</button>
       </li>
+      <!-- Botones numerados; el de la página actual se resalta -->
       @for (numero of paginas(); track numero) {
         <li class="page-item" [class.active]="numero === page()">
           <button class="page-link" type="button" (click)="ir(numero)">{{ numero + 1 }}</button>
         </li>
       }
+      <!-- Botón Siguiente: deshabilitado en la última página -->
       <li class="page-item" [class.disabled]="page() >= totalPages() - 1">
         <button class="page-link" type="button" (click)="ir(page() + 1)" [disabled]="page() >= totalPages() - 1">Siguiente</button>
       </li>
     </ul>
   </nav>
+<!-- Siguiente rama, con una sola página: no hay botones, solo se muestra cuántos resultados hay -->
 } @else if (totalElements() > 0) {
   <small class="text-body-secondary d-block mt-3">{{ totalElements() }} {{ totalElements() === 1 ? 'resultado' : 'resultados' }}</small>
 }

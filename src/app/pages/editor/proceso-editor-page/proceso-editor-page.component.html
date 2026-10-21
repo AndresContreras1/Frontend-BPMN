@@ -1,7 +1,9 @@
+<!-- Indicador de carga: solo mientras se carga y todavía no hay diagrama. -->
 @if (cargando() && !store.diagrama()) {
   <p class="text-body-secondary"><span class="spinner-border spinner-border-sm me-2"></span>Cargando el diagrama…</p>
 }
 
+<!-- Si falló la carga, se muestra el error (404: el proceso no existe) y un enlace para volver. `as error` guarda el valor en una variable. -->
 @if (store.problemaCarga(); as error) {
   <div class="text-center py-5" id="diagramaNoEncontrado">
     <h1 class="h4">{{ error.status === 404 ? 'El proceso no existe' : error.title }}</h1>
@@ -10,7 +12,9 @@
   </div>
 }
 
+<!-- Todo el editor solo se dibuja cuando ya hay proceso cargado; `as proceso` lo deja disponible como variable. -->
 @if (store.proceso(); as proceso) {
+  <!-- Migas de pan: Procesos > nombre del proceso > Diagrama. -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb small mb-2">
       <li class="breadcrumb-item"><a routerLink="/procesos">Procesos</a></li>
@@ -19,24 +23,30 @@
     </ol>
   </nav>
 
+  <!-- Título de la página con el estado del proceso y las acciones principales. -->
   <app-page-title [titulo]="'Diagrama: ' + proceso.nombre" hu="HU-07 a HU-16, HU-21 a HU-28" subtitulo="Pools, lanes, elementos, flujos de secuencia y mensajes">
     <app-estado-badge [estado]="proceso.estado" [activo]="proceso.activo"></app-estado-badge>
+    <!-- Etiqueta de solo lectura cuando el usuario no puede editar este proceso. -->
     @if (!store.editable()) {
       <span class="badge text-bg-secondary" id="soloLecturaBadge"><i class="bi bi-lock"></i> Solo lectura</span>
     }
+    <!-- Botón Validar: ejecuta el validador de reglas BPMN. -->
     <button type="button" class="btn btn-outline-primary btn-sm" (click)="validar()" [disabled]="validando()" id="validarDiagramaBtn">
       <i class="bi bi-check2-square"></i> Validar
     </button>
   </app-page-title>
 
+  <!-- Aviso: en un proceso publicado la API rechaza cambios que lo dejen incoherente. -->
   @if (proceso.estado === 'PUBLICADO' && store.editable()) {
     <div class="alert alert-info py-2 small" id="publicadoMsg">
       <i class="bi bi-info-circle"></i> Proceso publicado: la API rechaza los cambios que lo dejen incoherente.
     </div>
   }
+  <!-- Mensaje de éxito (por ejemplo: Actividad agregada) con las advertencias que devolvió el guardado. -->
   @if (aviso()) {
     <div class="alert alert-success alert-dismissible py-2" id="avisoEditor">
       {{ aviso() }}
+      <!-- Lista de advertencias del guardado (gateways y mensajes). -->
       @if (avisosGuardado().length) {
         <ul class="mb-0 small" id="avisosGuardado">
           @for (a of avisosGuardado(); track $index) {
@@ -44,18 +54,25 @@
           }
         </ul>
       }
+      <!-- Cierra el aviso. -->
       <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
     </div>
   }
+  <!-- Alerta roja con el error actual (si hay); al cerrarla se limpia el problema. -->
   <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
+  <!-- Dos columnas: el lienzo a la izquierda (8 de 12) y el panel lateral a la derecha (4 de 12). -->
   <div class="row g-3">
+    <!-- Columna del lienzo. -->
     <div class="col-xl-8">
+      <!-- Barra de herramientas: solo si se puede editar. Cada cambio de herramienta llega a cambiarHerramienta. -->
       @if (store.editable()) {
         <app-herramientas-barra [herramienta]="store.herramienta()" [conectando]="store.origenConexion() !== null"
                                 (cambiar)="cambiarHerramienta($event)"></app-herramientas-barra>
       }
+      <!-- Lienzo: dibuja pools, lanes, nodos, arcos y mensajes. Recibe los datos por entradas y avisa los clics con eventos. -->
       <div class="contenedor-lienzo">
+        <!-- Entradas: datos del diagrama y elementos resaltados. Salidas: clic en el fondo, en un nodo, en un arco o en un mensaje. -->
         <app-diagrama-svg [pools]="store.pools()" [nodos]="store.nodos()" [arcos]="store.arcos()" [mensajes]="store.mensajes()"
                           [advertencias]="store.advertencias()" [resaltado]="store.idResaltado()"
                           [arcoResaltado]="store.arcoSeleccionado()?.id ?? null" [mensajeResaltado]="store.mensajeSeleccionado()?.id ?? null"
@@ -66,7 +83,9 @@
       </div>
     </div>
 
+    <!-- Columna del panel lateral con tres pestañas. -->
     <div class="col-xl-4">
+      <!-- Pestañas: Elemento, Estructura y Advertencias; la activa se guarda en el signal pestana. -->
       <ul class="nav nav-tabs mb-2">
         <li class="nav-item">
           <button type="button" class="nav-link" [class.active]="pestana() === 'elemento'" (click)="pestana.set('elemento')" id="pestanaElemento">Elemento</button>
@@ -77,6 +96,7 @@
         <li class="nav-item">
           <button type="button" class="nav-link" [class.active]="pestana() === 'advertencias'" (click)="pestana.set('advertencias')" id="pestanaAdvertencias">
             Advertencias
+            <!-- Contador de advertencias: rojo si hay errores, amarillo si solo hay avisos. -->
             @if (store.advertencias().length) {
               <span class="badge rounded-pill" [class.text-bg-danger]="hayErrores()" [class.text-bg-warning]="!hayErrores()">
                 {{ store.advertencias().length }}
@@ -86,31 +106,42 @@
         </li>
       </ul>
 
+      <!-- Contenido según la pestaña activa. -->
       @switch (pestana()) {
         @case ('elemento') {
+          <!-- Pestaña Elemento: según lo que esté seleccionado se muestra el panel y formulario correspondiente (o una ayuda si no hay nada). -->
           @switch (store.seleccion()?.tipo) {
             @case ('nuevo') {
+              <!-- Elemento nuevo: el tipo de selección guardado en el store trae la clase y el lugar donde se hizo clic. -->
               @if (store.seleccion(); as s) {
+                <!-- Esta comprobación hace que TypeScript sepa que s tiene clase y ubicación. -->
                 @if (s.tipo === 'nuevo') {
+                  <!-- Marco del panel; el formulario va dentro (ng-content). -->
                   <app-panel-elemento [titulo]="tituloNuevo(s.clase)" [hu]="historia(s.clase)" icono="bi-plus-circle" (cerrar)="cerrarPanel()">
+                    <!-- Formulario según la clase del elemento nuevo. -->
                     @switch (s.clase) {
                       @case ('ACTIVIDAD') {
+                        <!-- Nueva actividad. -->
                         <app-actividad-form [ubicacion]="s.ubicacion" [lanes]="lanesDe(s.ubicacion.poolId)"
                                             [guardando]="guardando()" [problema]="problema()" (guardar)="guardarActividad($event)"></app-actividad-form>
                       }
                       @case ('GATEWAY') {
+                        <!-- Nuevo gateway. -->
                         <app-gateway-form [ubicacion]="s.ubicacion" [lanes]="lanesDe(s.ubicacion.poolId)"
                                           [guardando]="guardando()" [problema]="problema()" (guardar)="guardarGateway($event)"></app-gateway-form>
                       }
                       @case ('INICIO') {
+                        <!-- Nuevo evento de inicio. -->
                         <app-evento-form [ubicacion]="s.ubicacion" tipoInicial="INICIO" [lanes]="lanesDe(s.ubicacion.poolId)"
                                          [guardando]="guardando()" [problema]="problema()" (guardar)="guardarEvento($event)"></app-evento-form>
                       }
                       @case ('FIN') {
+                        <!-- Nuevo evento de fin. -->
                         <app-evento-form [ubicacion]="s.ubicacion" tipoInicial="FIN" [lanes]="lanesDe(s.ubicacion.poolId)"
                                          [guardando]="guardando()" [problema]="problema()" (guardar)="guardarEvento($event)"></app-evento-form>
                       }
                       @default {
+                        <!-- Cualquier otra clase es un mensaje (envío, recepción o notificación externa). -->
                         <app-mensaje-form [clase]="claseMensaje(s.clase)" [ubicacion]="s.ubicacion" [pools]="store.pools()" [nodos]="store.nodos()"
                                           [guardando]="guardando()" [problema]="problema()" (guardar)="guardarMensaje($event)"></app-mensaje-form>
                       }
@@ -120,22 +151,29 @@
               }
             }
             @case ('nodo') {
+              <!-- Elemento existente del flujo (actividad, gateway o evento) abierto para ver o editar. -->
               @if (store.nodoSeleccionado(); as nodo) {
+                <!-- Marco del panel con botón Eliminar solo para quien tiene permiso. -->
                 <app-panel-elemento [titulo]="tituloNodo(nodo)" [hu]="historia(nodo.tipo)" icono="bi-bounding-box" [puedeEliminar]="puedeEliminar()"
                                     (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
+                  <!-- Formulario según el tipo de nodo. -->
                   @switch (nodo.tipo) {
                     @case ('ACTIVIDAD') {
+                      <!-- Editar actividad. -->
                       <app-actividad-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
                                           [guardando]="guardando()" [problema]="problema()" (guardar)="guardarActividad($event)"></app-actividad-form>
                     }
                     @case ('GATEWAY') {
+                      <!-- Editar gateway y, debajo, las condiciones de sus salidas. -->
                       <app-gateway-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
                                         [guardando]="guardando()" [problema]="problema()" (guardar)="guardarGateway($event)"></app-gateway-form>
+                      <!-- Condiciones de cada arco que sale del gateway. -->
                       <app-salidas-gateway [salidas]="salidasGateway()" [nodos]="store.nodos()" [tipoGateway]="nodo.tipoGateway"
                                            [editable]="store.editable()" [guardando]="guardando()"
                                            (guardar)="guardarCondiciones($event)"></app-salidas-gateway>
                     }
                     @default {
+                      <!-- Eventos de inicio y fin. -->
                       <app-evento-form [nodo]="nodo" [lanes]="lanesDe(nodo.poolId)" [editable]="store.editable()"
                                        [guardando]="guardando()" [problema]="problema()" (guardar)="guardarEvento($event)"></app-evento-form>
                     }
@@ -144,23 +182,31 @@
               }
             }
             @case ('mensaje') {
+              <!-- Mensaje existente (envío, recepción o notificación externa). -->
               @if (store.mensajeSeleccionado(); as mensaje) {
+                <!-- Título e icono cambian según el tipo de mensaje. -->
                 <app-panel-elemento [titulo]="mensaje.direccion === 'RECEPCION' ? 'Recepción de mensaje' : (mensaje.tipoDestino ? 'Notificación externa' : 'Envío de mensaje')"
                                     [icono]="mensaje.direccion === 'RECEPCION' ? 'bi-envelope' : 'bi-envelope-fill'"
                                     [hu]="historia(mensaje.tipoDestino ? 'EXTERNO' : mensaje.direccion)"
                                     [puedeEliminar]="puedeEliminar()" (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
+                  <!-- Datos del mensaje. -->
                   <app-mensaje-form [mensaje]="mensaje" [pools]="store.pools()" [nodos]="store.nodos()" [editable]="store.editable()"
                                     [guardando]="guardando()" [problema]="problema()" (guardar)="guardarMensaje($event)"></app-mensaje-form>
+                  <!-- Clave de correlación del mensaje (HU-28). -->
                   <app-correlacion-form [mensaje]="mensaje" [editable]="store.editable()" [guardando]="guardando()"
                                         (guardar)="guardarCorrelacion($event)"></app-correlacion-form>
                 </app-panel-elemento>
               }
             }
             @case ('arco') {
+              <!-- Arco (flujo de secuencia): nuevo (id null) o existente. -->
               @if (store.seleccion(); as s) {
+                <!-- Comprobación para que TypeScript sepa que s es un arco. -->
                 @if (s.tipo === 'arco') {
+                  <!-- Solo se puede eliminar un arco que ya existe. -->
                   <app-panel-elemento [titulo]="s.id === null ? 'Nuevo flujo de secuencia' : 'Flujo de secuencia'" [hu]="historia('ARCO')" icono="bi-arrow-right"
                                       [puedeEliminar]="puedeEliminar() && s.id !== null" (eliminar)="pedirEliminar()" (cerrar)="cerrarPanel()">
+                    <!-- Formulario del arco. -->
                     <app-arco-form [arco]="store.arcoSeleccionado()" [origenId]="s.origenId" [destinoId]="s.destinoId" [nodos]="store.nodos()"
                                    [editable]="store.editable()" [guardando]="guardando()" [problema]="problema()"
                                    (guardar)="guardarArco($event)"></app-arco-form>
@@ -169,13 +215,16 @@
               }
             }
             @case ('pool') {
+              <!-- Formulario de pool (nuevo o existente). -->
               <app-pool-form [pool]="store.poolSeleccionado()" [esAdministrador]="sesion.esAdministrador()"
                              [guardando]="guardando()" [problema]="problema()"
                              (guardar)="guardarPool($event)" (cambiarPermiso)="cambiarPermiso($event)" (cancelar)="cerrarPanel()">
               </app-pool-form>
             }
             @case ('lane') {
+              <!-- Formulario de lane: necesita el pool al que pertenece. -->
               @if (store.poolDeLane(); as pool) {
+                <!-- Formulario de lane. -->
                 <app-lane-form [lane]="store.laneSeleccionada()" [pool]="pool" [roles]="store.roles()"
                                [esAdministrador]="sesion.esAdministrador()" [guardando]="guardando()"
                                (guardar)="guardarLane($event)" (cancelar)="cerrarPanel()">
@@ -183,8 +232,10 @@
               }
             }
             @default {
+              <!-- Sin selección: texto de ayuda. -->
               <div class="card">
                 <div class="card-body small text-body-secondary" id="ayudaPanel">
+                  <!-- La ayuda cambia según el usuario pueda editar o no. -->
                   @if (store.editable()) {
                     Elija una herramienta y haga clic en el lienzo para agregar elementos, o seleccione uno para editarlo.
                     Pools y lanes se administran en la pestaña <strong>Estructura</strong>.
@@ -197,17 +248,20 @@
           }
         }
         @case ('estructura') {
+          <!-- Pestaña Estructura. Aviso: el administrador restringió los cambios de pools y lanes. -->
           @if (store.editable() && !store.estructuraEditable()) {
             <div class="alert alert-info small py-2" id="estructuraRestringidaMsg">
               <i class="bi bi-shield-lock"></i> El administrador restringió los cambios de pools y lanes de este proceso.
             </div>
           }
+          <!-- Pools y lanes; al elegir uno se abre en la pestaña Elemento. -->
           <app-estructura-panel [pools]="store.pools()" [editable]="store.estructuraEditable()" [seleccion]="store.seleccion()"
                                 (seleccionar)="store.seleccionar($event); pestana.set('elemento')" (moverLane)="moverLane($event)"
                                 (eliminarPool)="eliminarPool($event)" (eliminarLane)="eliminarLane($event)">
           </app-estructura-panel>
         }
         @case ('advertencias') {
+          <!-- Pestaña Advertencias: resultado del validador; elegir una lleva al elemento. -->
           <app-advertencias-panel [advertencias]="store.advertencias()" [validando]="validando()"
                                   (validar)="validar()" (elegir)="irAAdvertencia($event)"></app-advertencias-panel>
         }
@@ -216,6 +270,7 @@
   </div>
 }
 
+<!-- Modal de confirmación para eliminar; se abre cuando confirmacion() tiene valor. -->
 <app-confirmar-modal [abierto]="confirmacion() !== null" [titulo]="confirmacion()?.titulo ?? ''"
                      [mensaje]="confirmacion()?.mensaje ?? ''" [advertencias]="confirmacion()?.advertencias ?? []"
                      textoConfirmar="Eliminar" (confirmar)="confirmar()" (cancelar)="confirmacion.set(null)">

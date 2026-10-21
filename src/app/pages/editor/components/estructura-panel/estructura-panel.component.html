@@ -1,27 +1,35 @@
+<!-- Contenedor de la estructura: una tarjeta por pool y, al final, el botón para agregar uno nuevo. -->
 <div class="d-flex flex-column gap-3" id="estructuraDiagrama">
+  <!-- Una tarjeta por pool; se resalta si es el pool abierto en el panel. -->
   @for (pool of pools(); track pool.id) {
     <div class="card" [class.border-primary]="estaSeleccionado('pool', pool.id)">
+      <!-- Encabezado: icono, nombre, tipo, etiqueta de caja negra y botones. -->
       <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
         <div>
           <i class="bi {{ iconoTipo[pool.tipo] }} text-primary"></i>
           <span class="fw-semibold ms-1">{{ pool.nombre }}</span>
           <span class="badge text-bg-light border ms-2">{{ etiquetaTipo[pool.tipo] }}</span>
+          <!-- Un pool de caja negra se muestra como participante sin detalle interno. -->
           @if (pool.cajaNegra) {
             <span class="badge text-bg-dark ms-1" title="Participante sin detalle interno">Caja negra</span>
           }
         </div>
+        <!-- Botones del pool: solo si el usuario puede editar la estructura. -->
         @if (editable()) {
           <div class="btn-group btn-group-sm">
+            <!-- Editar el pool. -->
             <button type="button" class="btn btn-outline-primary" (click)="seleccionar.emit({ tipo: 'pool', id: pool.id })"
                     [id]="'editarPoolBtn-' + pool.id" [attr.aria-label]="'Editar pool ' + pool.nombre" title="Editar pool">
               <i class="bi bi-pencil"></i>
             </button>
+            <!-- Agregar lane: una caja negra no tiene lanes. -->
             @if (!pool.cajaNegra) {
               <button type="button" class="btn btn-outline-primary" (click)="seleccionar.emit({ tipo: 'lane', id: null, poolId: pool.id })"
                       [id]="'agregarLaneBtn-' + pool.id" title="Agregar lane">
                 <i class="bi bi-plus-lg"></i> Lane
               </button>
             }
+            <!-- Eliminar pool: el pool propietario no se puede eliminar. -->
             @if (pool.tipo !== 'PROPIETARIO') {
               <button type="button" class="btn btn-outline-danger" (click)="eliminarPool.emit(pool)"
                       [id]="'eliminarPoolBtn-' + pool.id" [attr.aria-label]="'Eliminar pool ' + pool.nombre" title="Eliminar pool">
@@ -32,14 +40,19 @@
         }
       </div>
 
+      <!-- Cuerpo de la tarjeta: aviso para caja negra o la lista de lanes. -->
       @if (pool.cajaNegra) {
         <div class="card-body small text-body-secondary">Caja negra: se ve como participante, sin lanes ni elementos internos.</div>
       } @else {
+        <!-- Lista de lanes del pool. -->
         <ul class="list-group list-group-flush">
+          <!-- Una fila por lane. $first y $last (variables de @for) deshabilitan Subir en la primera y Bajar en la última. -->
           @for (lane of lanesOrdenadas(pool); track lane.id; let primera = $first; let ultima = $last) {
+            <!-- Fila de la lane; se resalta si es la lane abierta. -->
             <li class="list-group-item d-flex justify-content-between align-items-center"
                 [class.active-lane]="estaSeleccionado('lane', lane.id)">
               <span><i class="bi bi-distribute-vertical text-body-tertiary"></i> {{ lane.nombre }}</span>
+              <!-- Botones de la lane: subir, bajar, cambiar rol y eliminar. -->
               @if (editable()) {
                 <div class="btn-group btn-group-sm">
                   <button type="button" class="btn btn-outline-secondary" [disabled]="primera"
@@ -62,6 +75,7 @@
               }
             </li>
           } @empty {
+            <!-- @empty: se muestra cuando el pool no tiene lanes. -->
             <li class="list-group-item small text-body-secondary">Sin lanes. Cada lane es un rol de proceso responsable de actividades.</li>
           }
         </ul>
@@ -69,6 +83,7 @@
     </div>
   }
 
+  <!-- Botón para agregar un pool nuevo (id null = crear). -->
   @if (editable()) {
     <button type="button" class="btn btn-outline-primary align-self-start" id="agregarPoolBtn"
             (click)="seleccionar.emit({ tipo: 'pool', id: null })">

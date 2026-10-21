@@ -1,3 +1,4 @@
+<!-- Un mensaje por cada error del campo; d-block fuerza a Bootstrap a mostrarlo -->
 @for (error of errores(); track $index) {
   <div class="invalid-feedback d-block">{{ error }}</div>
 }

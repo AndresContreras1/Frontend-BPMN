@@ -1,3 +1,4 @@
+<!-- Migas de pan: permite volver al listado y muestra el nombre del proceso actual -->
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb small mb-2">
     <li class="breadcrumb-item"><a routerLink="/procesos">Procesos</a></li>
@@ -5,9 +6,11 @@
   </ol>
 </nav>
 
+<!-- Spinner mientras llega el proceso por primera vez -->
 @if (cargando() && !proceso()) {
   <p class="text-body-secondary"><span class="spinner-border spinner-border-sm me-2"></span>Cargando…</p>
 }
+<!-- Si la carga fallo (por ejemplo 404) se muestra el motivo y un enlace para volver -->
 @if (problemaCarga(); as error) {
   <div class="text-center py-5" id="procesoNoEncontrado">
     <h1 class="h4">{{ error.status === 404 ? 'El proceso no existe' : error.title }}</h1>
@@ -15,15 +18,20 @@
     <a class="btn btn-primary" routerLink="/procesos">Volver a los procesos</a>
   </div>
 }
+<!-- Todo el contenido de la ficha solo se pinta cuando el proceso ya esta cargado (p) -->
 @if (proceso(); as p) {
+  <!-- Titulo de la pagina; lo que va dentro son los botones de accion -->
   <app-page-title [titulo]="p.nombre" [subtitulo]="p.categoria" hu="HU-04 a HU-07, HU-23">
+    <!-- Abre el editor del diagrama; el texto cambia segun el usuario pueda editar o solo ver -->
     <a class="btn btn-primary" [routerLink]="['/procesos', p.id, 'diagrama']" id="abrirDiagramaBtn">
       <i class="bi bi-diagram-3"></i> {{ editable() ? 'Editar diagrama' : 'Ver diagrama' }}
     </a>
+    <!-- Acciones solo para quien puede editar -->
     @if (editable()) {
       <a class="btn btn-outline-primary" [routerLink]="['/procesos/editar', p.id]" id="editarProcesoBtn">
         <i class="bi bi-pencil"></i> Editar
       </a>
+      <!-- Si es borrador se ofrece publicar; si esta publicado, volver a borrador -->
       @if (p.estado === 'BORRADOR') {
         <button type="button" class="btn btn-success" id="publicarBtn" (click)="cambiarEstado('PUBLICADO')" [disabled]="cambiandoEstado()">
           <i class="bi bi-send-check"></i> Publicar
@@ -34,6 +42,7 @@
         </button>
       }
     }
+    <!-- Eliminar solo lo ve el administrador; abre el modal de confirmacion -->
     @if (administrable()) {
       <button type="button" class="btn btn-outline-danger" id="eliminarProcesoBtn" (click)="confirmandoEliminar.set(true)">
         <i class="bi bi-trash"></i> Eliminar
@@ -41,19 +50,23 @@
     }
   </app-page-title>
 
+  <!-- Avisos de solo lectura: proceso de otra empresa, o proceso ya eliminado -->
   @if (!p.propio) {
     <div class="alert alert-info" id="procesoCompartidoMsg"><i class="bi bi-share"></i> Otra empresa compartió este proceso con la suya: solo lectura.</div>
   } @else if (!p.activo) {
     <div class="alert alert-secondary" id="procesoEliminadoMsg"><i class="bi bi-archive"></i> Proceso eliminado: se conserva para consulta y auditoría.</div>
   }
+  <!-- Mensaje de exito (publicado / vuelto a borrador), se puede cerrar -->
   @if (aviso()) {
     <div class="alert alert-success alert-dismissible" id="avisoProceso">
       {{ aviso() }}
       <button type="button" class="btn-close" aria-label="Cerrar" (click)="aviso.set('')"></button>
     </div>
   }
+  <!-- Alerta con el error de la API (por ejemplo 409 al publicar un diagrama incoherente) -->
   <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
+  <!-- Tarjeta con descripcion, estado y datos de auditoria (quien y cuando) -->
   <div class="card mb-3">
     <div class="card-body">
       <div class="row g-3">
@@ -75,20 +88,25 @@
     </div>
   </div>
 
+  <!-- Diagrama del proceso en solo lectura (HU-07) -->
   <app-diagrama-vista [procesoId]="p.id"></app-diagrama-vista>
 
+  <!-- Historial y compartir solo existen para procesos de la propia empresa -->
   @if (p.propio) {
     <div class="row g-3">
       <div class="col-lg-8">
+        <!-- [recarga] cambia cada vez que hay un cambio, y eso hace que el historial se vuelva a pedir -->
         <app-historial-tabla [procesoId]="p.id" [recarga]="recargaHistorial()"></app-historial-tabla>
       </div>
       <div class="col-lg-4">
+        <!-- Cuando el panel emite (cambio) se recarga el historial para que muestre la comparticion -->
         <app-compartir-panel [procesoId]="p.id" [editable]="administrable()"
                              (cambio)="recargaHistorial.set(recargaHistorial() + 1)"></app-compartir-panel>
       </div>
     </div>
   }
 
+  <!-- Modal de confirmacion antes de eliminar; confirmar ejecuta eliminar(), cancelar solo lo cierra -->
   <app-confirmar-modal [abierto]="confirmandoEliminar()" titulo="Eliminar proceso"
                        [mensaje]="'¿Eliminar &quot;' + p.nombre + '&quot;? Quedará inactivo: se conserva su diagrama y su historial, pero ya no se podrá editar.'"
                        textoConfirmar="Eliminar" (confirmar)="eliminar()" (cancelar)="confirmandoEliminar.set(false)">

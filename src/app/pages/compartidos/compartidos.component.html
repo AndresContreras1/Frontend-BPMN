@@ -1,11 +1,15 @@
 <app-page-title titulo="Compartidos conmigo" hu="HU-23" subtitulo="Procesos de otras empresas que puede consultar en solo lectura"></app-page-title>
+<!-- Error de la API -->
 <app-alerta-error [problema]="problema()" (cerrar)="problema.set(null)"></app-alerta-error>
 
+<!-- Tabla generica: pinta encabezados, spinner y mensaje de vacio; las filas se pasan como contenido -->
 <app-tabla-generica [columnas]="columnas" [orden]="orden()" (ordenar)="ordenar($event)"
                     [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
                     mensajeVacio="Ninguna empresa ha compartido procesos con la suya.">
+  <!-- Una fila por proceso compartido; cada elemento trae el proceso y el nombre de la empresa dueña -->
   @for (c of resultado()?.content ?? []; track c.proceso.id) {
     <tr class="fila-compartido">
+      <!-- Nombre con enlace al detalle (se abre en solo lectura) -->
       <td><a [routerLink]="['/procesos', c.proceso.id]" class="fw-semibold text-decoration-none nombre-proceso">{{ c.proceso.nombre }}</a></td>
       <td><i class="bi bi-building text-body-secondary"></i> {{ c.empresaPropietaria }}</td>
       <td>{{ c.proceso.categoria }}</td>
@@ -15,5 +19,6 @@
   }
 </app-tabla-generica>
 
+<!-- Paginador; al cambiar de pagina se actualiza page y se vuelve a consultar -->
 <app-paginador [page]="page()" [totalPages]="resultado()?.totalPages ?? 0"
                [totalElements]="resultado()?.totalElements ?? 0" (pageChange)="page.set($event)"></app-paginador>

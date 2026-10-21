@@ -1,8 +1,11 @@
+// Angular: Component, signals (signal/computed), inject() para dependencias; takeUntilDestroyed cancela la suscripción al destruir el componente.
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+// RxJS: finalize (código al terminar), forkJoin (varias peticiones a la vez), map, switchMap (encadena peticiones), tap (efecto lateral).
 import { finalize, forkJoin, map, Observable, switchMap, tap } from 'rxjs';
 
+// Componentes compartidos de la app (alertas, modal de confirmar, lienzo SVG del diagrama, etc.).
 import { AlertaErrorComponent } from '../../../components/alerta-error/alerta-error.component';
 import { ConfirmarModalComponent } from '../../../components/confirmar-modal/confirmar-modal.component';
 import { tipoDeElemento } from '../../../components/diagrama/advertencias';
@@ -11,12 +14,14 @@ import { EstadoBadgeComponent } from '../../../components/estado-badge/estado-ba
 import { PageTitleComponent } from '../../../components/page-title/page-title.component';
 import { problemaDe } from '../../../core/services/errores';
 import { SesionStore } from '../../../core/services/sesion.store';
+// Modelos (tipos de datos) que viajan entre la API y la pantalla.
 import { Advertencia, Impacto } from '../../../models/diagrama.model';
 import { Lane } from '../../../models/lane.model';
 import { CorrelacionRequest } from '../../../models/mensaje.model';
 import { ActividadRequest, EventoRequest, GatewayRequest, Nodo } from '../../../models/nodo.model';
 import { PermisoEstructura, Pool, PoolRequest } from '../../../models/pool.model';
 import { ProblemDetail } from '../../../models/problem-detail.model';
+// Servicios que hacen las peticiones HTTP a la API.
 import { ActividadService } from '../../../service/actividad.service';
 import { ArcoService } from '../../../service/arco.service';
 import { DiagramaService } from '../../../service/diagrama.service';
@@ -25,6 +30,7 @@ import { GatewayService } from '../../../service/gateway.service';
 import { LaneService } from '../../../service/lane.service';
 import { MensajeService } from '../../../service/mensaje.service';
 import { PoolService } from '../../../service/pool.service';
+// Paneles y formularios hijos del editor.
 import { ActividadFormComponent } from '../components/actividad-form/actividad-form.component';
 import { AdvertenciasPanelComponent } from '../components/advertencias-panel/advertencias-panel.component';
 import { ArcoFormComponent, DatosArco } from '../components/arco-form/arco-form.component';
@@ -38,19 +44,28 @@ import { ClaseMensaje, GuardarMensaje, MensajeFormComponent } from '../component
 import { PanelElementoComponent } from '../components/panel-elemento/panel-elemento.component';
 import { PoolFormComponent } from '../components/pool-form/pool-form.component';
 import { CondicionArco, SalidasGatewayComponent } from '../components/salidas-gateway/salidas-gateway.component';
+// Estado compartido del editor y tipo de herramienta.
 import { EditorStore, Herramienta } from '../editor.store';
 import { Posicion } from '../../../components/diagrama/layout';
 
+/** Datos del modal de confirmación antes de eliminar: textos, advertencias del impacto y la acción a ejecutar si el usuario acepta. */
 interface Confirmacion {
+  // Título del modal.
   titulo: string;
+  // Pregunta que se muestra al usuario.
   mensaje: string;
+  // Advertencias que quedarían en el diagrama tras eliminar.
   advertencias: Advertencia[];
+  // Función que hace la petición de eliminar (devuelve un Observable).
   accion: () => Observable<unknown>;
+  // Mensaje de éxito que se muestra al terminar.
   exito: string;
 }
 
+/** Pestañas del panel lateral. */
 type Pestana = 'elemento' | 'estructura' | 'advertencias';
 
+/** Título del panel cuando se crea un elemento nuevo, según la herramienta usada. */
 const TITULO_NUEVO: Record<string, string> = {
   INICIO: 'Nuevo evento de inicio',
   FIN: 'Nuevo evento de fin',
@@ -74,20 +89,28 @@ const HISTORIAS: Record<string, string> = {
  * que las advertencias del validador queden al día. Antes de eliminar, muestra el impacto.
  */
 @Component({
+  // Nombre de la etiqueta del componente.
   selector: 'app-proceso-editor-page',
+  // Componentes que la plantilla puede usar (en Angular standalone se declaran aquí).
   imports: [
     RouterLink, PageTitleComponent, AlertaErrorComponent, ConfirmarModalComponent, EstadoBadgeComponent,
     DiagramaSvgComponent, HerramientasBarraComponent, PanelElementoComponent, AdvertenciasPanelComponent,
     EstructuraPanelComponent, PoolFormComponent, LaneFormComponent, EventoFormComponent, ActividadFormComponent,
     GatewayFormComponent, SalidasGatewayComponent, ArcoFormComponent, MensajeFormComponent, CorrelacionFormComponent,
   ],
+  // Una instancia nueva del store por cada página del editor (no es global).
   providers: [EditorStore],
+  // HTML del componente.
   templateUrl: './proceso-editor-page.component.html',
 })
 export class ProcesoEditorPageComponent {
+  /** Store con el estado del diagrama (público: la plantilla lo lee). */
   readonly store = inject(EditorStore);
+  /** Sesión del usuario: sirve para saber si es administrador o puede editar. */
   readonly sesion = inject(SesionStore);
+  // Ruta activa: de aquí sale el id del proceso (parámetro de la URL).
   private readonly route = inject(ActivatedRoute);
+  // Un servicio de API por cada tipo de elemento que el editor crea, edita o elimina.
   private readonly poolService = inject(PoolService);
   private readonly laneService = inject(LaneService);
   private readonly actividadService = inject(ActividadService);
@@ -97,16 +120,24 @@ export class ProcesoEditorPageComponent {
   private readonly mensajeService = inject(MensajeService);
   private readonly diagramaService = inject(DiagramaService);
 
+  /** true mientras se carga el diagrama. */
   cargando = signal(true);
+  /** true mientras hay una petición de guardado en curso (para deshabilitar botones). */
   guardando = signal(false);
+  /** true mientras se ejecuta el validador de reglas BPMN. */
   validando = signal(false);
+  /** Error o aviso de problema que se muestra en la alerta roja. */
   problema = signal<ProblemDetail | null>(null);
+  /** Mensaje de éxito o informativo que se muestra en pantalla. */
   aviso = signal('');
   /** Advertencias que devolvió la API al guardar (gateways y mensajes). */
   avisosGuardado = signal<Advertencia[]>([]);
+  /** Modal de confirmación pendiente (null = no hay modal abierto). */
   confirmacion = signal<Confirmacion | null>(null);
+  /** Pestaña activa del panel lateral. */
   pestana = signal<Pestana>('elemento');
 
+  /** true si alguna advertencia es de severidad ERROR (entonces el proceso no se puede publicar). */
   hayErrores = computed(() => this.store.advertencias().some((a) => a.severidad === 'ERROR'));
 
   /** Solo el administrador elimina elementos (la API aplica la misma regla). */
@@ -118,7 +149,9 @@ export class ProcesoEditorPageComponent {
     return nodo?.tipo === 'GATEWAY' ? this.store.arcos().filter((a) => a.origenId === nodo.id) : [];
   });
 
+  // Cada vez que cambia el id de la URL se carga el diagrama de ese proceso.
   constructor() {
+    // paramMap emite cuando cambian los parámetros de la ruta; map saca el id como número; switchMap cancela la carga anterior si llega otro id; finalize apaga el indicador de carga pase lo que pase.
     this.route.paramMap
       .pipe(
         map((params) => Number(params.get('id'))),
@@ -133,18 +166,22 @@ export class ProcesoEditorPageComponent {
 
   // ---------- Datos para la plantilla ----------
 
+  /** Lanes de un pool (lista vacía si no hay pool). */
   lanesDe(poolId: number | null | undefined): Lane[] {
     return poolId ? this.store.lanesDePool(poolId) : [];
   }
 
+  /** Título del panel para un elemento nuevo. */
   tituloNuevo(clase: string): string {
     return TITULO_NUEVO[clase];
   }
 
+  /** Historia de usuario asociada a la clase de elemento ('' si no tiene). */
   historia(clase: string): string {
     return HISTORIAS[clase] ?? '';
   }
 
+  /** Nombre legible del tipo de nodo para mostrar en el panel. */
   tituloNodo(nodo: Nodo): string {
     switch (nodo.tipo) {
       case 'ACTIVIDAD':
@@ -158,12 +195,14 @@ export class ProcesoEditorPageComponent {
     }
   }
 
+  /** Convierte el texto de la clase al tipo ClaseMensaje que espera el formulario (solo para el compilador, no cambia el valor). */
   claseMensaje(clase: string): ClaseMensaje {
     return clase as ClaseMensaje;
   }
 
   // ---------- Herramientas y lienzo ----------
 
+  /** Cambia la herramienta de la barra y limpia el error anterior. */
   cambiarHerramienta(herramienta: Herramienta): void {
     this.store.usarHerramienta(herramienta);
     this.problema.set(null);
@@ -171,18 +210,22 @@ export class ProcesoEditorPageComponent {
 
   /** Clic en el fondo del lienzo: coloca un elemento nuevo o mueve el seleccionado. */
   alClicLienzo(posicion: Posicion): void {
+    // Solo se actúa si el usuario puede editar y la herramienta pone algo en el lienzo (seleccionar y conectar no crean nada).
     const herramienta = this.store.herramienta();
     if (!this.store.editable() || herramienta === 'seleccionar' || herramienta === 'conectar') {
       return;
     }
+    // Mover: lleva el elemento seleccionado a este punto.
     if (herramienta === 'mover') {
       this.moverA(posicion);
       return;
     }
+    // Regla BPMN: un pool de caja negra no muestra proceso interno, así que no admite elementos.
     if (posicion.pool.cajaNegra) {
       this.avisar('Caja negra', `El pool "${posicion.pool.nombre}" es caja negra: no tiene elementos internos.`);
       return;
     }
+    // Regla: actividades y gateways deben estar dentro de una lane.
     if ((herramienta === 'ACTIVIDAD' || herramienta === 'GATEWAY') && !posicion.lane) {
       this.avisar('Falta la lane', 'Las actividades y los gateways van dentro de una lane: agregue una al pool en "Estructura".');
       return;
@@ -196,8 +239,10 @@ export class ProcesoEditorPageComponent {
     this.pestana.set('elemento');
   }
 
+  /** Clic en un nodo: con la herramienta conectar elige origen y destino del arco; en otro caso abre el nodo (o su mensaje) en el panel. */
   alClicNodo(id: number): void {
     if (this.store.herramienta() === 'conectar' && this.store.editable()) {
+      // Primer clic: se guarda el origen (si se vuelve a pulsar el mismo, se cancela). Segundo clic: se abre el formulario del arco nuevo.
       const origen = this.store.origenConexion();
       if (origen === null || origen === id) {
         this.store.marcarOrigenConexion(origen === id ? null : id);
@@ -208,11 +253,13 @@ export class ProcesoEditorPageComponent {
       this.pestana.set('elemento');
       return;
     }
+    // Si el nodo pertenece a un mensaje (throw/catch/envío), se abre el formulario de mensaje en vez del de nodo.
     const mensaje = this.store.mensajeDeNodo(id);
     this.store.seleccionar(mensaje ? { tipo: 'mensaje', id: mensaje.id } : { tipo: 'nodo', id });
     this.pestana.set('elemento');
   }
 
+  /** Clic en un arco: lo abre en el panel para editarlo. */
   alClicArco(id: number): void {
     const arco = this.store.arcos().find((a) => a.id === id);
     if (arco) {
@@ -221,6 +268,7 @@ export class ProcesoEditorPageComponent {
     }
   }
 
+  /** Clic en un mensaje: lo abre en el panel. */
   alClicMensaje(id: number): void {
     this.store.seleccionar({ tipo: 'mensaje', id });
     this.pestana.set('elemento');
@@ -228,6 +276,7 @@ export class ProcesoEditorPageComponent {
 
   /** Desde el panel de advertencias: abre el elemento o el arco señalado. */
   irAAdvertencia(advertencia: Advertencia): void {
+    // Según el tipo de elemento al que apunta la advertencia se abre el arco o el nodo (si aún existe).
     const tipo = tipoDeElemento(advertencia);
     const id = advertencia.elementoId;
     if (id == null) {
@@ -240,6 +289,7 @@ export class ProcesoEditorPageComponent {
     }
   }
 
+  /** Cierra el panel lateral y limpia errores y avisos del guardado. */
   cerrarPanel(): void {
     this.store.seleccionar(null);
     this.problema.set(null);
@@ -248,6 +298,7 @@ export class ProcesoEditorPageComponent {
 
   // ---------- Elementos del flujo (HU-08, HU-09, HU-14, HU-15) ----------
 
+  /** Crea o actualiza un evento (inicio o fin) según lo que esté abierto en el panel. */
   guardarEvento(datos: EventoRequest): void {
     const s = this.store.seleccion();
     if (s?.tipo === 'nuevo') {
@@ -257,6 +308,7 @@ export class ProcesoEditorPageComponent {
     }
   }
 
+  /** Crea o actualiza una actividad. Al crear, la lane es obligatoria (por eso el `!`). */
   guardarActividad(datos: ActividadRequest): void {
     const s = this.store.seleccion();
     if (s?.tipo === 'nuevo') {
@@ -266,6 +318,7 @@ export class ProcesoEditorPageComponent {
     }
   }
 
+  /** Crea o actualiza un gateway; guarda las advertencias que devuelve la API (por ejemplo salidas sin condición). */
   guardarGateway(datos: GatewayRequest): void {
     const s = this.store.seleccion();
     const peticion = s?.tipo === 'nuevo'
@@ -278,12 +331,14 @@ export class ProcesoEditorPageComponent {
 
   // ---------- Arcos (HU-11, HU-12) ----------
 
+  /** Crea o actualiza un flujo de secuencia entre dos nodos. */
   guardarArco(datos: DatosArco): void {
     const s = this.store.seleccion();
     const proceso = this.store.proceso();
     if (s?.tipo !== 'arco' || !proceso) {
       return;
     }
+    // Se arma la petición con el proceso y los datos del formulario (spread `...datos`).
     const arco = { procesoId: proceso.id, ...datos };
     const peticion = s.id === null ? this.arcoService.crear(arco) : this.arcoService.actualizar(s.id, arco);
     this.ejecutar(peticion, s.id === null ? 'Flujo de secuencia agregado.' : 'Flujo de secuencia actualizado.', s.id === null);
@@ -295,6 +350,7 @@ export class ProcesoEditorPageComponent {
     if (!proceso || !cambios.length) {
       return;
     }
+    // Una petición de actualizar por cada condición cambiada; forkJoin las lanza todas juntas.
     const peticiones = cambios.map(({ arco, condicion }) =>
       this.arcoService.actualizar(arco.id, {
         procesoId: proceso.id, origenId: arco.origenId, destinoId: arco.destinoId, etiqueta: arco.etiqueta, condicion,
@@ -305,12 +361,14 @@ export class ProcesoEditorPageComponent {
 
   // ---------- Mensajes (HU-25 a HU-28) ----------
 
+  /** Crea o actualiza un mensaje; el tipo del evento decide qué endpoint se llama. */
   guardarMensaje(evento: GuardarMensaje): void {
     const proceso = this.store.proceso();
     const s = this.store.seleccion();
     if (!proceso) {
       return;
     }
+    // Según el tipo: throw (envío), catch (recepción), externo (notificación externa) o actualizar uno existente.
     let peticion;
     switch (evento.tipo) {
       case 'throw':
@@ -328,6 +386,7 @@ export class ProcesoEditorPageComponent {
         }
         peticion = this.mensajeService.actualizar(s.id, evento.datos);
     }
+    // Todo lo que no sea 'actualizar' es un mensaje nuevo (cierra el panel al terminar).
     const nuevo = evento.tipo !== 'actualizar';
     this.ejecutar(
       peticion.pipe(tap((r) => this.avisosGuardado.set(r.advertencias))),
@@ -336,6 +395,7 @@ export class ProcesoEditorPageComponent {
     );
   }
 
+  /** Define por qué clave se correlaciona (relaciona) un mensaje con su respuesta. */
   guardarCorrelacion(datos: CorrelacionRequest): void {
     const s = this.store.seleccion();
     if (s?.tipo === 'mensaje') {
@@ -351,18 +411,21 @@ export class ProcesoEditorPageComponent {
 
   /** Mueve el elemento seleccionado a donde se hizo clic (solo dentro de su pool). */
   private moverA(posicion: Posicion): void {
+    // El elemento a mover es el nodo abierto o el nodo de un mensaje.
     const mensaje = this.store.mensajeSeleccionado();
     const nodo = this.store.nodoSeleccionado() ?? mensaje?.nodo ?? null;
     if (!nodo) {
       this.avisar('Elija qué mover', 'Seleccione primero un elemento y luego haga clic donde debe quedar.');
       return;
     }
+    // Regla: un elemento no cambia de pool (los arcos no cruzan entre pools).
     if (posicion.pool.id !== nodo.poolId) {
       this.avisar('Fuera de su pool', 'Un elemento solo se mueve dentro de su pool: sus arcos no cruzan a otro pool.');
       return;
     }
     const laneId = posicion.lane?.id ?? null;
     const { posX, posY } = posicion;
+    // Según el tipo de elemento se llama a su servicio, repitiendo sus datos y cambiando solo lane y posición.
     let peticion: Observable<unknown>;
     if (mensaje) {
       if (laneId !== nodo.laneId) {
@@ -436,6 +499,7 @@ export class ProcesoEditorPageComponent {
 
   // ---------- Validar ----------
 
+  /** Ejecuta el validador de reglas BPMN en la API y muestra el resultado en la pestaña de advertencias. */
   validar(): void {
     const proceso = this.store.proceso();
     if (!proceso) {
@@ -444,6 +508,7 @@ export class ProcesoEditorPageComponent {
     this.validando.set(true);
     this.diagramaService
       .validar(proceso.id)
+      // finalize: sea éxito o error, se apaga el indicador.
       .pipe(finalize(() => this.validando.set(false)))
       .subscribe({
         next: (advertencias) => {
@@ -459,6 +524,7 @@ export class ProcesoEditorPageComponent {
 
   // ---------- Pools y lanes (HU-21, HU-22, HU-24) ----------
 
+  /** Crea o actualiza un pool (seleccion.id null significa nuevo). */
   guardarPool(datos: PoolRequest): void {
     const seleccion = this.store.seleccion();
     const proceso = this.store.proceso();
@@ -470,6 +536,7 @@ export class ProcesoEditorPageComponent {
     this.ejecutar(peticion, nuevo ? `Pool "${datos.nombre}" agregado.` : `Pool "${datos.nombre}" actualizado.`, true);
   }
 
+  /** HU-24: el administrador cambia si el editor puede modificar la estructura (pools y lanes). */
   cambiarPermiso(permiso: PermisoEstructura): void {
     const pool = this.store.poolPropietario();
     if (pool) {
@@ -477,6 +544,7 @@ export class ProcesoEditorPageComponent {
     }
   }
 
+  /** Abre el modal para confirmar la eliminación de un pool. */
   eliminarPool(pool: Pool): void {
     this.confirmacion.set({
       titulo: 'Eliminar pool',
@@ -487,6 +555,7 @@ export class ProcesoEditorPageComponent {
     });
   }
 
+  /** Crea o actualiza una lane; solo se guarda el rol de proceso que representa. */
   guardarLane(rolProcesoId: number): void {
     const seleccion = this.store.seleccion();
     if (seleccion?.tipo !== 'lane') {
@@ -505,16 +574,20 @@ export class ProcesoEditorPageComponent {
     if (!pool) {
       return;
     }
+    // Lista de ids de las lanes en orden actual; se intercambia la lane con su vecina (dirección -1 sube, +1 baja).
     const ids = [...pool.lanes].sort((a, b) => a.orden - b.orden).map((l) => l.id);
     const i = ids.indexOf(lane.id);
     const j = i + direccion;
+    // Si no está o ya está en el borde, no se hace nada.
     if (i < 0 || j < 0 || j >= ids.length) {
       return;
     }
+    // Intercambio de dos posiciones con desestructuración.
     [ids[i], ids[j]] = [ids[j], ids[i]];
     this.ejecutar(this.laneService.reordenar(pool.id, ids), 'Orden de las lanes actualizado.', false);
   }
 
+  /** Abre el modal para confirmar la eliminación de una lane. */
   eliminarLane(lane: Lane): void {
     this.confirmacion.set({
       titulo: 'Eliminar lane',
@@ -525,6 +598,7 @@ export class ProcesoEditorPageComponent {
     });
   }
 
+  /** El usuario aceptó el modal: ejecuta la acción guardada y cierra el panel. */
   confirmar(): void {
     const confirmacion = this.confirmacion();
     this.confirmacion.set(null);
@@ -535,6 +609,7 @@ export class ProcesoEditorPageComponent {
 
   // ---------- Común ----------
 
+  /** Muestra un mensaje de regla incumplida con el mismo formato de error de la API (status 400). */
   private avisar(titulo: string, detalle: string): void {
     this.aviso.set('');
     this.problema.set({ title: titulo, status: 400, detail: detalle });
@@ -550,7 +625,9 @@ export class ProcesoEditorPageComponent {
     }
     peticion
       .pipe(
+        // switchMap: cuando termina el cambio, recién ahí se vuelve a pedir el diagrama.
         switchMap(() => this.store.recargar()),
+        // Pase lo que pase (éxito o error) se apaga el indicador de guardado.
         finalize(() => this.guardando.set(false)),
       )
       .subscribe({

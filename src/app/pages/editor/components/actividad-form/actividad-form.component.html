@@ -1,42 +1,53 @@
+<!-- Formulario reactivo de actividad: [formGroup] lo enlaza con actividadForm y (ngSubmit) llama a handleSubmit. novalidate evita la validación nativa del navegador, se usa la de Angular. -->
 <form class="row g-2" [formGroup]="actividadForm" (ngSubmit)="handleSubmit()" novalidate id="actividadForm">
+  <!-- Campo nombre (obligatorio). is-invalid de Bootstrap solo se pone si el campo fue tocado y es inválido. -->
   <div class="col-12">
     <label for="actividadNombre" class="form-label small">Nombre</label>
     <input type="text" id="actividadNombre" class="form-control form-control-sm" formControlName="nombre" placeholder="Revisar solicitud"
            [class.is-invalid]="actividadForm.controls.nombre.touched && actividadForm.controls.nombre.invalid" />
     <app-campo-error [control]="actividadForm.controls.nombre"></app-campo-error>
   </div>
+  <!-- Selector del tipo de actividad: las opciones salen de la lista TIPOS_ACTIVIDAD. -->
   <div class="col-12">
     <label for="actividadTipo" class="form-label small">Tipo de actividad</label>
     <select id="actividadTipo" class="form-select form-select-sm" formControlName="tipoActividad">
+      <!-- Una opción por cada tipo; track dice qué identifica cada elemento de la lista. -->
       @for (tipo of tipos; track tipo.valor) {
         <option [value]="tipo.valor">{{ tipo.texto }}</option>
       }
     </select>
   </div>
+  <!-- Selector de lane (rol responsable). ngValue permite que el valor sea un número o null, no solo texto. -->
   <div class="col-12">
     <label for="actividadLane" class="form-label small">Responsable (lane)</label>
     <select id="actividadLane" class="form-select form-select-sm" formControlName="laneId"
             [class.is-invalid]="actividadForm.controls.laneId.touched && actividadForm.controls.laneId.invalid">
+      <!-- Opción inicial deshabilitada: obliga a elegir una lane. -->
       <option [ngValue]="null" disabled>Elija la lane…</option>
+      <!-- Una opción por cada lane del pool. -->
       @for (lane of lanes(); track lane.id) {
         <option [ngValue]="lane.id">{{ lane.nombre }}</option>
       }
     </select>
     <app-campo-error [control]="actividadForm.controls.laneId" [mensajes]="{ required: 'La actividad necesita una lane responsable' }"></app-campo-error>
   </div>
+  <!-- Posición X en el lienzo. -->
   <div class="col-6">
     <label for="actividadPosX" class="form-label small">Posición X</label>
     <input type="number" id="actividadPosX" class="form-control form-control-sm" formControlName="posX" min="0" max="10000" />
     <app-campo-error [control]="actividadForm.controls.posX"></app-campo-error>
   </div>
+  <!-- Posición Y en el lienzo. -->
   <div class="col-6">
     <label for="actividadPosY" class="form-label small">Posición Y</label>
     <input type="number" id="actividadPosY" class="form-control form-control-sm" formControlName="posY" min="0" max="10000" />
     <app-campo-error [control]="actividadForm.controls.posY"></app-campo-error>
   </div>
+  <!-- El botón Guardar solo aparece si el usuario puede editar; se deshabilita mientras se guarda o si el formulario es inválido. -->
   @if (editable()) {
     <div class="col-12 d-flex justify-content-end mt-2">
       <button type="submit" class="btn btn-primary btn-sm" id="guardarActividadBtn" [disabled]="guardando() || actividadForm.invalid">
+        <!-- Spinner de carga mientras se guarda. -->
         @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Guardar
       </button>

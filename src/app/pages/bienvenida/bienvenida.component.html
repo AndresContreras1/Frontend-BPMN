@@ -1,12 +1,15 @@
 <!-- Página pública: qué hace el sistema y cómo empezar (HU-01 y HU-03) -->
+<!-- Sección principal: título, descripción y botones para registrarse o ingresar -->
 <section class="fondo-marca hero">
   <div class="container-xxl py-5 text-center aparecer">
+    <!-- Etiqueta pequeña sobre el título -->
     <span class="badge rounded-pill bg-white bg-opacity-25 mb-3">Visor y editor de procesos multiempresa</span>
     <h1 class="display-5 fw-bold mb-3">Modele los procesos de su empresa con BPMN</h1>
     <p class="lead mx-auto mb-4 texto-hero">
       Registre su empresa, invite a su equipo con roles de acceso y dibuje cada proceso con pools, lanes,
       actividades, gateways y mensajes. Todo queda aislado por empresa y con historial de cambios.
     </p>
+    <!-- Botones de acción; routerLink navega sin recargar la página -->
     <div class="d-flex flex-wrap justify-content-center gap-2">
       <a class="btn btn-light btn-lg" routerLink="/registro" id="empezarRegistroBtn">
         <i class="bi bi-building-add me-1"></i> Registrar mi empresa
@@ -18,27 +21,33 @@
   </div>
 </section>
 
+<!-- Tarjeta con el diagrama de ejemplo; sube sobre la sección anterior por el margen negativo del SCSS -->
 <section class="container-xxl ejemplo" aria-labelledby="tituloEjemplo">
   <div class="card shadow aparecer">
+    <!-- Título del ejemplo y una frase que lo explica -->
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
       <h2 class="h6 mb-0" id="tituloEjemplo"><i class="bi bi-diagram-3 text-primary me-1"></i> Solicitud de vacaciones</h2>
       <span class="small text-body-secondary">El ejemplo del enunciado: 2 pools, 3 lanes, un gateway exclusivo y un mensaje con correlación</span>
     </div>
+    <!-- Se reutiliza el mismo lienzo SVG del editor, solo para mostrar el ejemplo (no se conecta ningún clic) -->
     <div class="card-body lienzo-adaptable p-2">
       <app-diagrama-svg [pools]="pools" [nodos]="nodos" [arcos]="arcos" [mensajes]="mensajes"></app-diagrama-svg>
     </div>
   </div>
 </section>
 
+<!-- Los seis frentes del proyecto en tarjetas -->
 <section class="container-xxl py-5" aria-labelledby="tituloFunciones">
   <h2 class="h3 text-center mb-2" id="tituloFunciones">Todo lo que pide un proceso, en un solo lugar</h2>
   <p class="text-center text-body-secondary mb-4">Las 28 historias de usuario del proyecto, agrupadas en seis frentes.</p>
   <div class="row g-3">
+    <!-- Una tarjeta por cada elemento del arreglo funciones; track f.titulo identifica cada una -->
     @for (f of funciones; track f.titulo) {
       <div class="col-xl-4 col-md-6">
         <article class="card h-100 tarjeta-interactiva">
           <div class="card-body">
             <div class="d-flex align-items-center gap-3 mb-2">
+              <!-- Círculo de color con el ícono (las clases se arman con f.color) -->
               <span class="icono-circulo" [class]="'bg-' + f.color + '-subtle text-' + f.color + '-emphasis'" aria-hidden="true">
                 <i class="bi" [class]="f.icono"></i>
               </span>
@@ -55,18 +64,24 @@
   </div>
 </section>
 
+<!-- Carrusel de Bootstrap con los elementos del diagrama -->
 <section class="bg-body-tertiary border-top border-bottom py-5" aria-labelledby="tituloElementos">
   <div class="container-xxl">
     <h2 class="h3 text-center mb-4" id="tituloElementos">Los elementos del diagrama</h2>
+    <!-- El plugin Carousel de Bootstrap lo mueve solo (data-bs-ride) -->
     <div id="carruselElementos" class="carousel slide carrusel-elementos mx-auto" data-bs-ride="carousel">
+      <!-- Puntos de abajo: uno por diapositiva, para saltar a cualquiera -->
       <div class="carousel-indicators">
+        <!-- i es el índice; el primero se marca activo -->
         @for (e of elementos; track e.nombre; let i = $index) {
           <button type="button" data-bs-target="#carruselElementos" [attr.data-bs-slide-to]="i"
                   [class.active]="i === 0" [attr.aria-current]="i === 0 ? 'true' : null"
                   [attr.aria-label]="e.nombre"></button>
         }
       </div>
+      <!-- Diapositivas -->
       <div class="carousel-inner rounded-4 shadow-sm">
+        <!-- Una diapositiva por elemento; solo la primera empieza activa -->
         @for (e of elementos; track e.nombre; let i = $index) {
           <div class="carousel-item" [class.active]="i === 0">
             <div class="diapositiva text-center p-5">
@@ -78,10 +93,12 @@
           </div>
         }
       </div>
+      <!-- Flecha para ir a la diapositiva anterior -->
       <button class="carousel-control-prev" type="button" data-bs-target="#carruselElementos" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Anterior</span>
       </button>
+      <!-- Flecha para ir a la siguiente -->
       <button class="carousel-control-next" type="button" data-bs-target="#carruselElementos" data-bs-slide="next">
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Siguiente</span>
@@ -90,9 +107,11 @@
   </div>
 </section>
 
+<!-- Pasos para empezar, en una lista ordenada -->
 <section class="container-xxl py-5" aria-labelledby="tituloPasos">
   <h2 class="h3 text-center mb-4" id="tituloPasos">Cómo empezar</h2>
   <ol class="row g-3 list-unstyled mb-0">
+    <!-- Un paso por elemento; i + 1 es el número que se ve -->
     @for (p of pasos; track p.titulo; let i = $index) {
       <li class="col-lg-3 col-sm-6">
         <div class="card h-100 text-center">
@@ -105,6 +124,7 @@
       </li>
     }
   </ol>
+  <!-- Botón final para registrar la empresa -->
   <div class="text-center mt-4">
     <a class="btn btn-primary btn-lg" routerLink="/registro">Crear el espacio de mi empresa</a>
   </div>
