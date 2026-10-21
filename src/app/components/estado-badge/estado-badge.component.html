@@ -1,0 +1,7 @@
+@if (!activo()) {
+  <span class="badge text-bg-secondary">Eliminado</span>
+} @else if (estado() === 'PUBLICADO') {
+  <span class="badge text-bg-success">Publicado</span>
+} @else {
+  <span class="badge text-bg-warning">Borrador</span>
+}

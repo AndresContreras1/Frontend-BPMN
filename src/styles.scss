@@ -1,0 +1,28 @@
+// Variables de Bootstrap primero, luego estilos propios
+:root {
+  --bs-primary: #1f6feb;
+  --bs-primary-rgb: 31, 111, 235;
+  --bpmn-borde: #24292f;
+  --bpmn-actividad: #ffffff;
+  --bpmn-pool: #f6f8fa;
+  --bpmn-lane: #ffffff;
+  --bpmn-seleccion: #1f6feb;
+  --bpmn-error: #cf222e;
+  --bpmn-aviso: #bf8700;
+}
+
+body {
+  background-color: #f3f4f6;
+}
+
+.tarjeta {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+}
+
+.tabla-procesos td,
+.tabla-procesos th {
+  vertical-align: middle;
+}
