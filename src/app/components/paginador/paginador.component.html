@@ -1,6 +1,6 @@
 @if (totalPages() > 1) {
   <nav aria-label="Paginación" class="d-flex justify-content-between align-items-center mt-3">
-    <small class="text-body-secondary">{{ totalElements() }} resultados · página {{ page() + 1 }} de {{ totalPages() }}</small>
+    <small class="text-body-secondary">{{ totalElements() }} {{ totalElements() === 1 ? 'resultado' : 'resultados' }} · página {{ page() + 1 }} de {{ totalPages() }}</small>
     <ul class="pagination pagination-sm mb-0">
       <li class="page-item" [class.disabled]="page() === 0">
         <button class="page-link" type="button" (click)="ir(page() - 1)" [disabled]="page() === 0">Anterior</button>
@@ -16,5 +16,5 @@
     </ul>
   </nav>
 } @else if (totalElements() > 0) {
-  <small class="text-body-secondary d-block mt-3">{{ totalElements() }} resultados</small>
+  <small class="text-body-secondary d-block mt-3">{{ totalElements() }} {{ totalElements() === 1 ? 'resultado' : 'resultados' }}</small>
 }

@@ -68,6 +68,8 @@ src/app/
 | `/registro` | Registro de empresa; el representante entra como administrador | HU-01 |
 | `/empresa` | Datos de la empresa y del usuario en sesión | HU-01, HU-03 |
 | botón **Salir** | Cierre de sesión (`POST /auth/logout`) | HU-03 |
+| `/usuarios` | Lista paginada con búsqueda y orden; el administrador cambia el rol y desactiva o reactiva | HU-02 |
+| `/usuarios/nuevo` | Invitar usuario con contraseña inicial y rol (solo administrador) | HU-02 |
 
 ### Usuarios de prueba (datos demo del backend)
 
