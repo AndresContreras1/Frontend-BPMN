@@ -91,9 +91,9 @@
                     [cargando]="cargando() && !resultado()" [vacia]="resultado()?.content?.length === 0"
                     [mensajeVacio]="verEliminados() ? 'No hay procesos eliminados.' : 'No hay procesos que coincidan con los filtros.'">
   @for (p of resultado()?.content ?? []; track p.id) {
-    <tr>
+    <tr class="fila-proceso">
       <td>
-        <a [routerLink]="['/procesos', p.id]" class="fw-semibold text-decoration-none">{{ p.nombre }}</a>
+        <a [routerLink]="['/procesos', p.id]" class="fw-semibold text-decoration-none nombre-proceso">{{ p.nombre }}</a>
         @if (p.descripcion) {
           <div class="small text-body-secondary text-truncate descripcion-corta">{{ p.descripcion }}</div>
         }

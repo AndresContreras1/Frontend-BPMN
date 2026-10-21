@@ -35,6 +35,26 @@ npm run test:ci
 
 Corre las pruebas unitarias una vez en Chrome headless y deja la cobertura en `coverage/` (197 pruebas; 88 % de líneas y 72 % de ramas).
 
+### Pruebas de sistema (E2E)
+
+Las pruebas con Selenium viven en el backend (`Backend-BPMN/src/test/java/.../e2e`), como se vio en clase: con este frontend corriendo (`npm start`), allá se lanzan con `./mvnw verify -Pe2e`. Buscan los elementos por `id` y, dentro de los `@for`, por clase (`fila-proceso`, `nombre-proceso`, `fila-compartido`, `fila-usuario`), así un cambio de estilos no las rompe.
+
+## Integración continua y calidad
+
+`.github/workflows/ci.yml` corre en cada pull request y en cada push a `main`: instala, ejecuta las pruebas con cobertura, compila en modo producción y construye la imagen Docker. El análisis de SonarCloud (`sonar-project.properties`, cobertura desde `coverage/frontend-bpmn/lcov.info`) se activa cuando el repositorio tiene el secreto `SONAR_TOKEN`.
+
+## Despliegue en Kubernetes
+
+`.github/workflows/deploy.yaml` publica la imagen en `ghcr.io/<dueño>/frontend-bpmn:latest` en cada push a `main` y, con el runner self-hosted `main` registrado (variable del repositorio `RUNNER_REGISTRADO=true`), aplica `k8s/deployment.yaml` y reinicia el Deployment.
+
+| Objeto | Qué hace |
+|---|---|
+| `Deployment` `frontend-bpmn` | 2 réplicas de nginx con la SPA (`imagePullSecrets: ghcr-secret`) |
+| `Service` `frontend-bpmn` | Puerto 80 dentro del clúster |
+| `Ingress` | `ingressClassName: public`, host del grupo (`bpmn.inphotech.co`, cambiarlo por el asignado): `/` va al frontend; `/api`, `/swagger-ui` y `/v3/api-docs` los toma el Ingress del backend |
+
+El namespace `bpmn`, el secret `ghcr-secret` y el Service `backend` (el nombre que usa `proxy_pass` en `nginx.conf`) se crean con el despliegue del backend.
+
 ## Docker
 
 ### Stack completo (PostgreSQL + backend + frontend)
